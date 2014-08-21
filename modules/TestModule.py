@@ -12,7 +12,7 @@ class module(ModBase.module):
         logging.info("Started TestModule!")
         print("Hello World from the point of a brand-new, shiny, module!")
         if wpilib.IsDisabled():
-            logging.info("We Are Disabled")
+            print("We Are Disabled")
         else:
             logging.info("We Are Enabled")
         time.sleep(10)
