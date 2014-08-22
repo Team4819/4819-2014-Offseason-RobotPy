@@ -1,8 +1,9 @@
-from ModMaster import moduleError
 
 __author__ = 'christian'
 import logging
-from ModMaster import moduleError
+
+class moduleError(Exception):
+    pass
 
 class modWrapper:
 
@@ -20,8 +21,6 @@ class modWrapper:
         if hasattr(self.pymod, "name"):
             self.modname = self.pymod.name
 
-
-
     def start(self):
         logging.info("Starting Module " + self.pymodname)
         if hasattr(self.module, "start"):
@@ -30,7 +29,14 @@ class modWrapper:
         else:
             print("No start Method Found in module " + self.pymodname)
 
+    def kill(self):
+        self.module.stop();
 
+    def __getattr__(self, item):
+        if super.__getattr__(self, item) is None:
+            return self.module.__getattr__(item)
+        else:
+            return super.getattr__(self, item)
 
 
 

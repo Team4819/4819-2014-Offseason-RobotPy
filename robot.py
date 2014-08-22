@@ -1,28 +1,20 @@
 import logging
 import ModMaster
+import time
+try:
+    import wpilib
+except ImportError:
+    from pyfrc import wpilib
 
-from pyfrc import wpilib
+class RobotTrunk(wpilib.IterativeRobot):
 
-class RobotTrunk(wpilib.SimpleRobot):
-
-    modules = dict()
-
-    def __init__(self):
-        wpilib.SimpleRobot.__init__(self)
-
-    def checkRestart():
-        if stick1.GetRawButton(10):
-            raise RuntimeError("Restart")
-
-
-    def RobotMain(self):
-        print("in robot main")
-        ModMaster.loadMod("modules.TestModule")
 
     def RobotInit(self):
-
         ModMaster.loadMod("modules.TestModule")
 
+    def __exit__(self):
+        ModMaster.killAllMods()
+        wpilib.IterativeRobot.__exit__(self)
 
 
 
