@@ -1,16 +1,14 @@
+from ModMaster import moduleError
+
 __author__ = 'christian'
 import logging
-import threading
-import ModMaster
-
-class moduleError(Exception):
-    pass
+from ModMaster import moduleError
 
 class modWrapper:
 
     def __init__(self,pymodname):
         self.pymodname = pymodname
-        logging.info("loading module " + pymodname)
+        print("loading module " + pymodname)
         try:
             self.pymod = __import__(pymodname, fromlist=[''])
         except ImportError:
@@ -28,9 +26,9 @@ class modWrapper:
         logging.info("Starting Module " + self.pymodname)
         if hasattr(self.module, "start"):
             self.module.start()
-            logging.info("Module " + self.pymodname + "Started")
+            print("Module " + self.pymodname + "Started")
         else:
-            logging.info("No start Method Found in module " + self.pymodname)
+            print("No start Method Found in module " + self.pymodname)
 
 
 

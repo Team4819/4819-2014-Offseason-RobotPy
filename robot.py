@@ -19,10 +19,11 @@ class RobotTrunk(wpilib.SimpleRobot):
         print("in robot main")
         ModMaster.loadMod("modules.TestModule")
 
-    def StartCompetition(self):
-        print("In StartCompetition!")
+    def RobotInit(self):
+
         ModMaster.loadMod("modules.TestModule")
-        wpilib.SimpleRobot.StartCompetition(self)
+
+
 
 
 
