@@ -6,17 +6,28 @@ try:
 except ImportError:
     from pyfrc import wpilib
 
-class RobotTrunk(wpilib.IterativeRobot):
+class RobotTrunk(wpilib.SimpleRobot):
 
 
-    def RobotInit(self):
+    def __init__(self):
+        wpilib.SimpleRobot.__init__(self)
         ModMaster.loadMod("modules.TestModule")
+        ModMaster.loadMod("modules.TestModule2")
 
     def __exit__(self):
         ModMaster.killAllMods()
-        wpilib.IterativeRobot.__exit__(self)
+        wpilib.SimpleRobot.__exit__(self)
 
 
+    def OperatorControl(self):
+        dog = self.GetWatchdog()
+        dog.SetEnabled(True)
+        dog.SetExpiration(0.25)
+
+        while self.IsOperatorControl() and self.IsEnabled():
+            dog.Feed()
+
+            wpilib.Wait(0.04)
 
 
 
@@ -28,3 +39,4 @@ def run():
 
 if __name__ == '__main__':
     wpilib.run(min_version='2014.4.0')
+

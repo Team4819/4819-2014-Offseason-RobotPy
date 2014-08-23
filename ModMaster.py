@@ -5,7 +5,7 @@ import ModWrapper
 mods = dict()
 
 def getMod(modname):
-    return mods.module
+    return mods[modname]
 
 def loadMod(pymodname):
     modwrap = ModWrapper.modWrapper(pymodname)
