@@ -1,6 +1,5 @@
-import logging
-import ModMaster
-import time
+from framework import ModMaster
+
 try:
     import wpilib
 except ImportError:
@@ -8,27 +7,38 @@ except ImportError:
 
 class RobotTrunk(wpilib.SimpleRobot):
 
-
     def __init__(self):
-        wpilib.SimpleRobot.__init__(self)
-        ModMaster.loadMod("modules.TestModule")
-        ModMaster.loadMod("modules.TestModule2")
+        super().__init__()
+        self.reaper = ModMaster.GrimReaper()
+        self.reaper.start()
+        ModMaster.loadMod("modules.2Joysticks")
+        ModMaster.loadMod("modules.BasicArcadeDrive")
+        ModMaster.loadMod("modules.Cannon")
+        ModMaster.loadMod("modules.Intake")
 
-    def __exit__(self):
-        ModMaster.killAllMods()
-        wpilib.SimpleRobot.__exit__(self)
+    def Disabled(self):
+        '''Called when the robot is disabled'''
+        ModMaster.setEvent("disabled")
+        while self.IsDisabled():
+            wpilib.Wait(0.1)
+            self.reaper.delayDeath()
 
+    def Autonomous(self):
+        '''Called when autonomous mode is enabled'''
+        ModMaster.setEvent("enabled")
+        ModMaster.setEvent("autonomous")
+        while self.IsAutonomous() and self.IsEnabled():
+            wpilib.Wait(0.1)
+            self.reaper.delayDeath()
 
     def OperatorControl(self):
-        dog = self.GetWatchdog()
-        dog.SetEnabled(True)
-        dog.SetExpiration(0.25)
+        '''Called when operation control mode is enabled'''
+        ModMaster.setEvent("enabled")
+        ModMaster.setEvent("teleoperated")
 
         while self.IsOperatorControl() and self.IsEnabled():
-            dog.Feed()
-
+            self.reaper.delayDeath()
             wpilib.Wait(0.04)
-
 
 
 def run():
@@ -38,5 +48,4 @@ def run():
     return robot
 
 if __name__ == '__main__':
-    wpilib.run(min_version='2014.4.0')
-
+    wpilib.run()
