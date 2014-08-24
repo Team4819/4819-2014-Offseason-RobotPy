@@ -25,7 +25,7 @@ class module(ModBase.module):
             else:
                 print("We Are Not Pressed")
             time.sleep(2)
-            stop = self.stick.GetRawButton(11) or self._stop.is_set()
+            stop = self.stick.GetRawButton(11) or self.stopEvent.is_set()
 
         print("Stopped TestModule!")
 

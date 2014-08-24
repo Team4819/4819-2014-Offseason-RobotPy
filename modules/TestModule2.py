@@ -17,4 +17,4 @@ class module(ModBase.module):
         else:
             print("Nope, not pulled")
         time.sleep(10)
-        print("Stopped TestModule!")
+        print("Stopped TestModule2!")

@@ -7,7 +7,9 @@ class moduleError(Exception):
 
 class modWrapper:
 
-    def __init__(self,pymodname):
+    autoReload = False
+
+    def __init__(self, pymodname):
         self.pymodname = pymodname
         print("loading module " + pymodname)
         try:
@@ -25,18 +27,23 @@ class modWrapper:
         logging.info("Starting Module " + self.pymodname)
         if hasattr(self.module, "start"):
             self.module.start()
-            print("Module " + self.pymodname + "Started")
+            print("Module " + self.pymodname + " Started")
         else:
             print("No start Method Found in module " + self.pymodname)
 
     def kill(self):
-        self.module.stop();
+        self.module.stop()
+
+    def reload(self):
+        self.pymod.reload()
+        self.module.__class__ = self.pymod.mod
 
     def __getattr__(self, item):
-        if super.__getattr__(self, item) is None:
-            return self.module.__getattr__(item)
-        else:
-            return super.getattr__(self, item)
+        return getattr(self.module, item)
+
+
+
+
 
 
 
