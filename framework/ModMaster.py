@@ -1,5 +1,6 @@
+from framework import ModWrapper
+
 __author__ = 'christian'
-import ModWrapper
 import time
 import threading
 mods = dict()

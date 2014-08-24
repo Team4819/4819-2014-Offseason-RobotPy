@@ -1,6 +1,5 @@
-import logging
-import ModMaster
-import time
+from framework import ModMaster
+
 try:
     import wpilib
 except ImportError:
@@ -15,6 +14,7 @@ class RobotTrunk(wpilib.SimpleRobot):
         ModMaster.loadMod("modules.2Joysticks")
         ModMaster.loadMod("modules.BasicArcadeDrive")
         ModMaster.loadMod("modules.Cannon")
+        ModMaster.loadMod("modules.Intake")
 
     def Disabled(self):
         '''Called when the robot is disabled'''

@@ -1,7 +1,8 @@
+from framework import ModMaster, ModBase
+
 __author__ = 'christian'
-from modules import ModBase
 import time
-import ModMaster
+
 try:
     import wpilib
 except ImportError:

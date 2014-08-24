@@ -1,5 +1,6 @@
+from framework import ModBase
+
 __author__ = 'christian'
-from modules import ModBase
 try:
     import wpilib
 except ImportError:
