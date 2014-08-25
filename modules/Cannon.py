@@ -12,7 +12,9 @@ except ImportError:
 class module(ModBase.module):
 
     name = "cannon"
+    wants = {"Compressor", "controls"}
     disableFlags = dict()
+    dryFireProtection = False
 
     #Controls for externally enabling and disabling cannon
     def disable(self, handleName):
@@ -21,17 +23,31 @@ class module(ModBase.module):
     def enable(self, handleName):
         self.disableFlags[handleName] = False
 
+    def enableDryFireProtection(self):
+        self.dryFireProtection = True
+
+    def disableDryFireProtection(self):
+        self.dryFireProtection = False
 
     def moduleLoad(self):
         self.mainSolenoid1 = wpilib.Solenoid(1)
         self.mainSolenoid2 = wpilib.Solenoid(2)
         self.blowbackSolenoid = wpilib.Solenoid(3)
+        self.ballPresenseSwitch = wpilib.DigitalInput(1)
+        self.ballPresense = False
 
         ModMaster.getMod("controls").onEvent("highShot", self.highShot)
         ModMaster.getMod("controls").onEvent("medShot", self.medShot)
         ModMaster.getMod("controls").onEvent("lowShot", self.lowShot)
         ModMaster.getMod("controls").onEvent("blowbackOn", self.blowbackOn)
         ModMaster.getMod("controls").onEvent("blowbackOff", self.blowbackOff)
+
+        while not self.stopFlag:
+            self.lastBallPresense = self.ballPresense
+            self.ballPresense = self.ballPresenseSwitch.Get()
+            if not self.lastBallPresense and self.ballPresense:
+                self.setEvent("ballPresent")
+            time.sleep(.1)
 
     def blowbackOn(self):
         self.blowbackSolenoid.Set(True)
@@ -48,12 +64,16 @@ class module(ModBase.module):
     def lowShot(self):
         self.fire(duration=.1)
 
-    def fire(self, duration=.5):
+    def fire(self, duration=.5, enableDryFire = False):
 
         for key in self.disableFlags:
             if self.disableFlags[key]:
                 print("Not firing, cannon disabled by disableFlag " + key)
                 return
+
+        if not self.ballPresense and self.dryFireProtection and not enableDryFire:
+            print("Dry fire protection is On, not firing due to lack of ball")
+            return
 
         self.mainSolenoid1.Set(True)
         self.mainSolenoid2.Set(True)

@@ -11,10 +11,11 @@ class RobotTrunk(wpilib.SimpleRobot):
         super().__init__()
         self.reaper = ModMaster.GrimReaper()
         self.reaper.start()
-        ModMaster.loadMod("modules.2Joysticks")
+        ModMaster.loadMod("modules.Joysticks")
         ModMaster.loadMod("modules.BasicArcadeDrive")
         ModMaster.loadMod("modules.Cannon")
         ModMaster.loadMod("modules.Intake")
+        ModMaster.loadMod("modules.Compressor")
 
     def Disabled(self):
         '''Called when the robot is disabled'''

@@ -1,5 +1,6 @@
 __author__ = 'christian'
 import threading
+from framework import DataStream
 import logging
 import time
 
@@ -7,8 +8,10 @@ import time
 class module(object):
 
     name = "ModuleBase"
+    wants = list()
     stopFlag = False
     eventCallbacks = dict()
+    dataStreams = dict()
 
     def callFunc(self, function, args, kwargs, finEvent):
         function(*args, **kwargs)
@@ -28,6 +31,16 @@ class module(object):
 
     def moduleLoad(self):
         pass
+
+    def setDataStream(self, name, data):
+        if self.dataStreams.setdefault(name) is not None:
+            self.dataStreams[name].data = data
+
+    def registerDataStream(self, name, stream):
+        if self.dataStreams.setdefault(name) is None:
+            self.dataStreams[name] = stream
+        else:
+            stream = self.dataStreams[name]
 
     def moduleUnload(self):
         self.stopFlag = True
