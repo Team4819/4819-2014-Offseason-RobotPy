@@ -1,7 +1,8 @@
-from framework import ModMaster, ModBase
+from framework import ModMaster, ModBase, DataStream
 
 __author__ = 'christian'
 import time
+
 import threading
 try:
     import wpilib
@@ -12,6 +13,7 @@ except ImportError:
 class module(ModBase.module):
 
     name = "intake"
+    wants = {"compressor", "controls"}
 
     def moduleLoad(self):
         self.armSolenoid = wpilib.Solenoid(4)
@@ -24,6 +26,9 @@ class module(ModBase.module):
         ModMaster.getMod("controls").onEvent("flipperOut", self.flipperOut)
         ModMaster.onEvent("enabled", self.run)
         ModMaster.onEvent("disabled", self.disable)
+        #Setup data stream for wheels
+        self.intakeDrive = DataStream.DataStream()
+        ModMaster.getMod("controls").registerDataStream("intake", self.intakeDrive)
 
     def disable(self):
         self.stopFlag = True
@@ -31,8 +36,8 @@ class module(ModBase.module):
     def run(self):
         self.stopFlag = False
         while not self.stopFlag:
-            self.intakeMotor.Set(ModMaster.getMod("controls").intake)
-            time.sleep(.2)
+            self.intakeMotor.Set(float(self.intakeDrive.data))
+            time.sleep(.05)
         print("Intake Stopped")
 
     def armsUp(self):

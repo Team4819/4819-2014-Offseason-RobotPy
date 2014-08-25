@@ -30,8 +30,11 @@ class module(controls.module):
             if self.DriveY < .01 and self.DriveY > -.01:
                 self.DriveY = 0
 
+            self.setDataStream("drive", (self.DriveX, self.DriveY))
+
             #Get Intake Motor Value
-            self.intake = self.stick2.GetRawAxis(2)
+            self.setDataStream("intake", self.stick2.GetRawAxis(2))
+
 
             #Set button values
             lastButtons = copy.copy(self.buttons)
@@ -64,7 +67,7 @@ class module(controls.module):
                     self.setEvent(key)
 
 
-            time.sleep(.02)
+            time.sleep(.05)
         print("2Joysticks Stopped")
 
 

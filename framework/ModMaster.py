@@ -3,9 +3,18 @@ from framework import ModWrapper
 __author__ = 'christian'
 import time
 import threading
+import logging
 mods = dict()
 events = dict()
 eventCallbacks = dict()
+
+class moduleLoadError(Exception):
+    def __init__(self, name, message):
+        logging.error("Module Load Error: " + name + ": " + message)
+
+class moduleUnloadError(Exception):
+    def __init__(self, name, message):
+        logging.error("Module Unload Error: " + name + ": " + message)
 
 def getEvent(eventname):
     event = threading.Event()
@@ -38,9 +47,15 @@ def loadMod(pymodname):
     modwrap = ModWrapper.modWrapper(pymodname)
     modname = modwrap.module.name
     if mods.setdefault(modname) is not None:
-        raise ModWrapper.moduleError("Already module with name " + modname)
+        raise moduleLoadError(pymodname, ": Already module with name " + modname)
     mods[modname] = modwrap
     mods[modname].moduleLoad()
+
+def unloadMod(modname):
+    if mods.setdefault(modname) is None:
+        raise moduleUnloadError(modname, "No such module loaded")
+    mods[modname].moduleUnload().wait()
+    
 
 def killAllMods():
     for key in mods:
