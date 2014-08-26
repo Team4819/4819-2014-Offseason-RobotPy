@@ -5,8 +5,8 @@ import time
 import threading
 import logging
 mods = dict()
-events = dict()
 eventCallbacks = dict()
+modDataStreams = dict()
 
 class moduleLoadError(Exception):
     def __init__(self, name, message):
@@ -16,29 +16,45 @@ class moduleUnloadError(Exception):
     def __init__(self, name, message):
         logging.error("Module Unload Error: " + name + ": " + message)
 
-def getEvent(eventname):
-    event = threading.Event()
-    if events.setdefault(eventname) is None:
-        events[eventname] = list()
-    events[eventname].append(event)
-    return event
 
-def onEvent(eventname, func):
-    if eventCallbacks.setdefault(eventname) is None:
-        eventCallbacks[eventname] = list()
-    eventCallbacks[eventname].append(func)
+class eventCallback:
+    def __init__(self, mod, func, srcmod):
+        self.mod = mod
+        self.func = func
+        self.srcmod = srcmod
 
-def setEvent(eventname):
-    if events.setdefault(eventname) is None and eventCallbacks.setdefault(eventname) is None:
-        print("Warning: No events registered for event " + eventname)
-        return
-    if events.setdefault(eventname) is not None:
-        for event in events[eventname]:
-            event.set()
+    def call(self):
+        thread = threading.Thread(target=getMod(self.mod).__getattribute__(self.func))
+        thread.start()
+
+class DataStream(object):
+    def __init__(self, defValue):
+        self.data = defValue
+
+
+def getDataStream(streamName, defValue, srcmod="global"):
+    if modDataStreams.setdefault(srcmod) is None:
+        modDataStreams[srcmod] = dict()
+    if modDataStreams[srcmod].setDefault(streamName) is None:
+        modDataStreams[srcmod][streamName] = DataStream(defValue)
+    return modDataStreams[srcmod][streamName]
+
+def pushToDataStream(streamName, data, srcmod="global"):
+    if modDataStreams.setdefault(srcmod) is not None:
+        if modDataStreams[srcmod].setdefault(streamName) is not None:
+            modDataStreams[srcmod][streamName].data = data
+
+def setEventCallback(event, mod, func, srcmod=None):
+    if eventCallbacks.setdefault(event) is None:
+        eventCallbacks[event] = list()
+    eventCallbacks[event].append(eventCallback(mod, func, srcmod))
+
+def triggerEvent(eventname, srcmod):
     if eventCallbacks.setdefault(eventname) is not None:
         for callback in eventCallbacks[eventname]:
-            callback()
-    print("Triggered event " + eventname)
+            if srcmod is None or srcmod is callback.srcmod:
+                callback.call()
+        print("Triggered event " + eventname + " from mod " + srcmod)
 
 def getMod(modname):
     return mods[modname].module
@@ -55,7 +71,7 @@ def unloadMod(modname):
     if mods.setdefault(modname) is None:
         raise moduleUnloadError(modname, "No such module loaded")
     mods[modname].moduleUnload().wait()
-    
+
 
 def killAllMods():
     for key in mods:
@@ -83,6 +99,4 @@ class GrimReaper(threading.Thread):
 
     def delayDeath(self):
         self.timer = 0
-
-
 
