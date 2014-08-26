@@ -30,10 +30,10 @@ class module(ModBase.module):
         self.dryFireProtection = False
 
     def moduleLoad(self):
-        self.mainSolenoid1 = wpilib.Solenoid(1)
-        self.mainSolenoid2 = wpilib.Solenoid(2)
-        self.blowbackSolenoid = wpilib.Solenoid(3)
-        self.ballPresenseSwitch = wpilib.DigitalInput(1)
+        self.mainSolenoid1 = wpilib.Solenoid(3)
+        self.mainSolenoid2 = wpilib.Solenoid(4)
+        self.blowbackSolenoid = wpilib.Solenoid(5)
+        self.ballPresenseSwitch = wpilib.DigitalInput(13)
         self.ballPresense = False
 
         ModMaster.setEventCallback("highShot", self.name, "highShot", "controls")
@@ -84,4 +84,3 @@ class module(ModBase.module):
         self.blowbackSolenoid.Set(True)
         time.sleep(.2)
         self.blowbackSolenoid.Set(False)
-        print("Fired for " + str(duration) + " seconds!")

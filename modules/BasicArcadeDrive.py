@@ -26,7 +26,6 @@ class module(ModBase.module):
 
     def run(self):
         self.stopFlag = False
-        print("running BasicArcadeDrive")
         while not self.stopFlag:
             InputX = float(self.controlStream.data[0])
             InputY = float(self.controlStream.data[1])

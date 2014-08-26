@@ -4,8 +4,11 @@ try:
     import wpilib
 except ImportError:
     from pyfrc import wpilib
+try:
     import manhole
     manhole.install()
+except ImportError:
+    pass
 
 class RobotTrunk(wpilib.SimpleRobot):
 
@@ -15,9 +18,9 @@ class RobotTrunk(wpilib.SimpleRobot):
         self.reaper.start()
         ModMaster.loadMod("modules.Joysticks")
         ModMaster.loadMod("modules.BasicArcadeDrive")
-        #ModMaster.loadMod("modules.Cannon")
-        #ModMaster.loadMod("modules.Intake")
-        #ModMaster.loadMod("modules.Compressor")
+        ModMaster.loadMod("modules.Cannon")
+        ModMaster.loadMod("modules.Intake")
+        ModMaster.loadMod("modules.Compressor")
 
     def Disabled(self):
         '''Called when the robot is disabled'''

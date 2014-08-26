@@ -24,8 +24,7 @@ class eventCallback:
         self.srcmod = srcmod
 
     def call(self):
-        target = getMod(self.mod).__getattribute__(self.func)
-        print(self.mod + "," + self.func )
+        target = getattr(getMod(self.mod),self.func)
         thread = threading.Thread(target=target)
         thread.start()
 

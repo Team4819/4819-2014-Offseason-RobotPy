@@ -10,6 +10,6 @@ class module(ModBase.module):
     name = "compressor"
 
     def moduleLoad(self):
-        self.compressor = wpilib.Compressor(8, 1)
+        self.compressor = wpilib.Compressor(14, 1)
         self.compressor.Start()
 
