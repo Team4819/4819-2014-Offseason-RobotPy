@@ -4,6 +4,8 @@ try:
     import wpilib
 except ImportError:
     from pyfrc import wpilib
+    import manhole
+    manhole.install()
 
 class RobotTrunk(wpilib.SimpleRobot):
 
@@ -13,7 +15,7 @@ class RobotTrunk(wpilib.SimpleRobot):
         self.reaper.start()
         ModMaster.loadMod("modules.Joysticks")
         ModMaster.loadMod("modules.BasicArcadeDrive")
-        ModMaster.loadMod("modules.Cannon")
+        #ModMaster.loadMod("modules.Cannon")
         #ModMaster.loadMod("modules.Intake")
         #ModMaster.loadMod("modules.Compressor")
 

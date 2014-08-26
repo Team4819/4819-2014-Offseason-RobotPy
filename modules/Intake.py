@@ -21,12 +21,13 @@ class module(ModBase.module):
         self.flipperSolenoid = wpilib.Solenoid(5)
         self.intakeMotor = wpilib.Talon(3)
 
-        ModMaster.getMod("controls").onEvent("armsUp", self.armsUp)
-        ModMaster.getMod("controls").onEvent("armsDown", self.armsDown)
-        ModMaster.getMod("controls").onEvent("flipperIn", self.flipperIn)
-        ModMaster.getMod("controls").onEvent("flipperOut", self.flipperOut)
-        ModMaster.onEvent("enabled", self.run)
-        ModMaster.onEvent("disabled", self.disable)
+        ModMaster.setEventCallback("armsUp", self.name, "armsUp", srcmod="controls")
+        ModMaster.setEventCallback("armsDown", self.name, "armsDown", srcmod="controls")
+        ModMaster.setEventCallback("flipperIn", self.name, "flipperIn", srcmod="controls")
+        ModMaster.setEventCallback("flipperOut", self.name, "flipperOut", srcmod="controls")
+        ModMaster.setEventCallback("enabled", self.name, "run")
+        ModMaster.setEventCallback("disabled", self.name, "stop")
+
         #Setup data stream for wheels
         self.intakeDrive = ModMaster.getDataStream("intake", 0, srcmod="controls")
 

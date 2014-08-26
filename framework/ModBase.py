@@ -18,7 +18,7 @@ class module(object):
         finEvent.set()
 
     def triggerEvent(self, event):
-        ModMaster.triggerEvent(event, eventname=self.name)
+        ModMaster.triggerEvent(event, self.name)
 
     def moduleLoad(self):
         pass

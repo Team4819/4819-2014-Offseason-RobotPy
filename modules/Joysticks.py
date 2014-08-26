@@ -37,6 +37,7 @@ class module(controls.module):
 
             #Set button values
             lastButtons = copy.copy(self.buttons)
+
             self.buttons["trigger"] = self.stick1.GetRawButton(1)
             self.buttons["highShotSet"] = self.stick1.GetRawButton(2)
             self.buttons["medShotSet"] = self.stick1.GetRawButton(3)

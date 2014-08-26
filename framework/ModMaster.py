@@ -24,7 +24,9 @@ class eventCallback:
         self.srcmod = srcmod
 
     def call(self):
-        thread = threading.Thread(target=getMod(self.mod).__getattribute__(self.func))
+        target = getMod(self.mod).__getattribute__(self.func)
+        print(self.mod + "," + self.func )
+        thread = threading.Thread(target=target)
         thread.start()
 
 class DataStream(object):
@@ -35,7 +37,7 @@ class DataStream(object):
 def getDataStream(streamName, defValue, srcmod="global"):
     if modDataStreams.setdefault(srcmod) is None:
         modDataStreams[srcmod] = dict()
-    if modDataStreams[srcmod].setDefault(streamName) is None:
+    if modDataStreams[srcmod].setdefault(streamName) is None:
         modDataStreams[srcmod][streamName] = DataStream(defValue)
     return modDataStreams[srcmod][streamName]
 
@@ -52,7 +54,7 @@ def setEventCallback(event, mod, func, srcmod=None):
 def triggerEvent(eventname, srcmod):
     if eventCallbacks.setdefault(eventname) is not None:
         for callback in eventCallbacks[eventname]:
-            if srcmod is None or srcmod is callback.srcmod:
+            if callback.srcmod is None or srcmod is callback.srcmod:
                 callback.call()
         print("Triggered event " + eventname + " from mod " + srcmod)
 
