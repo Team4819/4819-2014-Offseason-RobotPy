@@ -35,7 +35,6 @@ class module(controls.module):
             #Get Intake Motor Value
             self.setDataStream("intake", self.stick2.GetRawAxis(2))
 
-
             #Set button values
             lastButtons = copy.copy(self.buttons)
             self.buttons["trigger"] = self.stick1.GetRawButton(1)
@@ -55,16 +54,16 @@ class module(controls.module):
             #Shoot events:
             if self.buttons["trigger"] and not lastButtons["trigger"]:
                 if self.buttons["highShotSet"]:
-                    self.setEvent("highShot")
+                    self.triggerEvent("highShot")
                 elif self.buttons["medShotSet"]:
-                    self.setEvent("medShot")
+                    self.triggerEvent("medShot")
                 elif self.buttons["lowShotSet"]:
-                    self.setEvent("lowShot")
+                    self.triggerEvent("lowShot")
 
             #Fire event for rising edge of any button
             for key in self.buttons:
                 if self.buttons[key] and not lastButtons[key]:
-                    self.setEvent(key)
+                    self.triggerEvent(key)
 
 
             time.sleep(.05)

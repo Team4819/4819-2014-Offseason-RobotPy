@@ -1,4 +1,4 @@
-from framework import ModMaster, ModBase, DataStream
+from framework import ModMaster, ModBase
 
 __author__ = 'christian'
 import time
@@ -16,10 +16,9 @@ class module(ModBase.module):
     def moduleLoad(self):
         self.leftMotor = wpilib.Talon(1)
         self.rightMotor = wpilib.Talon(2)
-        ModMaster.onEvent("enabled", self.run)
-        ModMaster.onEvent("disabled", self.stop)
-        self.controlStream = DataStream.DataStream()
-        ModMaster.getMod("controls").registerDataStream("drive", self.controlStream)
+        ModMaster.setEventCallback("enabled", self.name, "run")
+        ModMaster.setEventCallback("disabled", self.name, "stop")
+        self.controlStream = ModMaster.getDataStream("drive", {0, 0}, "controls")
         super().moduleLoad()
 
     def stop(self):

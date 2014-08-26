@@ -1,6 +1,6 @@
 __author__ = 'christian'
 import threading
-from framework import DataStream
+from framework import ModMaster
 import logging
 import time
 
@@ -17,30 +17,14 @@ class module(object):
         function(*args, **kwargs)
         finEvent.set()
 
-    def onEvent(self, event, callback):
-        if self.eventCallbacks.setdefault(event) is None:
-                self.eventCallbacks[event] = list()
-        self.eventCallbacks[event].append(callback)
-
-    def setEvent(self, event):
-        if self.eventCallbacks.setdefault(event) is None:
-            return
-        for callback in self.eventCallbacks[event]:
-            callback()
-        print(self.name + ": Event Triggered: " + event)
+    def triggerEvent(self, event):
+        ModMaster.triggerEvent(event, eventname=self.name)
 
     def moduleLoad(self):
         pass
 
     def setDataStream(self, name, data):
-        if self.dataStreams.setdefault(name) is not None:
-            self.dataStreams[name].data = data
-
-    def registerDataStream(self, name, stream):
-        if self.dataStreams.setdefault(name) is None:
-            self.dataStreams[name] = stream
-        else:
-            stream = self.dataStreams[name]
+        ModMaster.pushToDataStream(name, data, self.name)
 
     def moduleUnload(self):
         self.stopFlag = True

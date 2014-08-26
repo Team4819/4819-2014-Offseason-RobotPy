@@ -36,17 +36,17 @@ class module(ModBase.module):
         self.ballPresenseSwitch = wpilib.DigitalInput(1)
         self.ballPresense = False
 
-        ModMaster.getMod("controls").onEvent("highShot", self.highShot)
-        ModMaster.getMod("controls").onEvent("medShot", self.medShot)
-        ModMaster.getMod("controls").onEvent("lowShot", self.lowShot)
-        ModMaster.getMod("controls").onEvent("blowbackOn", self.blowbackOn)
-        ModMaster.getMod("controls").onEvent("blowbackOff", self.blowbackOff)
+        ModMaster.setEventCallback("highShot", self.name, "highShot", "controls")
+        ModMaster.setEventCallback("medShot", self.name, "medShot", "controls")
+        ModMaster.setEventCallback("lowShot", self.name, "lowShot", "controls")
+        ModMaster.setEventCallback("blowbackOn", self.name, "blowbackOn", "controls")
+        ModMaster.setEventCallback("blowbackOff", self.name, "blowbackOff", "controls")
 
         while not self.stopFlag:
             self.lastBallPresense = self.ballPresense
             self.ballPresense = self.ballPresenseSwitch.Get()
             if not self.lastBallPresense and self.ballPresense:
-                self.setEvent("ballPresent")
+                self.triggerEvent("ballPresent")
             time.sleep(.1)
 
     def blowbackOn(self):

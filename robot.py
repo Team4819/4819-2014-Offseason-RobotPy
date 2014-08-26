@@ -14,28 +14,28 @@ class RobotTrunk(wpilib.SimpleRobot):
         ModMaster.loadMod("modules.Joysticks")
         ModMaster.loadMod("modules.BasicArcadeDrive")
         ModMaster.loadMod("modules.Cannon")
-        ModMaster.loadMod("modules.Intake")
-        ModMaster.loadMod("modules.Compressor")
+        #ModMaster.loadMod("modules.Intake")
+        #ModMaster.loadMod("modules.Compressor")
 
     def Disabled(self):
         '''Called when the robot is disabled'''
-        ModMaster.setEvent("disabled")
+        ModMaster.triggerEvent("disabled", "RobotTrunk")
         while self.IsDisabled():
             wpilib.Wait(0.1)
             self.reaper.delayDeath()
 
     def Autonomous(self):
         '''Called when autonomous mode is enabled'''
-        ModMaster.setEvent("enabled")
-        ModMaster.setEvent("autonomous")
+        ModMaster.triggerEvent("enabled", "RobotTrunk")
+        ModMaster.triggerEvent("autonomous", "RobotTrunk")
         while self.IsAutonomous() and self.IsEnabled():
             wpilib.Wait(0.1)
             self.reaper.delayDeath()
 
     def OperatorControl(self):
         '''Called when operation control mode is enabled'''
-        ModMaster.setEvent("enabled")
-        ModMaster.setEvent("teleoperated")
+        ModMaster.triggerEvent("enabled", "RobotTrunk")
+        ModMaster.triggerEvent("teleoperated", "RobotTrunk")
 
         while self.IsOperatorControl() and self.IsEnabled():
             self.reaper.delayDeath()

@@ -1,4 +1,5 @@
-from framework import ModMaster, ModBase, DataStream
+from framework import ModMaster, ModBase
+from framework.ModMaster import DataStream
 
 __author__ = 'christian'
 import time
@@ -27,8 +28,7 @@ class module(ModBase.module):
         ModMaster.onEvent("enabled", self.run)
         ModMaster.onEvent("disabled", self.disable)
         #Setup data stream for wheels
-        self.intakeDrive = DataStream.DataStream()
-        ModMaster.getMod("controls").registerDataStream("intake", self.intakeDrive)
+        self.intakeDrive = ModMaster.getDataStream("intake", 0, srcmod="controls")
 
     def disable(self):
         self.stopFlag = True
