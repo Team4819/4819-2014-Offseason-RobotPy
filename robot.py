@@ -1,4 +1,4 @@
-from framework import ModMaster
+from framework import modmaster, events
 
 try:
     import wpilib
@@ -10,40 +10,36 @@ try:
 except ImportError:
     pass
 
+
 class RobotTrunk(wpilib.SimpleRobot):
 
     def __init__(self):
         super().__init__()
-        self.reaper = ModMaster.GrimReaper()
+        modmaster.load_startup_mods()
+        self.reaper = modmaster.GrimReaper()
         self.reaper.start()
-        ModMaster.loadMod("modules.Joysticks")
-        ModMaster.loadMod("modules.BasicArcadeDrive")
-        ModMaster.loadMod("modules.Cannon")
-        ModMaster.loadMod("modules.Intake")
-        ModMaster.loadMod("modules.Compressor")
 
     def Disabled(self):
         '''Called when the robot is disabled'''
-        ModMaster.triggerEvent("disabled", "RobotTrunk")
+        events.trigger("disabled", "RobotTrunk")
         while self.IsDisabled():
+            self.reaper.delay_death()
             wpilib.Wait(0.1)
-            self.reaper.delayDeath()
 
     def Autonomous(self):
         '''Called when autonomous mode is enabled'''
-        ModMaster.triggerEvent("enabled", "RobotTrunk")
-        ModMaster.triggerEvent("autonomous", "RobotTrunk")
+        events.trigger("enabled", "RobotTrunk")
+        events.trigger("autonomous", "RobotTrunk")
         while self.IsAutonomous() and self.IsEnabled():
+            self.reaper.delay_death()
             wpilib.Wait(0.1)
-            self.reaper.delayDeath()
 
     def OperatorControl(self):
         '''Called when operation control mode is enabled'''
-        ModMaster.triggerEvent("enabled", "RobotTrunk")
-        ModMaster.triggerEvent("teleoperated", "RobotTrunk")
-
+        events.trigger("enabled", "RobotTrunk")
+        events.trigger("teleoperated", "RobotTrunk")
         while self.IsOperatorControl() and self.IsEnabled():
-            self.reaper.delayDeath()
+            self.reaper.delay_death()
             wpilib.Wait(0.04)
 
 

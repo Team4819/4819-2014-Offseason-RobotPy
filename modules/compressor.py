@@ -1,4 +1,4 @@
-from framework import ModBase
+from framework import modbase
 try:
     import wpilib
 except ImportError:
@@ -6,10 +6,10 @@ except ImportError:
 
 __author__ = 'christian'
 
-class module(ModBase.module):
+class Module(modbase.Module):
     name = "compressor"
 
-    def moduleLoad(self):
+    def module_load(self):
         self.compressor = wpilib.Compressor(14, 1)
         self.compressor.Start()
 
