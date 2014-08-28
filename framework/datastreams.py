@@ -46,7 +46,7 @@ class DataStream(object):
             for key in self.updateHooks:
                 try:
                     if(self.updateHooks[key](olddata, data)):
-                        events.trigger(key, srcmod)
+                        events.trigger(key, self.name)
                 except Exception as e:
                     logging.error(e)
 
