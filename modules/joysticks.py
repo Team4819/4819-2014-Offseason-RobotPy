@@ -37,8 +37,8 @@ class Module(modbase.Module):
             intake = self.threshold(intake)
 
             #Push to data streams
-            self.drivestream.push("drive", (drive_x, drive_y), self.name)
-            self.intakestream.push("intake", intake, self.name)
+            self.drivestream.push((drive_x, drive_y), self.name, autolock=True)
+            self.intakestream.push(intake, self.name, autolock=True)
 
             #Get button values
             last_buttons = copy.copy(self.buttons)
@@ -54,16 +54,16 @@ class Module(modbase.Module):
             self.buttons["flipper"] = self.stick2.GetRawButton(3)
 
             if self.buttons["flipper"] is not last_buttons["flipper"]:
-                self.flipperstream.push(self.buttons["flipper"], self.name, autolock=true)
+                self.flipperstream.push(self.buttons["flipper"], self.name, autolock=True)
 
             if self.buttons["blowback"] is not last_buttons["blowback"]:
-                self.blowbackstream.push(self.buttons["flipper"],self.name, autolock=true)
+                self.blowbackstream.push(self.buttons["flipper"],self.name, autolock=True)
 
-            if self.buttons["armsDown"]:
-                self.armsstream.push(True, self.name, autolock=true)
+            if self.buttons["armsDown"] is not last_buttons["armsDown"]:
+                self.armsstream.push(True, "fart", autolock=True)
 
-            if self.buttons["armsUp"]:
-                self.armsstream.push(False, self.name, autolock=true)
+            if self.buttons["armsUp"] is not last_buttons["armsUp"]:
+                self.armsstream.push(False, "wheeze", autolock=True)
 
             #Trigger Events
 

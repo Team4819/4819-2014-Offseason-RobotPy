@@ -26,12 +26,11 @@ class Module(modbase.Module):
     def run(self):
         self.stop_flag = False
         while not self.stop_flag:
-            input_x = float(self.control_stream.get()[0])
-            input_y = float(self.control_stream.get()[1])
-            output_left = input_y + input_x
+            drive = self.control_stream.get((0, 0))
+            output_left = drive[1] + drive[0]
             if output_left > 1 or output_left < -1:
                 output_left = 1
-            output_right = input_y - input_x
+            output_right = drive[1] - drive[0]
             if output_right > 1 or output_right < -1:
                 output_right = 1
 

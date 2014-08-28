@@ -13,7 +13,7 @@ class EventCallback:
         self.srcmod = srcmod
 
     def call(self):
-        target = getattr(modmaster.get_mod(self.mod).async, self.func)
+        target = getattr(modmaster.get_mod(self.mod), self.func)
         thread = threading.Thread(target=target)
         thread.start()
 

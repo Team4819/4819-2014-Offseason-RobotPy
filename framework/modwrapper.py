@@ -45,12 +45,8 @@ class ModWrapper:
         self.modname = self.module.name
 
 
-    def run(self):
-        self.module.run()
-
     def switch_module(self, pymodname):
         self.module_unload()
-
 
     def kill(self):
         self.module.stop()
@@ -62,6 +58,7 @@ class ModWrapper:
 
     def __getattr__(self, item):
         return getattr(self.module, item)
+
 
 
 
