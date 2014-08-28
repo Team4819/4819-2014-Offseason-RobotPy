@@ -26,6 +26,8 @@ class Module(object):
     def __getattr__(self, item):
         if item is "Async":
             return _Async(self)
+        else:
+            raise AttributeError(item)
 
 
 class _Async:

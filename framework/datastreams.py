@@ -5,20 +5,17 @@ __author__ = 'christian'
 streams = dict()
 
 class LockError(Exception):
-    def __init__(self, stream, error):
-        logging.error("Lock Error: " + stream + ": " + error)
+    pass
 
 
 class DataStream(object):
 
-    data = None
-    _lock = None
-    _active = False
-    updateHooks = dict()
-    name = ""
-
     def __init__(self, name):
         self.name = name
+        self.data = None
+        self._lock = None
+        self._active = False
+        self.updateHooks = dict()
 
     def lock(self, owner):
         self._lock = owner
@@ -45,7 +42,7 @@ class DataStream(object):
             self.data = data
             for key in self.updateHooks:
                 try:
-                    if(self.updateHooks[key](olddata, data)):
+                    if self.updateHooks[key](olddata, data):
                         events.trigger(key, self.name)
                 except Exception as e:
                     logging.error(e)
@@ -53,8 +50,6 @@ class DataStream(object):
     def on_update(self, event, check=lambda x, y: True):
         self.updateHooks[event] = check
         self._active = True
-
-
 
 def get_stream(stream):
     if streams.setdefault(stream) is None:

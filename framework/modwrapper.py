@@ -11,7 +11,7 @@ class ModWrapper:
     modlist = list()
 
     def module_unload(self):
-        pass
+        self.module.module_unload()
 
     def start(self):
         self.module.start()
@@ -43,18 +43,20 @@ class ModWrapper:
 
     def switch_module(self):
         self.module_unload()
+        self.modindex += 1
         self.load_next_module(self.name)
 
     def load_next_module(self, subsystem):
             success = False
             while not success:
                 if self.modindex == len(self.modlist):
-                    raise moderrors.ModuleLoadError("Cannot Load Module: no modules left to try and load for subsystem " + subsystem)
+                    raise moderrors.ModuleLoadError(subsystem, "Cannot Load Module: no modules left to try and load for subsystem")
                 try:
                     print("Attempting to load module " + self.modlist[self.modindex])
                     self.pymodule_load(self.modlist[self.modindex])
                     success = True
-                except moderrors.ModuleLoadError:
+                except Exception as e:
+                    logging.error(e)
                     self.modindex += 1
 
     def kill(self):
@@ -64,32 +66,22 @@ class ModWrapper:
         self.pymod.reload()
         self.module.__class__ = self.pymod.mod
 
-    def __getattr__(self, item):
-        attribute = object.__getattribute__(self.module, item)
-        if hasattr(attribute, "__call__"):
-            return FuncWrapper(item, self)
-        else:
-            return attribute
-
-
-class FuncWrapper:
-    def __init__(self, item, modwrap):
-        self.func = item
-        self.modwrap = modwrap
-
-    def __call__(self, *args, **kwargs):
+    def call_wrap(self, func):
         success = False
         while not success:
             try:
-                target = object.__getattribute__(self.modwrap, self.func)
-                target(*args, **kwargs)
+                getattr(self.module, func)()
                 success = True
             except Exception as e:
                 logging.error(e)
                 try:
-                    self.modwrap.switch_module()
+                    self.switch_module()
                 except moderrors.ModuleLoadError:
                     return
+
+    def __getattr__(self, item):
+        return getattr(self.module, item)
+
 
 
 

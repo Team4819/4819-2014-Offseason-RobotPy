@@ -76,9 +76,7 @@ class Module(modbase.Module):
                 elif self.buttons["lowShotSet"]:
                     events.trigger("lowShot", self.name)
 
-
             time.sleep(.05)
-        print("2Joysticks Stopped")
 
     def threshold(self, number):
         if number < .01 and number > -.01:

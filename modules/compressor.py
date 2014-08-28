@@ -1,4 +1,5 @@
 from framework import modbase
+from framework.refrence_db import get_ref
 try:
     import wpilib
 except ImportError:
@@ -10,6 +11,9 @@ class Module(modbase.Module):
     name = "compressor"
 
     def module_load(self):
-        self.compressor = wpilib.Compressor(14, 1)
-        self.compressor.Start()
+        self.compressor = get_ref("compressor")
+        if self.compressor.ref is None:
+            self.compressor.ref = wpilib.Compressor(14, 1)
+
+        self.compressor.ref.Start()
 

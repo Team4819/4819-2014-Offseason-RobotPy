@@ -14,10 +14,13 @@ mods = dict()
 def load_startup_mods():
     modlist = configerator.get_config()["StartupMods"]
     for mod in modlist:
-        load_mod(mod)
+        try:
+            load_mod(mod)
+        except ModuleLoadError:
+            pass
 
 def get_mod(modname):
-    return mods[modname].module
+    return mods[modname]
 
 
 def load_mod(pymodname):

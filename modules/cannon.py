@@ -1,4 +1,5 @@
 from framework import modbase, events
+from framework.refrence_db import get_ref
 import time
 __author__ = 'christian'
 
@@ -28,10 +29,23 @@ class Module(modbase.Module):
         self.dryfire_protection = False
 
     def module_load(self):
-        self.main_solenoid_1 = wpilib.Solenoid(3)
-        self.main_solenoid_2 = wpilib.Solenoid(4)
-        self.blowback_solenoid = wpilib.Solenoid(5)
-        self.ballpresense_switch = wpilib.DigitalInput(13)
+
+        self.main_solenoid_1 = get_ref("main_solenoid_1")
+        if self.main_solenoid_1.ref is None:
+            self.main_solenoid_1.ref = wpilib.Solenoid(3)
+
+        self.main_solenoid_2 = get_ref("main_solenoid_2")
+        if self.main_solenoid_2.ref is None:
+            self.main_solenoid_2.ref = wpilib.Solenoid(4)
+
+        self.blowback_solenoid = get_ref("blowback_solenoid")
+        if self.blowback_solenoid.ref is None:
+            self.blowback_solenoid.ref = wpilib.Solenoid(5)
+
+        self.ballpresense_switch = get_ref("ballpresence_switch")
+        if self.ballpresense_switch.ref is None:
+            self.ballpresense_switch.ref = wpilib.DigitalInput(13)
+
         self.ballpresense = False
 
         events.set_callback("highShot", self.name, "high_shot", "controls")
@@ -43,16 +57,16 @@ class Module(modbase.Module):
     def start(self):
         while not self.stop_flag:
             self.last_ballpresense = self.ballpresense
-            self.ballpresense = self.ballpresense_switch.Get()
+            self.ballpresense = self.ballpresense_switch.ref.Get()
             if not self.last_ballpresense and self.ballpresense:
                 self.trigger_event("ballPresent")
             time.sleep(.1)
 
     def blowback_on(self):
-        self.blowback_solenoid.Set(True)
+        self.blowback_solenoid.ref.Set(True)
 
     def blowback_off(self):
-        self.blowback_solenoid.Set(False)
+        self.blowback_solenoid.ref.Set(False)
 
     def high_shot(self):
         self.fire(duration=.5)
@@ -74,12 +88,12 @@ class Module(modbase.Module):
             print("Dry fire protection is On, not firing due to lack of ball")
             return
 
-        self.main_solenoid_1.Set(True)
-        self.main_solenoid_2.Set(True)
+        self.main_solenoid_1.ref.Set(True)
+        self.main_solenoid_2.ref.Set(True)
         time.sleep(duration)
-        self.main_solenoid_1.Set(False)
-        self.main_solenoid_2.Set(False)
+        self.main_solenoid_1.ref.Set(False)
+        self.main_solenoid_2.ref.Set(False)
         time.sleep(.2)
-        self.blowback_solenoid.Set(True)
+        self.blowback_solenoid.ref.Set(True)
         time.sleep(.2)
-        self.blowback_solenoid.Set(False)
+        self.blowback_solenoid.ref.Set(False)
