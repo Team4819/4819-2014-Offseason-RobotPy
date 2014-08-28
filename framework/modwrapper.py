@@ -1,5 +1,6 @@
 from framework import configerator, moderrors
 import logging
+import threading
 __author__ = 'christian'
 
 
@@ -40,7 +41,6 @@ class ModWrapper:
         self.module.module_load()
         self.modname = self.module.name
 
-
     def switch_module(self):
         self.module_unload()
         self.modindex += 1
@@ -54,13 +54,11 @@ class ModWrapper:
                 try:
                     print("Attempting to load module " + self.modlist[self.modindex])
                     self.pymodule_load(self.modlist[self.modindex])
+                    threading.Thread(target=self.module.start).start()
                     success = True
                 except Exception as e:
                     logging.error(e)
                     self.modindex += 1
-
-    def kill(self):
-        self.module.stop()
 
     def reload(self):
         self.pymod.reload()

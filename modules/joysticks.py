@@ -1,4 +1,4 @@
-from framework import events, datastreams, modbase
+from framework import events, datastreams, modbase, modmaster
 import time
 import copy
 try:
@@ -16,7 +16,8 @@ class Module(modbase.Module):
     def module_load(self):
         self.stick1 = wpilib.Joystick(1)
         self.stick2 = wpilib.Joystick(2)
-        self.buttons = {"trigger": False, "highShotSet": False, "medShotSet": False, "lowShotSet": False, "blowback": False, "armsUp": False, "armsDown": False, "flipper": False}
+        self.stick3 = wpilib.Joystick(3)
+        self.buttons = {"trigger": False, "highShotSet": False, "medShotSet": False, "lowShotSet": False, "blowback": False, "armsUp": False, "armsDown": False, "flipper": False, "modReloader": False}
         self.drivestream = datastreams.get_stream("drive")
         self.intakestream = datastreams.get_stream("intake")
         self.armsstream = datastreams.get_stream("arms")
@@ -52,6 +53,10 @@ class Module(modbase.Module):
             self.buttons["armsUp"] = self.stick2.GetRawButton(2)
             self.buttons["armsDown"] = self.stick2.GetRawButton(4)
             self.buttons["flipper"] = self.stick2.GetRawButton(3)
+            self.buttons["modReloader"] = self.stick3.GetRawButton(1)
+            
+            if self.buttons["modReloader"] is not last_buttons["modReloader"]:
+                modmaster.reload_mods()
 
             if self.buttons["flipper"] is not last_buttons["flipper"]:
                 self.flipperstream.push(self.buttons["flipper"], self.name, autolock=True)

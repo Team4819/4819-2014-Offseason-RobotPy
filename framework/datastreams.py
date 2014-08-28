@@ -4,6 +4,7 @@ __author__ = 'christian'
 
 streams = dict()
 
+
 class LockError(Exception):
     pass
 
@@ -50,6 +51,7 @@ class DataStream(object):
     def on_update(self, event, check=lambda x, y: True):
         self.updateHooks[event] = check
         self._active = True
+
 
 def get_stream(stream):
     if streams.setdefault(stream) is None:

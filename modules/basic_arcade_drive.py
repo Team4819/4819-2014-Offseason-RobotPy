@@ -1,12 +1,10 @@
 from framework import modbase, events, datastreams, refrence_db
-
-__author__ = 'christian'
 import time
-
 try:
     import wpilib
 except ImportError:
     from pyfrc import wpilib
+__author__ = 'christian'
 
 class Module(modbase.Module):
 
@@ -33,12 +31,20 @@ class Module(modbase.Module):
         self.stop_flag = False
         while not self.stop_flag:
             drive = self.control_stream.get((0, 0))
+
             output_left = drive[1] + drive[0]
-            if output_left > 1 or output_left < -1:
+
+            if output_left > 1:
                 output_left = 1
+            elif output_left < -1:
+                output_left = -1
+
             output_right = drive[1] - drive[0]
-            if output_right > 1 or output_right < -1:
+
+            if output_right > 1:
                 output_right = 1
+            elif output_right < -1:
+                output_right = -1
 
             self.left_motor.ref.Set(output_left)
             self.right_motor.ref.Set(output_right)

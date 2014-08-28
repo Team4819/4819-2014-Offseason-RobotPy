@@ -38,15 +38,15 @@ def unload_mod(modname):
         raise ModuleUnloadError(modname, "No such module loaded")
     mods[modname].module_unload()
 
+
 def kill_all_mods():
     for key in mods:
         mods[key].module_unload()
 
-def set_auto_reload(setting):
+
+def reload_mods():
     for key in mods:
-        mods[key].autoReload = setting
-
-
+        mods[key].reload
 
 
 #   This is my solution to the threads that would not die!

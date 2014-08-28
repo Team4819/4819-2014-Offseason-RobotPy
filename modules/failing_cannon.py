@@ -30,6 +30,8 @@ class Module(modbase.Module):
 
     def module_load(self):
 
+        self.timer = 0
+
         self.main_solenoid_1 = get_ref("main_solenoid_1")
         if self.main_solenoid_1.ref is None:
             self.main_solenoid_1.ref = wpilib.Solenoid(3)
@@ -73,7 +75,9 @@ class Module(modbase.Module):
         self.fire(duration=.1)
 
     def fire(self, duration=.5, enable_dryfire=False):
-
+        self.timer += 1
+        if self.timer is 5:
+            raise Exception
         for key in self.disableFlags:
             if self.disableFlags[key]:
                 print("Not firing, cannon disabled by disableFlag " + key)
