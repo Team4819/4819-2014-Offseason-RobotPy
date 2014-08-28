@@ -57,7 +57,7 @@ class Module(modbase.Module):
                 self.flipperstream.push(self.buttons["flipper"], self.name, autolock=True)
 
             if self.buttons["blowback"] is not last_buttons["blowback"]:
-                self.blowbackstream.push(self.buttons["flipper"],self.name, autolock=True)
+                self.blowbackstream.push(self.buttons["blowback"], self.name, autolock=True)
 
             if self.buttons["armsDown"] is not last_buttons["armsDown"]:
                 self.armsstream.push(True, "fart", autolock=True)

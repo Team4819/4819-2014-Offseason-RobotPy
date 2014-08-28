@@ -1,4 +1,4 @@
-from framework import modbase, events
+from framework import modbase, events, datastreams
 from framework.refrence_db import get_ref
 import time
 __author__ = 'christian'
@@ -48,11 +48,11 @@ class Module(modbase.Module):
 
         self.ballpresense = False
 
+        self.blowback_stream = datastreams.get_stream("blowback")
+
         events.set_callback("highShot", self.name, "high_shot", "controls")
         events.set_callback("medShot", self.name, "med_shot", "controls")
         events.set_callback("lowShot", self.name, "low_shot", "controls")
-        events.set_callback("blowbackOn", self.name, "blowback_on", "controls")
-        events.set_callback("blowbackOff", self.name, "blowback_off", "controls")
 
     def start(self):
         while not self.stop_flag:
@@ -60,13 +60,10 @@ class Module(modbase.Module):
             self.ballpresense = self.ballpresense_switch.ref.Get()
             if not self.last_ballpresense and self.ballpresense:
                 self.trigger_event("ballPresent")
+            self.blowback_solenoid.ref.Set(self.blowback_stream.get(False))
             time.sleep(.1)
 
-    def blowback_on(self):
-        self.blowback_solenoid.ref.Set(True)
 
-    def blowback_off(self):
-        self.blowback_solenoid.ref.Set(False)
 
     def high_shot(self):
         self.fire(duration=.5)
@@ -94,6 +91,6 @@ class Module(modbase.Module):
         self.main_solenoid_1.ref.Set(False)
         self.main_solenoid_2.ref.Set(False)
         time.sleep(.2)
-        self.blowback_solenoid.ref.Set(True)
+        self.blowback_stream.push(True, self.name, autolock=True)
         time.sleep(.2)
-        self.blowback_solenoid.ref.Set(False)
+        self.blowback_stream.push(False, self.name, autolock=False)

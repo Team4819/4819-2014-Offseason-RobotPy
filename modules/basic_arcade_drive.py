@@ -14,14 +14,12 @@ class Module(modbase.Module):
 
     def module_load(self):
         self.left_motor = refrence_db.get_ref("left_motor")
-        if self.left_motor is None:
-            self.left_motor = wpilib.Talon(1)
-            refrence_db.save_refrence(self.left_motor, "left_motor")
+        if self.left_motor.ref is None:
+            self.left_motor.ref = wpilib.Talon(1)
 
         self.right_motor = refrence_db.get_ref("right_motor")
-        if self.right_motor is None:
-            self.right_motor = wpilib.Talon(2)
-            refrence_db.save_refrence(self.right_motor, "right_motor")
+        if self.right_motor.ref is None:
+            self.right_motor.ref = wpilib.Talon(2)
 
         events.set_callback("enabled", self.name, "run")
         events.set_callback("disabled", self.name, "stop")
