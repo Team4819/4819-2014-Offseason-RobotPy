@@ -37,6 +37,13 @@ class Module(modbase.Module):
 
         events.set_callback("enabled", self.name, "run")
         events.set_callback("disabled", self.name, "disable")
+        events.set_callback("cannon.load", self.name, "refresh_cannon_disable")
+
+    def refresh_cannon_disable(self):
+        if self.armstream.get(True):
+            modmaster.get_mod("cannon").disable(self.name)
+        else:
+            modmaster.get_mod("cannon").enable(self.name)
 
     def disable(self):
         self.stop_flag = True

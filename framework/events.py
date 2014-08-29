@@ -1,6 +1,4 @@
-import threading
-from framework import modmaster
-
+import framework.modmaster
 __author__ = 'christian'
 
 event_callbacks = dict()
@@ -13,9 +11,7 @@ class EventCallback:
         self.srcmod = srcmod
 
     def call(self):
-        target = getattr(modmaster.get_mod(self.mod), "call_wrap")
-        thread = threading.Thread(target=target, args={self.func})
-        thread.start()
+        framework.modmaster.get_mod(self.mod).async(self.func)
 
 
 def set_callback(event, mod, func, srcmod=None):
@@ -24,9 +20,10 @@ def set_callback(event, mod, func, srcmod=None):
     event_callbacks[event].append(EventCallback(mod, func, srcmod))
 
 
-def trigger(eventname, srcmod):
+def trigger(eventname, srcmod, target="all"):
     if event_callbacks.setdefault(eventname) is not None:
         for callback in event_callbacks[eventname]:
             if callback.srcmod is None or srcmod is callback.srcmod:
-                callback.call()
+                if target is "all" or callback.mod is target:
+                    callback.call()
         print("Triggered event " + eventname + " from mod " + srcmod)

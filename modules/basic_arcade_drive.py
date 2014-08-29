@@ -22,7 +22,6 @@ class Module(modbase.Module):
         events.set_callback("enabled", self.name, "run")
         events.set_callback("disabled", self.name, "stop")
         self.control_stream = datastreams.get_stream("drive")
-        super().module_load()
 
     def stop(self):
         self.stop_flag = True

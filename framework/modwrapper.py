@@ -1,8 +1,9 @@
-from framework import configerator, moderrors
+from framework import configerator, moderrors, events
 import logging
 import threading
+import importlib
+import traceback
 __author__ = 'christian'
-
 
 
 class ModWrapper:
@@ -10,12 +11,15 @@ class ModWrapper:
     autoReload = False
     modindex = 0
     modlist = list()
+    pymodname = "not a module!!"
 
-    def module_unload(self):
-        self.module.module_unload()
-
-    def start(self):
-        self.module.start()
+    def switch_module(self, retry_current=False):
+        self.module_unload()
+        if not retry_current:
+            self.modindex += 1
+        self.load_next_module(self.name)
+        events.trigger(self.modname + ".load", self.modname + ".ModWrapper")
+        events.trigger("run", self.modname + ".ModWrapper", target=self.modname)
 
     def module_load(self, modname):
         if configerator.parsed_config.setdefault(modname) is None:
@@ -24,12 +28,26 @@ class ModWrapper:
             self.modlist = configerator.parsed_config[modname]
             self.load_next_module(modname)
 
-    def pymodule_load(self, pymodname):
-        self.pymodname = pymodname
-        print("loading module " + pymodname)
+    def load_next_module(self, subsystem):
+            success = False
+            while not success:
+                if self.modindex == len(self.modlist):
+                    raise moderrors.ModuleLoadError(subsystem, "Cannot Load Module: no modules left to try and load for subsystem")
+                try:
+                    self.pymodule_load(self.modlist[self.modindex])
+                    success = True
+                except Exception as e:
+                    logging.error("Error loading module " + self.modlist[self.modindex] + ": " + e)
+                    self.modindex += 1
 
+    def pymodule_load(self, pymodname):
+        print("loading module " + pymodname)
+        #Load Python file, use reload if it is just being reloaded!
         try:
-            self.pymod = __import__(pymodname, fromlist=[''])
+            if pymodname is not self.pymodname:
+                self.pymod = __import__(pymodname, fromlist=[''])
+            else:
+                importlib.reload(self.pymod)
         except ImportError as e:
             raise moderrors.ModuleLoadError(pymodname, str(e))
 
@@ -40,29 +58,13 @@ class ModWrapper:
 
         self.module.module_load()
         self.modname = self.module.name
-
-    def switch_module(self):
-        self.module_unload()
-        self.modindex += 1
-        self.load_next_module(self.name)
-
-    def load_next_module(self, subsystem):
-            success = False
-            while not success:
-                if self.modindex == len(self.modlist):
-                    raise moderrors.ModuleLoadError(subsystem, "Cannot Load Module: no modules left to try and load for subsystem")
-                try:
-                    print("Attempting to load module " + self.modlist[self.modindex])
-                    self.pymodule_load(self.modlist[self.modindex])
-                    threading.Thread(target=self.module.start).start()
-                    success = True
-                except Exception as e:
-                    logging.error(e)
-                    self.modindex += 1
+        self.pymodname = pymodname
 
     def reload(self):
-        self.pymod.reload()
-        self.module.__class__ = self.pymod.mod
+        self.switch_module(retry_current=True)
+
+    def async(self, func):
+        threading.Thread(target=self.call_wrap, args={func}).start()
 
     def call_wrap(self, func):
         success = False
@@ -71,10 +73,11 @@ class ModWrapper:
                 getattr(self.module, func)()
                 success = True
             except Exception as e:
-                logging.error(e)
+                logging.error("Exception calling func " + func + ": " + str(e) + "\n" + traceback.format_exc())
                 try:
                     self.switch_module()
-                except moderrors.ModuleLoadError:
+                except moderrors.ModuleLoadError as ex:
+                    logging.error(ex)
                     return
 
     def __getattr__(self, item):

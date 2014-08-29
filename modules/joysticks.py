@@ -24,6 +24,8 @@ class Module(modbase.Module):
         self.flipperstream = datastreams.get_stream("flipper")
         self.blowbackstream = datastreams.get_stream("blowback")
 
+        events.set_callback("run", self.name, "start")
+
     def start(self):
         while not self.stop_flag:
 
@@ -55,7 +57,7 @@ class Module(modbase.Module):
             self.buttons["flipper"] = self.stick2.GetRawButton(3)
             self.buttons["modReloader"] = self.stick3.GetRawButton(1)
             
-            if self.buttons["modReloader"] is not last_buttons["modReloader"]:
+            if self.buttons["modReloader"] and not last_buttons["modReloader"]:
                 modmaster.reload_mods()
 
             if self.buttons["flipper"] is not last_buttons["flipper"]:
@@ -64,11 +66,11 @@ class Module(modbase.Module):
             if self.buttons["blowback"] is not last_buttons["blowback"]:
                 self.blowbackstream.push(self.buttons["blowback"], self.name, autolock=True)
 
-            if self.buttons["armsDown"] is not last_buttons["armsDown"]:
-                self.armsstream.push(True, "fart", autolock=True)
+            if self.buttons["armsDown"] and not last_buttons["armsDown"]:
+                self.armsstream.push(True, self.name, autolock=True)
 
-            if self.buttons["armsUp"] is not last_buttons["armsUp"]:
-                self.armsstream.push(False, "wheeze", autolock=True)
+            if self.buttons["armsUp"] and not last_buttons["armsUp"]:
+                self.armsstream.push(False, self.name, autolock=True)
 
             #Trigger Events
 

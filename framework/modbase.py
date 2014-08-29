@@ -4,7 +4,7 @@ __author__ = 'christian'
 
 class Module(object):
 
-    name = "ModuleBase"
+    name = "generic"
     stop_flag = False
 
     def module_load(self):
@@ -17,7 +17,7 @@ class Module(object):
         pass
 
     def __getattr__(self, item):
-        return CallReporter(self, item)
+        return CallReporter(self.name, item)
 
 
 class CallReporter:
@@ -26,4 +26,4 @@ class CallReporter:
         self.item = item
 
     def __call__(self, *args, **kwargs):
-        logging.log("Functon call to non-existent function " + self.item + " on module " + self.module + " with args " + args + " and kwargs " + kwargs)
+        logging.error("Functon call to non-existent function " + self.item + " on module " + self.module)

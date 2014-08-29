@@ -1,7 +1,6 @@
 import time
 import threading
-
-from framework import modwrapper, configerator
+from framework import modwrapper, configerator, events
 from framework.moderrors import ModuleLoadError, ModuleUnloadError
 
 
@@ -19,8 +18,14 @@ def load_startup_mods():
         except ModuleLoadError:
             pass
 
+
 def get_mod(modname):
-    return mods[modname]
+    if modname in mods:
+        return mods[modname]
+    else:
+        if "generic" not in mods:
+            load_mod("framework.modbase")
+        return mods["generic"]
 
 
 def load_mod(pymodname):
@@ -30,7 +35,8 @@ def load_mod(pymodname):
     if mods.setdefault(modname) is not None:
         raise ModuleLoadError(modname, ": Already module with name " + modname)
     mods[modname] = modwrap
-    threading.Thread(target=mods[modname].start).start()
+    events.trigger(modname + ".load", "ModMaster")
+    events.trigger("run", "ModMaster", target=modname)
 
 
 def unload_mod(modname):
@@ -46,7 +52,13 @@ def kill_all_mods():
 
 def reload_mods():
     for key in mods:
-        mods[key].reload
+        mods[key].reload()
+
+
+def on_modload(target, module, callback):
+    events.set_callback(target + ".load", module, callback)
+    if module in mods:
+        mods[target].async(callback)
 
 
 #   This is my solution to the threads that would not die!

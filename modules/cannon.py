@@ -15,19 +15,6 @@ class Module(modbase.Module):
     disableFlags = dict()
     dryfire_protection = False
 
-    #Controls for externally enabling and disabling cannon
-    def disable(self, srcmod):
-        self.disableFlags[srcmod] = True
-
-    def enable(self, srcmod):
-        self.disableFlags[srcmod] = False
-
-    def enable_dryfire_protection(self):
-        self.dryfire_protection = True
-
-    def disable_dryfire_protection(self):
-        self.dryfire_protection = False
-
     def module_load(self):
 
         self.main_solenoid_1 = get_ref("main_solenoid_1")
@@ -53,8 +40,22 @@ class Module(modbase.Module):
         events.set_callback("highShot", self.name, "high_shot", "controls")
         events.set_callback("medShot", self.name, "med_shot", "controls")
         events.set_callback("lowShot", self.name, "low_shot", "controls")
+        events.set_callback("run", self.name, "run")
 
-    def start(self):
+        #Controls for externally enabling and disabling cannon
+    def disable(self, srcmod):
+        self.disableFlags[srcmod] = True
+
+    def enable(self, srcmod):
+        self.disableFlags[srcmod] = False
+
+    def enable_dryfire_protection(self):
+        self.dryfire_protection = True
+
+    def disable_dryfire_protection(self):
+        self.dryfire_protection = False
+
+    def run(self):
         while not self.stop_flag:
             self.last_ballpresense = self.ballpresense
             self.ballpresense = self.ballpresense_switch.ref.Get()
@@ -64,7 +65,7 @@ class Module(modbase.Module):
             time.sleep(.1)
 
     def high_shot(self):
-        self.fire(duration=.5)
+        self.fire(duration=2)
 
     def med_shot(self):
         self.fire(duration=.2)
