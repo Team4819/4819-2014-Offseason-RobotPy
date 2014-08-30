@@ -17,7 +17,7 @@ class Module(modbase.Module):
         self.stick1 = wpilib.Joystick(1)
         self.stick2 = wpilib.Joystick(2)
         self.stick3 = wpilib.Joystick(3)
-        self.buttons = {"trigger": False, "highShotSet": False, "medShotSet": False, "lowShotSet": False, "blowback": False, "armsUp": False, "armsDown": False, "flipper": False, "modReloader": False}
+        self.buttons = {"trigger": False, "highShotSet": False, "medShotSet": False, "lowShotSet": False, "blowback": False, "armsUp": False, "armsDown": False, "flipper": False, "modReloader": True}
         self.drivestream = datastreams.get_stream("drive")
         self.intakestream = datastreams.get_stream("intake")
         self.armsstream = datastreams.get_stream("arms")

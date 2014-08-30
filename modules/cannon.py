@@ -42,7 +42,7 @@ class Module(modbase.Module):
         events.set_callback("lowShot", self.name, "low_shot", "controls")
         events.set_callback("run", self.name, "run")
 
-        #Controls for externally enabling and disabling cannon
+    #Controls for externally enabling and disabling cannon
     def disable(self, srcmod):
         self.disableFlags[srcmod] = True
 
@@ -65,20 +65,24 @@ class Module(modbase.Module):
             time.sleep(.1)
 
     def high_shot(self):
-        self.fire(duration=2)
+        self.fire(duration=.5)
 
     def med_shot(self):
         self.fire(duration=.2)
 
     def low_shot(self):
+        raise Exception("This is terrible, you are a bad baaad one")
         self.fire(duration=.1)
 
     def fire(self, duration=.5, enable_dryfire=False):
-
+        count = 0
         for key in self.disableFlags:
             if self.disableFlags[key]:
+                count += 1
                 print("Not firing, cannon disabled by disableFlag " + key)
                 return
+        if count is not 0:
+            print("found " + count + " Active disable flags")
 
         if not self.ballpresense and self.dryfire_protection and not enable_dryfire:
             print("Dry fire protection is On, not firing due to lack of ball")

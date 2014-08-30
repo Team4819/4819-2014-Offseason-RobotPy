@@ -54,7 +54,7 @@ class DataStream(object):
 
 
 def get_stream(stream):
-    if streams.setdefault(stream) is None:
+    if stream not in streams:
         streams[stream] = DataStream(stream)
     return streams[stream]
 

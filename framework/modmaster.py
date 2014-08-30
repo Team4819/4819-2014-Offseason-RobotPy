@@ -3,9 +3,7 @@ import threading
 from framework import modwrapper, configerator, events
 from framework.moderrors import ModuleLoadError, ModuleUnloadError
 
-
 __author__ = 'christian'
-
 
 mods = dict()
 
@@ -17,6 +15,7 @@ def load_startup_mods():
             load_mod(mod)
         except ModuleLoadError:
             pass
+    events.set_event("run", "ModMaster", True)
 
 
 def get_mod(modname):
@@ -32,15 +31,15 @@ def load_mod(pymodname):
     modwrap = modwrapper.ModWrapper()
     modwrap.module_load(pymodname)
     modname = modwrap.module.name
-    if mods.setdefault(modname) is not None:
+    if modname in mods:
         raise ModuleLoadError(modname, ": Already module with name " + modname)
     mods[modname] = modwrap
     events.trigger(modname + ".load", "ModMaster")
-    events.trigger("run", "ModMaster", target=modname)
+    events.refresh_events(modname)
 
 
 def unload_mod(modname):
-    if mods.setdefault(modname) is None:
+    if modname not in mods:
         raise ModuleUnloadError(modname, "No such module loaded")
     mods[modname].module_unload()
 

@@ -11,18 +11,19 @@ class ModWrapper:
     autoReload = False
     modindex = 0
     modlist = list()
-    pymodname = "not a module!!"
+    pymodname = ""
 
     def switch_module(self, retry_current=False):
         self.module_unload()
+        events.remove_callbacks(self.modname)
         if not retry_current:
             self.modindex += 1
         self.load_next_module(self.name)
         events.trigger(self.modname + ".load", self.modname + ".ModWrapper")
-        events.trigger("run", self.modname + ".ModWrapper", target=self.modname)
+        events.refresh_events(self.modname)
 
     def module_load(self, modname):
-        if configerator.parsed_config.setdefault(modname) is None:
+        if modname not in configerator.parsed_config:
             self.pymodule_load(modname)
         else:
             self.modlist = configerator.parsed_config[modname]
@@ -67,18 +68,14 @@ class ModWrapper:
         threading.Thread(target=self.call_wrap, args={func}).start()
 
     def call_wrap(self, func):
-        success = False
-        while not success:
+        try:
+            getattr(self.module, func)()
+        except Exception as e:
+            logging.error("Exception calling func " + func + ": " + str(e) + "\n" + traceback.format_exc())
             try:
-                getattr(self.module, func)()
-                success = True
-            except Exception as e:
-                logging.error("Exception calling func " + func + ": " + str(e) + "\n" + traceback.format_exc())
-                try:
-                    self.switch_module()
-                except moderrors.ModuleLoadError as ex:
-                    logging.error(ex)
-                    return
+                self.switch_module()
+            except moderrors.ModuleLoadError as ex:
+                logging.error(ex)
 
     def __getattr__(self, item):
         return getattr(self.module, item)

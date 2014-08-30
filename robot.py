@@ -1,5 +1,4 @@
 from framework import modmaster, events
-
 try:
     import wpilib
 except ImportError:
@@ -21,27 +20,31 @@ class RobotTrunk(wpilib.SimpleRobot):
 
     def Disabled(self):
         '''Called when the robot is disabled'''
-        events.trigger("disabled", "RobotTrunk")
+        events.set_event("disabled", "RobotTrunk", True)
         while self.IsDisabled():
             self.reaper.delay_death()
             wpilib.Wait(0.1)
+        events.set_event("disabled", "RobotTrunk", False)
 
     def Autonomous(self):
         '''Called when autonomous mode is enabled'''
-        events.trigger("enabled", "RobotTrunk")
-        events.trigger("autonomous", "RobotTrunk")
+        events.set_event("enabled", "RobotTrunk", True)
+        events.set_event("autonomous", "RobotTrunk", True)
         while self.IsAutonomous() and self.IsEnabled():
             self.reaper.delay_death()
             wpilib.Wait(0.1)
+        events.set_event("enabled", "RobotTrunk", False)
+        events.set_event("autonomous", "RobotTrunk", False)
 
     def OperatorControl(self):
         '''Called when operation control mode is enabled'''
-        events.trigger("enabled", "RobotTrunk")
-        events.trigger("teleoperated", "RobotTrunk")
+        events.set_event("enabled", "RobotTrunk", True)
+        events.set_event("teleoperated", "RobotTrunk", True)
         while self.IsOperatorControl() and self.IsEnabled():
             self.reaper.delay_death()
             wpilib.Wait(0.04)
-
+        events.set_event("enabled", "RobotTrunk", False)
+        events.set_event("teleoperated", "RobotTrunk", False)
 
 def run():
     """Main loop"""
