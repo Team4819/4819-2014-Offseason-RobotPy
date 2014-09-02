@@ -52,6 +52,6 @@ def trigger(eventname, srcmod, action="triggered"):
     recorder.log_event(action, eventname, srcmod)
     if eventname in event_callbacks:
         for callback in event_callbacks[eventname]:
-            if callback.srcmod is None or srcmod is callback.srcmod:
+            if callback.srcmod is None or srcmod == callback.srcmod:
                 callback.call()
         logging.info("Triggered event " + eventname + " from mod " + srcmod)

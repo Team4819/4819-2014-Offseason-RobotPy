@@ -27,6 +27,7 @@ logging.basicConfig(handlers=(ch, fh), level=logging.INFO)
 def list_modules():
     return mods.keys()
 
+
 def load_startup_mods():
     modlist = configerator.get_config()["StartupMods"]
     for mod in modlist:
@@ -34,7 +35,7 @@ def load_startup_mods():
             load_mod(mod)
         except ModuleLoadError as e:
             logging.error(e)
-    events.set_event("run", "ModMaster", True)
+    events.set_event("run", "modmaster", True)
 
 
 def get_mod(modname):
@@ -53,7 +54,7 @@ def load_mod(pymodname):
     if modname in mods:
         raise ModuleLoadError(modname, ": Already module with name " + modname)
     mods[modname] = modwrap
-    events.trigger(modname + ".load", "ModMaster")
+    events.trigger(modname + ".load", "modmaster")
     events.refresh_events(modname)
 
 

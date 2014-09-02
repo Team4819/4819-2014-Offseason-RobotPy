@@ -1,4 +1,4 @@
-from framework import modmaster, datastreams
+from framework import modmaster, datastreams, events
 import json
 import logging
 import os
@@ -26,6 +26,7 @@ def replay_recording(recpath="latest"):
     logging.info("Playing recording at " + recpath)
     starttime = time.monotonic()
     threading.Thread(target=replay_datastreams, args={recpath + "/datastreams"}).start()
+    threading.Thread(target=replay_events, args={recpath + "/events.rec"}).start()
 
 
 def replay_datastreams(datastreampath):
@@ -68,3 +69,38 @@ def replay_datastreams(datastreampath):
                 stream_handles[stream].push(update["data"], update["srcmod"], autolock=update["autolock"])
         time.sleep(.1)
     logging.info("Datastream Playback finished")
+
+def replay_events(eventsfile):
+    finished = False
+    parsed_events = list()
+
+    #parse it
+    filehandle = open(eventsfile, "r")
+    lines = filehandle.readlines()
+    for line in lines:
+        line = line.rstrip()
+        splitdata = line.split(",")
+        update = dict()
+        update["event"] = splitdata[0][6:].strip()[1:-1]
+        update["action"] = splitdata[1][7:].strip()[1:-1]
+        update["timestamp"] = float(splitdata[2][11:].strip()[1:-1])
+        update["srcmod"] = splitdata[3][5:].strip()[1:-1]
+        if update["srcmod"] in modmaster.list_modules() or update["srcmod"] in ("modmaster", "RobotTrunk", "datastream"):
+            continue
+        parsed_events.append(update)
+    logging.info("Parsed events file " + eventsfile)
+    #do it
+    while not finished:
+        timestamp = time.monotonic() - starttime
+        if len(parsed_events) is 0:
+            finished = True
+            continue
+        if parsed_events[0]["timestamp"] < timestamp:
+            event = parsed_events[0]
+            del parsed_events[0]
+            if event['action'] == "triggered":
+                events.trigger(event["event"], event["srcmod"])
+            else:
+                events.set_event(event["event"], event["srcmod"], event["action"] is "on")
+        time.sleep(.1)
+    logging.info("Event Playback finished")

@@ -28,7 +28,7 @@ def log_event(action, eventname, srcmod):
     if not recording:
         return
     timestamp = time.monotonic() - starttime
-    event_file.write("Event [" + eventname + "] Action [" + action + "] At [" + str.format("{0:.3f}", timestamp) + "] From [" + srcmod + "]\n")
+    event_file.write("Event [{}], Action [{}], Timestamp [{:.2}], From [{}]\n".format(eventname, action, timestamp, srcmod))
 
 
 def update_datastream(name, data, srcmod, autolock):
