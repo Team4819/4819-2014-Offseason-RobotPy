@@ -1,4 +1,6 @@
 from framework import modmaster, events
+from framework.record import recorder, playback
+
 try:
     import wpilib
 except ImportError:
@@ -15,6 +17,8 @@ class RobotTrunk(wpilib.SimpleRobot):
     def __init__(self):
         super().__init__()
         modmaster.load_startup_mods()
+        recorder.startRecording()
+        playback.replay_recording()
         self.reaper = modmaster.GrimReaper()
         self.reaper.start()
 
@@ -39,7 +43,7 @@ class RobotTrunk(wpilib.SimpleRobot):
     def OperatorControl(self):
         '''Called when operation control mode is enabled'''
         events.set_event("enabled", "RobotTrunk", True)
-        events.set_event("teleoperated", "RobotTrunk", True)
+        events.set_event("autonomous", "RobotTrunk", True)
         while self.IsOperatorControl() and self.IsEnabled():
             self.reaper.delay_death()
             wpilib.Wait(0.04)
@@ -53,4 +57,6 @@ def run():
     return robot
 
 if __name__ == '__main__':
+    import physics
+    wpilib.internal.physics_controller.setup(physics)
     wpilib.run()

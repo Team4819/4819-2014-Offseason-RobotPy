@@ -15,7 +15,6 @@ class ModWrapper:
 
     def switch_module(self, retry_current=False):
         self.module_unload()
-        events.remove_callbacks(self.modname)
         if not retry_current:
             self.modindex += 1
         self.load_next_module(self.name)
@@ -38,11 +37,11 @@ class ModWrapper:
                     self.pymodule_load(self.modlist[self.modindex])
                     success = True
                 except Exception as e:
-                    logging.error("Error loading module " + self.modlist[self.modindex] + ": " + e)
+                    logging.error("Error loading module " + self.modlist[self.modindex] + ": " + str(e))
                     self.modindex += 1
 
     def pymodule_load(self, pymodname):
-        print("loading module " + pymodname)
+        logging.info("loading module " + pymodname)
         #Load Python file, use reload if it is just being reloaded!
         try:
             if pymodname is not self.pymodname:
@@ -60,6 +59,10 @@ class ModWrapper:
         self.module.module_load()
         self.modname = self.module.name
         self.pymodname = pymodname
+
+    def module_unload(self):
+        self.module.module_unload()
+        events.remove_callbacks(self.modname)
 
     def reload(self):
         self.switch_module(retry_current=True)

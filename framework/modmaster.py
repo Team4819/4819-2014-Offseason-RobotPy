@@ -1,20 +1,39 @@
 import time
 import threading
+import logging
+
 from framework import modwrapper, configerator, events
 from framework.moderrors import ModuleLoadError, ModuleUnloadError
+from framework.record import recorder
+
 
 __author__ = 'christian'
 
 mods = dict()
 
+fh = logging.FileHandler(recorder.log_dir + "/main.log")
+fh.setLevel(logging.INFO)
+
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+fh.setFormatter(formatter)
+
+logging.basicConfig(handlers=(ch, fh), level=logging.INFO)
+
+
+def list_modules():
+    return mods.keys()
 
 def load_startup_mods():
     modlist = configerator.get_config()["StartupMods"]
     for mod in modlist:
         try:
             load_mod(mod)
-        except ModuleLoadError:
-            pass
+        except ModuleLoadError as e:
+            logging.error(e)
     events.set_event("run", "ModMaster", True)
 
 
@@ -42,6 +61,7 @@ def unload_mod(modname):
     if modname not in mods:
         raise ModuleUnloadError(modname, "No such module loaded")
     mods[modname].module_unload()
+    mods.pop(modname, None)
 
 
 def kill_all_mods():
@@ -71,9 +91,9 @@ class GrimReaper(threading.Thread):
         while self.timer < 4:
             self.timer += 1
             if self.timer > 2:
-                print("The Reaper is coming!")
+                logging.info("The Reaper is coming!")
             time.sleep(.1)
-        print("KILL ALL THE THREADS!!!!!")
+        logging.info("KILL ALL THE THREADS!!!!!")
         kill_all_mods()
 
     def delay_death(self):

@@ -49,4 +49,3 @@ class Module(modbase.Module):
             self.right_motor.ref.Set(output_right)
 
             time.sleep(.05)
-        print("BasicArcadeDrive stopped")

@@ -26,4 +26,4 @@ class CallReporter:
         self.item = item
 
     def __call__(self, *args, **kwargs):
-        logging.error("Functon call to non-existent function " + self.item + " on module " + self.module)
+        logging.warning("Functon call to non-existent function " + self.item + " on module " + self.module)

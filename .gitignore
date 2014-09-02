@@ -1,2 +1,5 @@
 *.iml
 .idea/*
+.pycharmproject
+*.log
+recs/*

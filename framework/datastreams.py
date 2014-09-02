@@ -1,5 +1,7 @@
-from framework import events
 import logging
+from . import events
+from .record import recorder
+
 __author__ = 'christian'
 
 streams = dict()
@@ -41,6 +43,7 @@ class DataStream(object):
         else:
             olddata = self.data
             self.data = data
+            recorder.update_datastream(self.name, data, srcmod, autolock)
             for key in self.updateHooks:
                 try:
                     if self.updateHooks[key](olddata, data):

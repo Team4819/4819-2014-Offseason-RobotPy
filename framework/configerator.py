@@ -1,5 +1,5 @@
 __author__ = 'christian'
-
+import logging
 parsed_config = dict()
 loaded = False
 
@@ -23,4 +23,4 @@ def parse_config(path):
         else:
             if line is not "":
                 parsed_config[section].append(line)
-    print("Finished parsing " + path)
+    logging.info("Finished parsing " + path)

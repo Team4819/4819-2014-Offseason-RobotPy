@@ -1,4 +1,7 @@
+import logging
 import framework.modmaster
+from framework.record import recorder
+
 __author__ = 'christian'
 
 event_callbacks = dict()
@@ -31,10 +34,10 @@ def set_callback(event, mod, func, srcmod=None):
 def set_event(eventname, srcmod, state):
     if eventname not in stated_events and state:
         stated_events.append(eventname)
-        trigger(eventname, srcmod)
+        trigger(eventname, srcmod, action="on")
     elif eventname in stated_events and not state:
         stated_events.remove(eventname)
-
+        recorder.log_event("off", eventname, srcmod)
 
 def refresh_events(target):
     for event in stated_events:
@@ -42,13 +45,13 @@ def refresh_events(target):
             for callback in event_callbacks[event]:
                 if callback.mod is target:
                     callback.call()
-    print("Refreshed event " + target)
+    logging.info("Refreshed event " + target)
 
 
-def trigger(eventname, srcmod, target="all"):
+def trigger(eventname, srcmod, action="triggered"):
+    recorder.log_event(action, eventname, srcmod)
     if eventname in event_callbacks:
         for callback in event_callbacks[eventname]:
             if callback.srcmod is None or srcmod is callback.srcmod:
-                if target is "all" or callback.mod is target:
-                    callback.call()
-        print("Triggered event " + eventname + " from mod " + srcmod)
+                callback.call()
+        logging.info("Triggered event " + eventname + " from mod " + srcmod)

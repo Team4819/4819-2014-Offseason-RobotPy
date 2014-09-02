@@ -55,7 +55,6 @@ class Module(modbase.Module):
             self.intake_motor.ref.Set(float(self.intakestream.get(0)))
             self.flipper_solenoid.ref.Set(not self.flipperstream.get(False))
             time.sleep(.05)
-        print("Intake Stopped")
 
     def update_arms(self):
         if self.armstream.get(True):

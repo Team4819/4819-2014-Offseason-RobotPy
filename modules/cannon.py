@@ -1,6 +1,7 @@
 from framework import modbase, events, datastreams
 from framework.refrence_db import get_ref
 import time
+import logging
 __author__ = 'christian'
 
 try:
@@ -71,21 +72,16 @@ class Module(modbase.Module):
         self.fire(duration=.2)
 
     def low_shot(self):
-        raise Exception("This is terrible, you are a bad baaad one")
         self.fire(duration=.1)
 
     def fire(self, duration=.5, enable_dryfire=False):
-        count = 0
         for key in self.disableFlags:
             if self.disableFlags[key]:
-                count += 1
-                print("Not firing, cannon disabled by disableFlag " + key)
+                logging.info("Not firing, cannon disabled by disableFlag " + key)
                 return
-        if count is not 0:
-            print("found " + count + " Active disable flags")
 
         if not self.ballpresense and self.dryfire_protection and not enable_dryfire:
-            print("Dry fire protection is On, not firing due to lack of ball")
+            logging.info("Dry fire protection is On, not firing due to lack of ball")
             return
 
         self.main_solenoid_1.ref.Set(True)
