@@ -28,3 +28,16 @@ def test_module_reload():
     assert module.getMessage() == "hello there most excellent tester!"
     modmaster.unload_mod("test")
     os.remove("framework/tests/resources/test_module_reload/test.py")
+
+def test_config_loading():
+    assert len(modmaster.list_modules()) is 0
+    modmaster.load_startup_mods("framework/tests/resources/test_config_loading/mods.conf")
+    assert len(modmaster.list_modules()) is 1
+    module = modmaster.get_mod("test1")
+    assert module.getMessage() == "Get out of here!"
+    modmaster.load_mod("test2")
+    assert len(modmaster.list_modules()) is 2
+    module = modmaster.get_mod("test2")
+    assert module.getMessage() == "Get out of here, Now!"
+    modmaster.kill_all_mods()
+    assert len(modmaster.list_modules()) is 0

@@ -31,8 +31,8 @@ def list_modules():
     return mods.keys()
 
 
-def load_startup_mods():
-    modlist = configerator.get_config()["StartupMods"]
+def load_startup_mods(config="modules/mods.conf"):
+    modlist = configerator.get_config(config)["StartupMods"]
     for mod in modlist:
         try:
             load_mod(mod)
@@ -70,8 +70,10 @@ def unload_mod(modname):
 
 
 def kill_all_mods():
-    for key in mods:
-        mods[key].module_unload()
+    keys = list()
+    keys += list_modules()
+    for key in keys:
+        unload_mod(key)
 
 
 def reload_mods():

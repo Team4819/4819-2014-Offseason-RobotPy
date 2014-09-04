@@ -4,9 +4,11 @@ parsed_config = dict()
 loaded = False
 
 
-def get_config():
+def get_config(config="modules/mods.conf"):
+    global loaded
     if not loaded:
-        parse_config("modules/mods.conf")
+        parse_config(config)
+        loaded = True
     return parsed_config
 
 
