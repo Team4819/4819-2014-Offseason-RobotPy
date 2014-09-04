@@ -21,7 +21,9 @@ formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
 fh.setFormatter(formatter)
 
-logging.basicConfig(handlers=(ch, fh), level=logging.INFO)
+logging.root.addHandler(ch)
+logging.root.addHandler(fh)
+logging.root.setLevel(logging.INFO)
 
 
 
