@@ -24,6 +24,7 @@ fh.setFormatter(formatter)
 logging.basicConfig(handlers=(ch, fh), level=logging.INFO)
 
 
+
 def list_modules():
     return mods.keys()
 
@@ -56,6 +57,7 @@ def load_mod(pymodname):
     mods[modname] = modwrap
     events.trigger(modname + ".load", "modmaster")
     events.refresh_events(modname)
+
 
 
 def unload_mod(modname):

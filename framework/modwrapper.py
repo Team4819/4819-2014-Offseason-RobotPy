@@ -8,10 +8,11 @@ __author__ = 'christian'
 
 class ModWrapper:
 
-    autoReload = False
     modindex = 0
-    modlist = list()
     pymodname = ""
+
+    def __init__(self):
+        self.modlist = list()
 
     def switch_module(self, retry_current=False):
         self.module_unload()
@@ -24,6 +25,7 @@ class ModWrapper:
     def module_load(self, modname):
         if modname not in configerator.parsed_config:
             self.pymodule_load(modname)
+            self.modlist.append(self.pymodname)
         else:
             self.modlist = configerator.parsed_config[modname]
             self.load_next_module(modname)

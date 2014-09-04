@@ -1,0 +1,13 @@
+language: python
+
+before_install:
+ - sudo apt-get update
+ - sudo apt-get install python3
+
+install:
+  - "pip install --pre -r requirements.txt"
+
+python:
+  - "3.1"
+script:
+  - python main.py
