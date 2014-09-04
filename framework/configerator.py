@@ -1,14 +1,10 @@
 __author__ = 'christian'
 import logging
 parsed_config = dict()
-loaded = False
 
 
 def get_config(config="modules/mods.conf"):
-    global loaded
-    if not loaded:
-        parse_config(config)
-        loaded = True
+    parse_config(config)
     return parsed_config
 
 
