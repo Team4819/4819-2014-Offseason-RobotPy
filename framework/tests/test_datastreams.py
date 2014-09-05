@@ -40,4 +40,4 @@ def test_datastream_locking():
     mod1.readStream()
     assert mod1.streamData is 100
     modmaster.kill_all_mods()
-
+    datastreams.purge_datastreams()

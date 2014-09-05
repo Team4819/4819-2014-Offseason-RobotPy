@@ -55,3 +55,12 @@ def trigger(eventname, srcmod, action="triggered"):
             if callback.srcmod is None or srcmod == callback.srcmod:
                 callback.call()
         logging.info("Triggered event " + eventname + " from mod " + srcmod)
+
+
+def purge_events():
+    global stated_events, event_callbacks
+    keys = list()
+    keys += event_callbacks.keys()
+    for key in keys:
+        del(event_callbacks[key])
+    stated_events = list()

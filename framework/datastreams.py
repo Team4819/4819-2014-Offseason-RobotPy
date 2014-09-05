@@ -60,3 +60,9 @@ def get_stream(stream):
         streams[stream] = DataStream(stream)
     return streams[stream]
 
+
+def purge_datastreams():
+    keys = list()
+    keys += streams.keys()
+    for key in keys:
+        del(streams[key])
