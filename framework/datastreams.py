@@ -33,11 +33,10 @@ class DataStream(object):
     def push(self, data, srcmod, autolock=False):
         if not self._active:
             return
+        if autolock:
+            self._lock = srcmod
         if self._lock is not None and self._lock is not srcmod:
-            if autolock:
-                self.lock = srcmod
-            else:
-                raise LockError(self.name, "No lock for source " + srcmod + ", lock is currently for " + self._lock)
+            raise LockError(self.name, "No lock for source " + srcmod + ", lock is currently for " + self._lock)
         if data is self.data:
             return
         else:

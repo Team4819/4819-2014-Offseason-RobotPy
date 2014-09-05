@@ -8,4 +8,4 @@ python:
   - "3.2"
 
 script:
-  - py.test framework/tests/
+  - py.test --cov framework framework/tests/

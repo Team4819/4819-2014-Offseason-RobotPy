@@ -4,7 +4,6 @@ from framework import modmaster
 import shutil
 import os
 import time
-import pytest
 
 
 def test_basic_module_load_unload():
@@ -59,3 +58,5 @@ def test_exception_handling():
     assert mod.message == "Problem solved!"
     modmaster.kill_all_mods()
     assert len(modmaster.list_modules()) is 0
+
+
