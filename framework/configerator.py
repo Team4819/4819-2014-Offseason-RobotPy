@@ -3,11 +3,6 @@ import logging
 parsed_config = dict()
 
 
-def get_config(config="modules/mods.conf"):
-    parse_config(config)
-    return parsed_config
-
-
 def parse_config(path):
     f = open(path)
     section = None
@@ -22,3 +17,4 @@ def parse_config(path):
             if line is not "":
                 parsed_config[section].append(line)
     logging.info("Finished parsing " + path)
+    return parsed_config

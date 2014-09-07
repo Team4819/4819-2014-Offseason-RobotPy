@@ -54,11 +54,9 @@ class Module(modbase.Module):
             if self.buttons["modReloader"] and not last_buttons["modReloader"]:
                 modmaster.reload_mods()
 
-            if self.buttons["flipper"] is not last_buttons["flipper"]:
-                self.flipperstream.push(self.buttons["flipper"], self.name, autolock=True)
+            self.flipperstream.push(self.buttons["flipper"], self.name, autolock=True)
 
-            if self.buttons["blowback"] is not last_buttons["blowback"]:
-                self.blowbackstream.push(self.buttons["blowback"], self.name, autolock=True)
+            self.blowbackstream.push(self.buttons["blowback"], self.name, autolock=True)
 
             if self.buttons["armsDown"] and not last_buttons["armsDown"]:
                 self.armsstream.push(True, self.name, autolock=True)

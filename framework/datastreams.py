@@ -37,7 +37,7 @@ class DataStream(object):
             self._lock = srcmod
         if self._lock is not None and self._lock is not srcmod:
             raise LockError(self.name, "No lock for source " + srcmod + ", lock is currently for " + self._lock)
-        if data is self.data:
+        if data == self.data:
             return
         else:
             olddata = self.data

@@ -5,8 +5,6 @@ import logging
 from framework import modwrapper, configerator, events
 from framework.moderrors import ModuleLoadError, ModuleUnloadError
 from framework.record import recorder
-
-
 __author__ = 'christian'
 
 mods = dict()
@@ -26,13 +24,16 @@ logging.root.addHandler(fh)
 logging.root.setLevel(logging.INFO)
 
 
-
 def list_modules():
     return mods.keys()
 
 
 def load_startup_mods(config="modules/mods.conf"):
-    modlist = configerator.get_config(config)["StartupMods"]
+    try:
+        modlist = configerator.parse_config(config)["StartupMods"]
+    except Exception as e:
+        logging.error(e)
+        modlist = configerator.parse_config("framework/defaults/mods.conf")["StartupMods"]
     for mod in modlist:
         try:
             load_mod(mod)
@@ -61,7 +62,6 @@ def load_mod(pymodname):
     events.refresh_events(modname)
 
 
-
 def unload_mod(modname):
     if modname not in mods:
         raise ModuleUnloadError(modname, "No such module loaded")
@@ -79,12 +79,6 @@ def kill_all_mods():
 def reload_mods():
     for key in mods:
         mods[key].reload()
-
-
-def on_modload(target, module, callback):
-    events.set_callback(target + ".load", module, callback)
-    if module in mods:
-        mods[target].async(callback)
 
 
 #   This is my solution to the threads that would not die!
