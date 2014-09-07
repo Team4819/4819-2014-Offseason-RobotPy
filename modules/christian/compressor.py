@@ -7,13 +7,11 @@ except ImportError:
 
 __author__ = 'christian'
 
+
 class Module(modbase.Module):
     name = "compressor"
 
     def module_load(self):
-        self.compressor = get_ref("compressor")
-        if self.compressor.ref is None:
-            self.compressor.ref = wpilib.Compressor(14, 1)
-
-        self.compressor.ref.Start()
+        self.compressor = get_ref("compressor", wpilib.Compressor, 14, 1)
+        self.compressor.Start()
 

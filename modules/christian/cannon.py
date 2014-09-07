@@ -18,21 +18,10 @@ class Module(modbase.Module):
 
     def module_load(self):
 
-        self.main_solenoid_1 = get_ref("main_solenoid_1")
-        if self.main_solenoid_1.ref is None:
-            self.main_solenoid_1.ref = wpilib.Solenoid(3)
-
-        self.main_solenoid_2 = get_ref("main_solenoid_2")
-        if self.main_solenoid_2.ref is None:
-            self.main_solenoid_2.ref = wpilib.Solenoid(4)
-
-        self.blowback_solenoid = get_ref("blowback_solenoid")
-        if self.blowback_solenoid.ref is None:
-            self.blowback_solenoid.ref = wpilib.Solenoid(5)
-
-        self.ballpresense_switch = get_ref("ballpresence_switch")
-        if self.ballpresense_switch.ref is None:
-            self.ballpresense_switch.ref = wpilib.DigitalInput(13)
+        self.main_solenoid_1 = get_ref("main_solenoid_1", wpilib.Solenoid, 3)
+        self.main_solenoid_2 = get_ref("main_solenoid_2", wpilib.Solenoid, 4)
+        self.blowback_solenoid = get_ref("blowback_solenoid", wpilib.Solenoid, 5)
+        self.ballpresense_switch = get_ref("ballpresence_switch", wpilib.DigitalInput, 13)
 
         self.ballpresense = False
 
@@ -59,10 +48,10 @@ class Module(modbase.Module):
     def run(self):
         while not self.stop_flag:
             self.last_ballpresense = self.ballpresense
-            self.ballpresense = self.ballpresense_switch.ref.Get()
+            self.ballpresense = self.ballpresense_switch.Get()
             if not self.last_ballpresense and self.ballpresense:
                 self.trigger_event("ballPresent")
-            self.blowback_solenoid.ref.Set(self.blowback_stream.get(False))
+            self.blowback_solenoid.Set(self.blowback_stream.get(False))
             time.sleep(.1)
 
     def high_shot(self):
@@ -84,11 +73,11 @@ class Module(modbase.Module):
             logging.info("Dry fire protection is On, not firing due to lack of ball")
             return
 
-        self.main_solenoid_1.ref.Set(True)
-        self.main_solenoid_2.ref.Set(True)
+        self.main_solenoid_1.Set(True)
+        self.main_solenoid_2.Set(True)
         time.sleep(duration)
-        self.main_solenoid_1.ref.Set(False)
-        self.main_solenoid_2.ref.Set(False)
+        self.main_solenoid_1.Set(False)
+        self.main_solenoid_2.Set(False)
         time.sleep(.2)
         self.blowback_stream.push(True, self.name, autolock=True)
         time.sleep(.2)

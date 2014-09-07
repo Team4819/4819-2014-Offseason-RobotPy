@@ -2,12 +2,10 @@ __author__ = 'christian'
 refrences = dict()
 
 
-class refrence(object):
-    def __init__(self):
-        self.ref = None
-
-
-def get_ref(name):
+def get_ref(name, object, *args, **kwargs):
     if name not in refrences:
-        refrences[name] = refrence()
-    return refrences[name]
+        ref = object(*args, **kwargs)
+        refrences[name] = ref
+    else:
+        ref = refrences[name]
+    return ref

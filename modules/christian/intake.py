@@ -15,17 +15,9 @@ class Module(modbase.Module):
     def module_load(self):
 
         #Get refrences
-        self.arm_solenoid = get_ref("arm_solenoid")
-        if self.arm_solenoid.ref is None:
-            self.arm_solenoid.ref = wpilib.Solenoid(2)
-
-        self.flipper_solenoid = get_ref("flipper_solenoid")
-        if self.flipper_solenoid.ref is None:
-            self.flipper_solenoid.ref = wpilib.Solenoid(1)
-
-        self.intake_motor = get_ref("intake_motor")
-        if self.intake_motor.ref is None:
-            self.intake_motor.ref = wpilib.Talon(3)
+        self.arm_solenoid = get_ref("arm_solenoid", wpilib.Solenoid, 2)
+        self.flipper_solenoid = get_ref("flipper_solenoid", wpilib.Solenoid, 1)
+        self.intake_motor = get_ref("intake_motor", wpilib.Talon, 3)
 
 
         self.armstream = datastreams.get_stream("arms")
@@ -52,17 +44,17 @@ class Module(modbase.Module):
     def run(self):
         self.stop_flag = False
         while not self.stop_flag:
-            self.intake_motor.ref.Set(float(self.intakestream.get(0)))
-            self.flipper_solenoid.ref.Set(not self.flipperstream.get(False))
+            self.intake_motor.Set(float(self.intakestream.get(0)))
+            self.flipper_solenoid.Set(not self.flipperstream.get(False))
             time.sleep(.05)
 
     def update_arms(self):
         if self.armstream.get(True):
             modmaster.get_mod("cannon").disable(self.name)
-            self.arm_solenoid.ref.Set(False)
+            self.arm_solenoid.Set(False)
         else:
             modmaster.get_mod("cannon").enable(self.name)
-            self.arm_solenoid.ref.Set(True)
+            self.arm_solenoid.Set(True)
 
 
 
