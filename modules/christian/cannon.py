@@ -81,4 +81,4 @@ class Module(modbase.Module):
         time.sleep(.2)
         self.blowback_stream.push(True, self.name, autolock=True)
         time.sleep(.2)
-        self.blowback_stream.push(False, self.name, autolock=False)
+        self.blowback_stream.push(False, self.name, autolock=True)

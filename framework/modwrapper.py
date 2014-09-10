@@ -64,10 +64,12 @@ class ModWrapper:
         self.modname = self.module.name
         self.pymodname = pymodname
         events.set_event(self.modname + ".load", self.modname, True)
+        events.refresh_events(self.modname)
 
     def module_unload(self):
         self.module.module_unload()
         events.set_event(self.modname + ".load", self.modname, False)
+        events.trigger(self.modname + ".unload", self.modname)
         events.remove_callbacks(self.modname)
 
     def reload(self):

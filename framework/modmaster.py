@@ -58,9 +58,6 @@ def load_mod(pymodname):
     if modname in mods:
         raise ModuleLoadError(modname, ": Already module with name " + modname)
     mods[modname] = modwrap
-    events.trigger(modname + ".load", "modmaster")
-    events.refresh_events(modname)
-
 
 def unload_mod(modname):
     if modname not in mods:
