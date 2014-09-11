@@ -27,10 +27,10 @@ class Module(modbase.Module):
 
         self.blowback_stream = datastreams.get_stream("blowback")
 
-        events.set_callback("highShot", self.name, "high_shot", "controls")
-        events.set_callback("medShot", self.name, "med_shot", "controls")
-        events.set_callback("lowShot", self.name, "low_shot", "controls")
-        events.set_callback("run", self.name, "run")
+        events.set_callback("highShot", self.high_shot, self.name)
+        events.set_callback("medShot", self.med_shot, self.name)
+        events.set_callback("lowShot", self.low_shot, self.name)
+        events.set_callback("run", self.run, self.name)
 
     #Controls for externally enabling and disabling cannon
     def disable(self, srcmod):

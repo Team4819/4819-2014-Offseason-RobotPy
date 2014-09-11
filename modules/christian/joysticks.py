@@ -24,7 +24,7 @@ class Module(modbase.Module):
         self.flipperstream = datastreams.get_stream("flipper")
         self.blowbackstream = datastreams.get_stream("blowback")
 
-        events.set_callback("run", self.name, "start")
+        events.set_callback("run", self.start, self.name)
 
     def start(self):
         while not self.stop_flag:

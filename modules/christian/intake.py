@@ -22,14 +22,14 @@ class Module(modbase.Module):
 
         self.armstream = datastreams.get_stream("arms")
         self.armstream.on_update("update_arms")
-        events.set_callback("update_arms", self.name, "update_arms")
+        events.set_callback("update_arms", self.update_arms, self.name)
 
         self.flipperstream = datastreams.get_stream("flipper")
         self.intakestream = datastreams.get_stream("intake")
 
-        events.set_callback("enabled", self.name, "run")
-        events.set_callback("disabled", self.name, "disable")
-        events.set_callback("cannon.load", self.name, "refresh_cannon_disable")
+        events.set_callback("enabled", self.run, self.name)
+        events.set_callback("disabled", self.run, self.name)
+        events.set_callback("cannon.load", self.run, self.name)
 
     def refresh_cannon_disable(self):
         if self.armstream.get(True):

@@ -15,8 +15,8 @@ class Module(modbase.Module):
         self.left_motor = refrence_db.get_ref("left_motor", wpilib.Talon, 1)
         self.right_motor = refrence_db.get_ref("right_motor", wpilib.Talon, 2)
 
-        events.set_callback("enabled", self.name, "run")
-        events.set_callback("disabled", self.name, "stop")
+        events.set_callback("enabled", self.run, self.name)
+        events.set_callback("disabled", self.stop, self.name)
         self.control_stream = datastreams.get_stream("drive")
 
     def run(self):

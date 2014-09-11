@@ -8,7 +8,7 @@ class Module(modbase.Module):
     index = 1
 
     def set_callback(self):
-        events.set_callback("test", self.name, "callback")
+        events.set_callback("test", self.callback, self.name)
 
     def callback(self):
         self.index += 1

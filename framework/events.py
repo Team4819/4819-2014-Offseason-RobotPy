@@ -1,4 +1,5 @@
 import logging
+import threading
 import framework.modmaster
 from framework.record import recorder
 
@@ -9,26 +10,26 @@ stated_events = list()
 
 
 class EventCallback:
-    def __init__(self, mod, func, srcmod):
-        self.mod = mod
-        self.func = func
+    def __init__(self, callback, tgtmod, srcmod):
+        self.func = callback
         self.srcmod = srcmod
+        self.tgtmod = tgtmod
 
     def call(self):
-        framework.modmaster.get_mod(self.mod).async(self.func)
+        threading.Thread(target=self.func).start()
 
 
 def remove_callbacks(mod):
     for key in event_callbacks:
         for callback in event_callbacks[key]:
-            if callback.mod is mod:
+            if callback.tgtmod is mod:
                 event_callbacks[key].remove(callback)
 
 
-def set_callback(event, mod, func, srcmod=None):
+def set_callback(event, callback, tgtmod=None, srcmod=None):
     if event not in event_callbacks:
         event_callbacks[event] = list()
-    event_callbacks[event].append(EventCallback(mod, func, srcmod))
+    event_callbacks[event].append(EventCallback(callback, tgtmod, srcmod))
 
 
 def set_event(eventname, srcmod, state):
@@ -39,12 +40,16 @@ def set_event(eventname, srcmod, state):
         stated_events.remove(eventname)
         recorder.log_event("off", eventname, srcmod)
 
+
 def refresh_events(target):
     for event in stated_events:
         if event in event_callbacks:
             for callback in event_callbacks[event]:
-                if callback.mod is target:
-                    callback.call()
+                if callback.tgtmod is target:
+                    try:
+                        callback.call()
+                    except Exception as e:
+                        logging.error(e)
     logging.info("Refreshed event " + target)
 
 
@@ -53,7 +58,10 @@ def trigger(eventname, srcmod, action="triggered"):
     if eventname in event_callbacks:
         for callback in event_callbacks[eventname]:
             if callback.srcmod is None or srcmod == callback.srcmod:
-                callback.call()
+                try:
+                    callback.call()
+                except Exception as e:
+                    logging.error(e)
         logging.info("Triggered event " + eventname + " from mod " + srcmod)
 
 

@@ -8,7 +8,7 @@ class Module(modbase.Module):
     index = 1
 
     def module_load(self):
-        events.set_callback("test", self.name, "callback")
+        events.set_callback("test", self.callback, self.name)
 
     def reset(self):
         self.index = 1
