@@ -10,6 +10,7 @@ def parse_config(path):
         line = line.rstrip('\r\n')
         if "#" in line:
             line, comment = line.split("#", 1)
+            line = line.strip()
         if "[" in line:
             section = line.split("[", 1)[1].split("]", 1)[0]
             parsed_config[section] = list()

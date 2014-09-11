@@ -41,6 +41,8 @@ class DataStream(object):
             raise LockError(self.name, "No lock for source " + srcmod + ", lock is currently for " + self._lock)
         else:
             olddata = self.data
+            if olddata is None:
+                olddata = data
             self.data = data
             recorder.update_datastream(self.name, data, srcmod, autolock)
             for key in self.updateHooks:
