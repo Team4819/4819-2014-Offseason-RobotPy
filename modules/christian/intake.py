@@ -28,8 +28,8 @@ class Module(modbase.Module):
         self.intakestream = datastreams.get_stream("intake")
 
         events.set_callback("enabled", self.run, self.name)
-        events.set_callback("disabled", self.run, self.name)
-        events.set_callback("cannon.load", self.run, self.name)
+        events.set_callback("disabled", self.disable, self.name)
+        events.set_callback("cannon.load", self.refresh_cannon_disable, self.name)
 
     def refresh_cannon_disable(self):
         if self.armstream.get(True):

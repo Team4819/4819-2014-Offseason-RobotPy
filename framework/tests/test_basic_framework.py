@@ -50,10 +50,10 @@ def test_exception_handling():
     modmaster.load_startup_mods("framework/tests/resources/exception_handling/mods.conf")
     assert len(modmaster.list_modules()) is 1
     mod = modmaster.get_mod("exceptional")
-    mod.async("setMessage")
+    mod.async(mod.setMessage)
     time.sleep(1)
     assert mod.message == "hi"
-    mod.async("setMessage")
+    mod.async(mod.setMessage)
     time.sleep(1)
     assert mod.message == "Problem solved!"
     modmaster.kill_all_mods()

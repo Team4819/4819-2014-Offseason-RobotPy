@@ -80,7 +80,7 @@ class ModWrapper:
 
     def call_wrap(self, func):
         try:
-            getattr(self.module, func)()
+            func()
         except Exception as e:
             logging.error("Exception calling func " + func + ": " + str(e) + "\n" + traceback.format_exc())
             try:

@@ -57,6 +57,6 @@ def run():
     return robot
 
 if __name__ == '__main__':
-    import physics
-    wpilib.internal.physics_controller.setup(physics)
+    #import physics
+    #wpilib.internal.physics_controller.setup(physics)
     wpilib.run()
