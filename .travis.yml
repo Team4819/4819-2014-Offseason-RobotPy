@@ -9,3 +9,6 @@ python:
 
 script:
   - py.test --cov framework framework/tests/
+
+after_success:
+  - coveralls
