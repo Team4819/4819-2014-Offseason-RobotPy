@@ -5,8 +5,8 @@ import time
 
 
 def test_basic_events():
-    modmaster.load_mod("framework.tests.resources.test_basic_events.testMod1")
-    modmaster.load_mod("framework.tests.resources.test_basic_events.testMod2")
+    modmaster.load_mod("framework.tests.resources.basic_events.testMod1")
+    modmaster.load_mod("framework.tests.resources.basic_events.testMod2")
     mod1 = modmaster.get_mod("test1")
     mod2 = modmaster.get_mod("test2")
     assert mod1.index is 1
@@ -22,7 +22,7 @@ def test_basic_events():
 
 
 def test_state_events():
-    modmaster.load_mod("framework.tests.resources.test_state_events.testMod1")
+    modmaster.load_mod("framework.tests.resources.state_events.testMod1")
     mod1 = modmaster.get_mod("test1")
     assert mod1.index is 1
     events.trigger("test", "Tester")

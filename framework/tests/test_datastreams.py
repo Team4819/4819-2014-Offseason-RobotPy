@@ -5,8 +5,8 @@ import pytest
 
 
 def test_basic_datastream():
-    modmaster.load_mod("framework.tests.resources.test_basic_datastream.testMod1")
-    modmaster.load_mod("framework.tests.resources.test_basic_datastream.testMod2")
+    modmaster.load_mod("framework.tests.resources.basic_datastream.testMod1")
+    modmaster.load_mod("framework.tests.resources.basic_datastream.testMod2")
     mod1 = modmaster.get_mod("test1")
     mod2 = modmaster.get_mod("test2")
     assert mod1.streamData == "blank"
@@ -19,9 +19,9 @@ def test_basic_datastream():
 
 
 def test_datastream_locking():
-    modmaster.load_mod("framework.tests.resources.test_datastream_locking.testMod1")
-    modmaster.load_mod("framework.tests.resources.test_datastream_locking.testMod2")
-    modmaster.load_mod("framework.tests.resources.test_datastream_locking.testMod3")
+    modmaster.load_mod("framework.tests.resources.datastream_locking.testMod1")
+    modmaster.load_mod("framework.tests.resources.datastream_locking.testMod2")
+    modmaster.load_mod("framework.tests.resources.datastream_locking.testMod3")
     mod1 = modmaster.get_mod("test1")
     mod2 = modmaster.get_mod("test2")
     mod3 = modmaster.get_mod("test3")
