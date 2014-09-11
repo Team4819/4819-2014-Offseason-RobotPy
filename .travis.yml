@@ -2,6 +2,7 @@ language: python
 
 install:
   - "pip install --pre -r requirements.txt"
+  - "pip install python-coveralls"
 
 python:
   - "3.4"

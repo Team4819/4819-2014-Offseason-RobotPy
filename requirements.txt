@@ -1,3 +1,2 @@
 pyfrc
 pytest-cov
-python-coveralls
