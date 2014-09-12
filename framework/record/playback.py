@@ -15,18 +15,18 @@ def replay_recording(recpath="latest"):
         rootdir = "recs"
         dates = os.listdir(rootdir)
         dates.sort()
-        times = os.listdir(rootdir + "/" + dates[0])
+        times = os.listdir(os.path.join(rootdir, dates[0]))
         if len(times) <= 1:
             del(dates[0])
-            times = os.listdir(rootdir + "/" + dates[0])
+            times = os.listdir(os.path.join(rootdir, dates[0]))
         times.sort(reverse=True)
-        recpath = rootdir + "/" + dates[0] + "/" + times[1]
+        recpath = os.path.join(rootdir, dates[0], times[1])
 
     global starttime
     logging.info("Playing recording at " + recpath)
     starttime = time.monotonic()
-    threading.Thread(target=replay_datastreams, args={recpath + "/datastreams"}).start()
-    threading.Thread(target=replay_events, args={recpath + "/events.rec"}).start()
+    threading.Thread(target=replay_datastreams, args={os.path.join(recpath, "datastreams")}).start()
+    threading.Thread(target=replay_events, args={os.path.join(recpath, "events.rec")}).start()
 
 
 def replay_datastreams(datastreampath):

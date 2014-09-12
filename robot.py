@@ -18,7 +18,7 @@ class RobotTrunk(wpilib.SimpleRobot):
         super().__init__()
         modmaster.load_startup_mods()
         recorder.startRecording()
-        #playback.replay_recording()
+        playback.replay_recording()
         self.reaper = modmaster.GrimReaper()
         self.reaper.start()
 

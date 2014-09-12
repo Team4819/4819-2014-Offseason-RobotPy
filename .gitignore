@@ -3,5 +3,6 @@
 .pycharmproject
 *.log
 recs/*
+*__pycache__*
 *.pyc
 .coverage
