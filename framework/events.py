@@ -1,4 +1,5 @@
 import logging
+import threading
 import framework.modmaster
 from framework.record import recorder
 
@@ -15,7 +16,7 @@ class EventCallback:
         self.tgtmod = tgtmod
 
     def call(self):
-        framework.modmaster.get_mod(self.tgtmod).async(self.func)
+        threading.Thread(target=framework.modmaster.get_mod(self.tgtmod).call_wrap, args={self.func}).start()
 
 
 def remove_callbacks(mod):

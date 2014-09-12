@@ -75,14 +75,11 @@ class ModWrapper:
     def reload(self):
         self.switch_module(retry_current=True)
 
-    def async(self, func):
-        threading.Thread(target=self.call_wrap, args={func}).start()
-
     def call_wrap(self, func):
         try:
             func()
         except Exception as e:
-            logging.error("Exception calling func " + func + ": " + str(e) + "\n" + traceback.format_exc())
+            logging.error("Exception calling func " + func.__name__ + ": " + str(e) + "\n" + traceback.format_exc())
             try:
                 self.switch_module()
             except moderrors.ModuleLoadError as ex:
