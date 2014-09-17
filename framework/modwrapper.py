@@ -50,7 +50,7 @@ class ModWrapper:
             if pymodname is not self.pymodname:
                 self.pymod = __import__(pymodname, fromlist=[''])
             else:
-                os.remove(getattr(self.pymod, "__cached__"))
+                #os.remove(getattr(self.pymod, "__cached__"))
                 self.pymod = imp.reload(self.pymod)
         except ImportError as e:
             raise moderrors.ModuleLoadError(pymodname, str(e))

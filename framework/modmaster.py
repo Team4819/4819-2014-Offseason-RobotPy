@@ -10,18 +10,18 @@ __author__ = 'christian'
 
 mods = dict()
 
-fh = logging.FileHandler(os.path.join(recorder.log_dir, "main.log"))
-fh.setLevel(logging.INFO)
+#fh = logging.FileHandler(os.path.join(recorder.log_dir, "main.log"))
+#fh.setLevel(logging.INFO)
 
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
 
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
-fh.setFormatter(formatter)
+#fh.setFormatter(formatter)
 
 logging.root.addHandler(ch)
-logging.root.addHandler(fh)
+#logging.root.addHandler(fh)
 logging.root.setLevel(logging.INFO)
 
 
@@ -29,12 +29,12 @@ def list_modules():
     return mods.keys()
 
 
-def load_startup_mods(config=os.path.join("modules", "mods.conf")):
+def load_startup_mods(config=os.path.join("/py", "modules", "mods.conf")):
     try:
         modlist = configerator.parse_config(config)["StartupMods"]
     except Exception as e:
         logging.error(e)
-        modlist = configerator.parse_config(os.path.join("framework", "defaults", "mods.conf"))["StartupMods"]
+        modlist = configerator.parse_config(os.path.join("py", "framework", "defaults", "mods.conf"))["StartupMods"]
     for mod in modlist:
         try:
             load_mod(mod)

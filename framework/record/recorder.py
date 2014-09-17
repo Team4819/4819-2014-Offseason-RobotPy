@@ -12,7 +12,7 @@ starttime = 0
 log_dir = os.path.join("recs", time.strftime("%m.%d.%y"), time.strftime("%H-%M-%S"))
 datastream_dir = os.path.join(log_dir, "datastreams")
 datastream_rate = .25
-os.makedirs(log_dir, exist_ok=True)
+#os.makedirs(log_dir, exist_ok=True)
 
 recording = False
 

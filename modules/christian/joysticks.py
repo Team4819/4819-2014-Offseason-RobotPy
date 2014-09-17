@@ -46,10 +46,10 @@ class Module(modbase.Module):
             self.buttons["medShotSet"] = self.stick1.GetRawButton(3)
             self.buttons["lowShotSet"] = self.stick1.GetRawButton(4)
             self.buttons["blowback"] = self.stick1.GetRawButton(5)
-            self.buttons["armsUp"] = self.stick2.GetRawButton(2)
-            self.buttons["armsDown"] = self.stick2.GetRawButton(4)
-            self.buttons["flipper"] = self.stick2.GetRawButton(3)
-            self.buttons["modReloader"] = self.stick3.GetRawButton(1)
+            self.buttons["armsUp"] = self.stick2.GetRawButton(3)
+            self.buttons["armsDown"] = self.stick2.GetRawButton(2)
+            self.buttons["flipper"] = self.stick2.GetRawButton(4)
+            self.buttons["modReloader"] = self.stick2.GetRawButton(10)
             
             if self.buttons["modReloader"] and not last_buttons["modReloader"]:
                 modmaster.reload_mods()
@@ -77,7 +77,7 @@ class Module(modbase.Module):
                 elif self.buttons["lowShotSet"]:
                     events.trigger("lowShot", self.name)
 
-            time.sleep(.05)
+            time.sleep(.025)
 
     def threshold(self, number):
         if number < .01 and number > -.01:
