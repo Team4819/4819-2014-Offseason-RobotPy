@@ -1,6 +1,7 @@
 import time
 import threading
 import logging
+import os
 
 from framework import modwrapper, configerator, events
 from framework.moderrors import ModuleLoadError, ModuleUnloadError
@@ -9,7 +10,7 @@ __author__ = 'christian'
 
 mods = dict()
 
-fh = logging.FileHandler(recorder.log_dir + "/main.log")
+fh = logging.FileHandler(os.path.join(recorder.log_dir, "main.log"))
 fh.setLevel(logging.INFO)
 
 ch = logging.StreamHandler()
@@ -28,12 +29,12 @@ def list_modules():
     return mods.keys()
 
 
-def load_startup_mods(config="modules/mods.conf"):
+def load_startup_mods(config=os.path.join("modules", "mods.conf")):
     try:
         modlist = configerator.parse_config(config)["StartupMods"]
     except Exception as e:
         logging.error(e)
-        modlist = configerator.parse_config("framework/defaults/mods.conf")["StartupMods"]
+        modlist = configerator.parse_config(os.path.join("framework", "defaults", "mods.conf"))["StartupMods"]
     for mod in modlist:
         try:
             load_mod(mod)
