@@ -1,5 +1,7 @@
-from framework import modmaster, events
+from framework import modmaster, events, filesystem
 from framework.record import recorder, playback
+import logging
+import os
 
 try:
     import wpilib
@@ -16,11 +18,27 @@ class RobotTrunk(wpilib.SimpleRobot):
 
     def __init__(self):
         super().__init__()
+
+        filesystem.root_dir = os.path.dirname(os.path.realpath(__file__))
+        filesystem.gen_paths()
+        self.init_logs()
+
         modmaster.load_startup_mods()
+
         recorder.startRecording()
         #playback.replay_recording()
+
         self.reaper = modmaster.GrimReaper()
         self.reaper.start()
+
+    def init_logs(self):
+        filesystem.make_dirs()
+        fh = logging.FileHandler(filesystem.log_file)
+        fh.setLevel(logging.INFO)
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        fh.setFormatter(formatter)
+        logging.root.addHandler(fh)
+        logging.root.setLevel(logging.INFO)
 
     def Disabled(self):
         '''Called when the robot is disabled'''

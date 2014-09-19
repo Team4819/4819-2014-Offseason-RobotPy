@@ -5,24 +5,16 @@ import os
 
 from framework import modwrapper, configerator, events
 from framework.moderrors import ModuleLoadError, ModuleUnloadError
-from framework.record import recorder
 __author__ = 'christian'
 
 mods = dict()
 
-fh = logging.FileHandler(os.path.join(recorder.log_dir, "main.log"))
-fh.setLevel(logging.INFO)
 
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
-
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 ch.setFormatter(formatter)
-fh.setFormatter(formatter)
-
 logging.root.addHandler(ch)
-logging.root.addHandler(fh)
-logging.root.setLevel(logging.INFO)
 
 
 def list_modules():

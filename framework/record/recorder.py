@@ -1,3 +1,4 @@
+from framework import filesystem
 import time
 import os
 import json
@@ -5,23 +6,18 @@ import json
 __author__ = 'christian'
 
 
-events_file = "events.rec"
 datastream_files = dict()
 last_datastream_updates = dict()
 starttime = 0
-log_dir = os.path.join("recs", time.strftime("%m.%d.%y"), time.strftime("%H-%M-%S"))
-datastream_dir = os.path.join(log_dir, "datastreams")
 datastream_rate = .25
-os.makedirs(log_dir, exist_ok=True)
 
 recording = False
 
 
 def startRecording():
     global recording, starttime, event_file
-    filename = os.path.join(log_dir, events_file)
-    event_file = open(filename, "w", 1)
-    os.makedirs(datastream_dir, exist_ok=True)
+    filesystem.make_dirs()
+    event_file = open(filesystem.events_file, "w", 1)
     recording = True
     starttime = time.clock()
 
@@ -37,7 +33,7 @@ def update_datastream(name, data, srcmod, autolock):
     if not recording:
         return
     if name not in datastream_files:
-        filename = os.path.join(datastream_dir, name + ".rec")
+        filename = os.path.join(filesystem.datastream_dir, name + ".rec")
         datastream_files[name] = open(filename, "w", 1)
         last_datastream_updates[name] = 0
     timestamp = time.clock() - starttime

@@ -4,6 +4,7 @@ import threading
 import imp
 import os
 import traceback
+import time
 __author__ = 'christian'
 
 
@@ -11,8 +12,11 @@ class ModWrapper:
 
     modindex = 0
     pymodname = ""
+    filename = ""
+
 
     def __init__(self):
+        self.runningEvents = dict()
         self.modlist = list()
 
     def switch_module(self, retry_current=False):
@@ -63,6 +67,7 @@ class ModWrapper:
         self.module.module_load()
         self.modname = self.module.name
         self.pymodname = pymodname
+        self.filename = pymodname
         events.set_event(self.modname + ".load", self.modname, True)
         events.refresh_events(self.modname)
 
@@ -75,15 +80,24 @@ class ModWrapper:
     def reload(self):
         self.switch_module(retry_current=True)
 
+    funcid_current = 0
+
     def call_wrap(self, func):
+        id = self.funcid_current
+        self.funcid_current = self.funcid_current + 1
+        obj = {"name": func.__name__, "starttime": time.clock()}
+        self.runningEvents[id] = obj
         try:
             func()
+            del(self.runningEvents[id])
         except Exception as e:
+            del(self.runningEvents[id])
             logging.error("Exception calling func " + func.__name__ + ": " + str(e) + "\n" + traceback.format_exc())
             try:
                 self.switch_module()
             except moderrors.ModuleLoadError as ex:
                 logging.error(ex)
+
 
     def __getattr__(self, item):
         return getattr(self.module, item)
