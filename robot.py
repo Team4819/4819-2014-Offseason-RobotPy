@@ -23,7 +23,7 @@ class RobotTrunk(wpilib.SimpleRobot):
         filesystem.gen_paths()
         self.init_logs()
 
-        modmaster.load_startup_mods()
+        modmaster.load_startup_mods(os.path.join(filesystem.root_dir, "modules", "mods.conf"))
 
         recorder.startRecording()
         #playback.replay_recording()
