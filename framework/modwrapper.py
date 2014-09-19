@@ -24,8 +24,6 @@ class ModWrapper:
         if not retry_current:
             self.modindex += 1
         self.load_next_module(self.name)
-        events.trigger(self.modname + ".load", self.modname + ".ModWrapper")
-        events.refresh_events(self.modname)
 
     def module_load(self, modname):
         if modname not in configerator.parsed_config:
@@ -76,6 +74,7 @@ class ModWrapper:
         events.set_event(self.modname + ".load", self.modname, False)
         events.trigger(self.modname + ".unload", self.modname)
         events.remove_callbacks(self.modname)
+        logging.info("unloaded module " + self.modname)
 
     def reload(self):
         self.switch_module(retry_current=True)
