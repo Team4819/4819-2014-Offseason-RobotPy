@@ -16,18 +16,36 @@ class Module(modbase.Module):
     def module_load(self):
         self.stick1 = refrence_db.get_ref("Joy1", wpilib.Joystick, 1)
         self.stick2 = refrence_db.get_ref("Joy2", wpilib.Joystick, 2)
-        self.stick3 = refrence_db.get_ref("Joy3", wpilib.Joystick, 3)
         self.buttons = {"trigger": False, "highShotSet": False, "medShotSet": False, "lowShotSet": False, "blowback": False, "armsUp": False, "armsDown": False, "flipper": False, "modReloader": True}
         self.drivestream = datastreams.get_stream("drive")
         self.intakestream = datastreams.get_stream("intake")
         self.armsstream = datastreams.get_stream("arms")
         self.flipperstream = datastreams.get_stream("flipper")
         self.blowbackstream = datastreams.get_stream("blowback")
+        self.joy1stream = datastreams.get_stream("joystick1")
+        self.joy2stream = datastreams.get_stream("joystick2")
 
         events.set_callback("run", self.start, self.name)
 
     def start(self):
         while not self.stop_flag:
+
+            #Get everyting
+            joy1buttons = list()
+            for i in range(1,10):
+                joy1buttons.append(self.stick1.GetRawButton(i))
+            joy1axes = list()
+            for i in range(1,4):
+                joy1axes.append(self.stick1.GetRawAxis(i))
+            self.joy1stream.push({"buttons": joy1buttons, "axes": joy1axes}, self.name, autolock=True)
+            joy2buttons = list()
+            for i in range(1,10):
+                joy2buttons.append(self.stick2.GetRawButton(i))
+            joy2axes = list()
+            for i in range(1,4):
+                joy2axes.append(self.stick2.GetRawAxis(i))
+            self.joy2stream.push({"buttons": joy2buttons, "axes": joy2axes}, self.name, autolock=True)
+
 
             #Get Axis values and threshold
             drive_x = self.threshold(self.stick1.GetRawAxis(1))

@@ -13,9 +13,6 @@ class Module(object):
     def module_unload(self):
         self.stop_flag = True
 
-    def start(self):
-        pass
-
     def __getattr__(self, item):
         return CallReporter(self.name, item)
 

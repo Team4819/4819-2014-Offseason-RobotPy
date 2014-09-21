@@ -50,7 +50,7 @@ class Module(modbase.Module):
             self.last_ballpresense = self.ballpresense
             self.ballpresense = self.ballpresense_switch.Get()
             if not self.last_ballpresense and self.ballpresense:
-                self.trigger_event("ballPresent")
+                events.trigger("ballPresent", self.name)
             self.blowback_solenoid.Set(self.blowback_stream.get(False))
             time.sleep(.1)
 
