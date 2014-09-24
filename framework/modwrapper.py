@@ -42,7 +42,7 @@ class ModWrapper:
                     self.pymodule_load(self.modlist[self.modindex])
                     success = True
                 except Exception as e:
-                    logging.error("Error loading module " + self.modlist[self.modindex] + ": " + str(e))
+                    logging.error("Error loading module: " + self.modlist[self.modindex] + ": " + str(e) + "\n" + traceback.format_exc())
                     self.modindex += 1
 
     def pymodule_load(self, pymodname):
@@ -65,6 +65,7 @@ class ModWrapper:
             raise moderrors.ModuleLoadError(pymodname, str(e))
 
         self.module.module_load()
+
         self.modname = self.module.name
         self.pymodname = pymodname
         self.filename = pymodname
