@@ -17,12 +17,14 @@ class Module(modbase.Module):
         self.pressure_switch = datastreams.get_stream("pressure_switch")
         self.joystick1 = datastreams.get_stream("joystick1")
         self.joystick2 = datastreams.get_stream("joystick2")
+        self.ball_presence = datastreams.get_stream("ballpresence")
         events.set_callback("run", self.run, self.name)
 
 
     def run(self):
         while not self.stop_flag:
-            wpilib.SmartDashboard.PutBoolean("Pressure Sensor", self.pressure_switch.get(False))
+            wpilib.SmartDashboard.PutBoolean("Pressure Switch", self.pressure_switch.get(False))
+            wpilib.SmartDashboard.PutBoolean("Ball Present", self.ball_presence.get(False))
             default = {"buttons": (False, False, False, False, False, False, False, False, False, False), "axes": (0,0,0,0)}
             joy1string = json.dumps(self.joystick1.get(default))
             joy2string = json.dumps(self.joystick2.get(default))

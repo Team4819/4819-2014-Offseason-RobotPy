@@ -25,6 +25,8 @@ class Module(modbase.Module):
 
         self.ballpresense = False
 
+        self.ballpresense_stream = datastreams.get_stream("ballpresence")
+
         self.blowback_stream = datastreams.get_stream("blowback")
 
         events.set_callback("highShot", self.high_shot, self.name)
@@ -49,6 +51,8 @@ class Module(modbase.Module):
         while not self.stop_flag:
             self.last_ballpresense = self.ballpresense
             self.ballpresense = self.ballpresense_switch.Get()
+            self.ballpresense_stream.push(self.ballpresense_switch.Get(), self.name, True)
+            self.ballpresense_stream.on_update("ballPresent", lambda x, y: not x and y)
             if not self.last_ballpresense and self.ballpresense:
                 events.trigger("ballPresent", self.name)
             self.blowback_solenoid.Set(self.blowback_stream.get(False))
