@@ -20,6 +20,9 @@ class DataStream(object):
         self._active = False
         self.updateHooks = dict()
 
+    def activate(self):
+        self._active = True
+
     def lock(self, owner):
         self._lock = owner
 
@@ -57,9 +60,11 @@ class DataStream(object):
         self._active = True
 
 
-def get_stream(stream):
+def get_stream(stream, activate=False):
     if stream not in streams:
         streams[stream] = DataStream(stream)
+    if activate:
+        streams[stream].activate()
     return streams[stream]
 
 

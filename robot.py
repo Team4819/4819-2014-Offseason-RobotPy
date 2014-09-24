@@ -61,7 +61,7 @@ class RobotTrunk(wpilib.SimpleRobot):
     def OperatorControl(self):
         '''Called when operation control mode is enabled'''
         events.set_event("enabled", "RobotTrunk", True)
-        events.set_event("autonomous", "RobotTrunk", True)
+        events.set_event("teleoperated", "RobotTrunk", True)
         while self.IsOperatorControl() and self.IsEnabled():
             self.reaper.delay_death()
             wpilib.Wait(0.04)

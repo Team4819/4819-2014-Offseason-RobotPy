@@ -18,7 +18,10 @@ logging.root.addHandler(ch)
 
 
 def list_modules():
-    return mods.keys()
+    module_list = [x for x in mods]
+    if "placeholder" in module_list:
+        module_list.remove("placeholder")
+    return module_list
 
 
 def load_startup_mods(config=os.path.join("modules", "mods.conf")):
@@ -39,9 +42,10 @@ def get_mod(modname):
     if modname in mods:
         return mods[modname]
     else:
-        if "generic" not in mods:
-            load_mod("framework.modbase")
-        return mods["generic"]
+        if "placeholder" not in mods:
+            load_mod("framework.dummy_module")
+        mods["placeholder"].set_target(modname)
+        return mods["placeholder"]
 
 
 def load_mod(pymodname):
@@ -51,6 +55,7 @@ def load_mod(pymodname):
     if modname in mods:
         raise ModuleLoadError(modname, ": Already module with name " + modname)
     mods[modname] = modwrap
+
 
 def unload_mod(modname):
     if modname not in mods:

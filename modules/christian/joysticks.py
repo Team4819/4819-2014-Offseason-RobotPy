@@ -17,6 +17,7 @@ class Module(modbase.Module):
         self.stick1 = refrence_db.get_ref("Joy1", wpilib.Joystick, 1)
         self.stick2 = refrence_db.get_ref("Joy2", wpilib.Joystick, 2)
         self.buttons = {"trigger": False, "highShotSet": False, "medShotSet": False, "lowShotSet": False, "blowback": False, "armsUp": False, "armsDown": False, "flipper": False, "modReloader": True}
+        self.axes = {"intake": 0, "drive-x": 0, "drive-y": 0}
         self.drivestream = datastreams.get_stream("drive")
         self.intakestream = datastreams.get_stream("intake")
         self.armsstream = datastreams.get_stream("arms")
@@ -48,13 +49,16 @@ class Module(modbase.Module):
 
 
             #Get Axis values and threshold
-            drive_x = self.threshold(self.stick1.GetRawAxis(1))
-            drive_y = self.threshold(self.stick1.GetRawAxis(2))
-            intake = self.threshold(self.stick2.GetRawAxis(2))
+            last_axis = copy.copy(self.axes)
+            self.axes["drive-x"] = self.threshold(self.stick1.GetRawAxis(1))
+            self.axes["drive-y"] = self.threshold(self.stick1.GetRawAxis(2))
+            self.axes["intake"] = self.threshold(self.stick2.GetRawAxis(2))
 
             #Push to data streams
-            self.drivestream.push((drive_x, drive_y), self.name, autolock=True)
-            self.intakestream.push(intake, self.name, autolock=True)
+            if not self.axes["drive-x"] == last_axis["drive-x"] or not self.axes["drive-y"] == last_axis["drive-y"]:
+                self.drivestream.push((self.axes["drive-x"], self.axes["drive-y"]), self.name, autolock=True)
+            if not self.axes["intake"] == last_axis["intake"]:
+                self.intakestream.push(self.axes["intake"], self.name, autolock=True)
 
             #Get button values
             last_buttons = copy.copy(self.buttons)
