@@ -104,13 +104,14 @@ class Module(modbase.Module):
                         sign = abs(delta_y)/delta_y
                         out_y = runtime_vars["last_out_y"]
                         out_y += sign * config["acceleration"] * wait_time
-                        if abs(out_x) >= config["max-speed"]:
+                        if abs(out_y) >= config["max-speed"]:
+                            out_y = sign * config["max-speed"]
                             runtime_vars["stage"] = 1
 
                     elif runtime_vars["stage"] is 1:
                         out_y = runtime_vars["last_out_y"]
                         end_range = (out_y * out_y * config["acceleration"] * 2)
-                        if abs(delta_y) - end_range < config["precision"]:
+                        if delta_y - end_range < config["precision"]:
                             runtime_vars["stage"] = 2
 
                     elif runtime_vars["stage"] is 2:
