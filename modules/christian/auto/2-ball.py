@@ -13,6 +13,7 @@ class Module(modbase.Module):
         self.position_stream =  datastreams.get_stream("position")
         self.arm_stream = datastreams.get_stream("arms")
         self.intake_stream = datastreams.get_stream("intake")
+        self.ball_presence_stream = datastreams.get_stream("ballpresence")
         events.set_callback("autonomous", self.run, self.name)
 
     def run(self):
@@ -66,10 +67,14 @@ class Module(modbase.Module):
         if self.navigator_status.get(1) is -1:
             raise Exception("Error in navigator execution")
 
+        #wait for ball presence
+        while not self.stop_flag and not self.ball_presence_stream.get(False):
+            time.sleep(.5)
+
         #Shoot
         events.trigger("highShot", self.name)
 
-        #stop
+        #stop intake
         self.intake_stream.push(0, self.name)
 
 

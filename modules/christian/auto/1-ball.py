@@ -22,17 +22,14 @@ class Module(modbase.Module):
 
         #Drive to line
         events.trigger("navigator.mark", self.name)
-        self.navigator_config.push({"mode": 1, "y-goal": 3, "max-speed": 1, "acceleration": 1, "iter-second": 10, "precision": 1}, self.name, autolock=True)
+        self.navigator_config.push({"mode": 1, "y-goal": 3, "max-speed": .5, "acceleration": 1, "iter-second": 10, "precision": 1}, self.name, autolock=True)
         events.set_event("navigator.run", self.name, True)
         time.sleep(.2)
         start_time = time.clock()
         while not self.stop_flag and self.navigator_status.get(1) is 0 and time.clock() - start_time < 5:
             time.sleep(.5)
 
-        events.set_event("navigator.run", self.name, False)
-        events.trigger("navigator.stop", self.name)
-        if self.navigator_status.get(1) is -1:
-            raise Exception("Error in navigator execution")
+        self.stop_nav()
 
         #Wait at line
         time.sleep(5)
@@ -40,7 +37,7 @@ class Module(modbase.Module):
 
         #Charge
         events.trigger("navigator.mark", self.name)
-        self.navigator_config.push({"mode": 1, "y-goal": 12, "max-speed": .5, "acceleration": 1, "iter-second": 10, "precision": 1}, self.name, autolock=True)
+        self.navigator_config.push({"mode": 1, "y-goal": 15, "max-speed": 1, "acceleration": 1, "iter-second": 10, "precision": 1}, self.name, autolock=True)
         events.set_event("navigator.run", self.name, True)
         start_time = time.clock()
         pos = self.position_stream.get((0, 0))
@@ -53,14 +50,18 @@ class Module(modbase.Module):
         #Shoot
         events.trigger("highShot", self.name)
 
+        #Wait for shooting to end
+        time.sleep(.25)
 
         #STOP!!!
+        self.stop_nav()
+
+
+
+    def stop_nav(self):
         events.set_event("navigator.run", self.name, False)
         events.trigger("navigator.stop", self.name)
         if self.navigator_status.get(1) is -1:
             raise Exception("Error in navigator execution")
-
-
-
 
 

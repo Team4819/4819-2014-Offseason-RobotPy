@@ -1,6 +1,7 @@
 import time
 import threading
 import logging
+import traceback
 import os
 
 from framework import modwrapper, configerator, events
@@ -73,7 +74,10 @@ def kill_all_mods():
 
 def reload_mods():
     for key in mods:
-        mods[key].reload()
+        try:
+            mods[key].reload()
+        except Exception as e:
+            logging.error("Error reloading module: " + key + ": " + str(e) + "\n" + traceback.format_exc())
 
 
 #   This is my solution to the threads that would not die!

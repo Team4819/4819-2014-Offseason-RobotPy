@@ -24,3 +24,7 @@ class Module(modbase.Module):
             self.pressure_switch_datastream.push(self.pressure_switch.Get(), self.name, autolock=True)
             time.sleep(1)
 
+    def module_unload(self):
+        self.stop_flag = True
+        self.compressor.Stop()
+

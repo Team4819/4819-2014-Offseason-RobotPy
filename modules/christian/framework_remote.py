@@ -2,6 +2,7 @@ __author__ = 'christian'
 
 from framework import modbase, events, modmaster
 import logging
+import traceback
 import time
 import json
 
@@ -33,15 +34,18 @@ class Module(modbase.Module):
                 commands = json.loads(commandsString)
                 for command in commands:
                     if int(command) >= self.index:
-                        if commands[command]["command"] == "reload module":
-                            modmaster.get_mod(commands[command]["target"]).reload()
-                        elif commands[command]["command"] == "unload module":
-                            modmaster.unload_mod(commands[command]["target"])
-                        elif commands[command]["command"] == "load module":
-                            modmaster.load_mod(commands[command]["target"])
-                        else:
-                            logging.error("Framework Remote: No such command - " + commands[command]["command"])
+                        try:
+                            if commands[command]["command"] == "reload module":
+                                modmaster.get_mod(commands[command]["target"]).reload()
+                            elif commands[command]["command"] == "unload module":
+                                modmaster.unload_mod(commands[command]["target"])
+                            elif commands[command]["command"] == "load module":
+                                modmaster.load_mod(commands[command]["target"])
+                            else:
+                                logging.error("Framework Remote: No such command - " + commands[command]["command"])
+                        except Exception as e:
+                            logging.error("Error running command: " + commands[command]["command"] + ": " + str(e) + "\n" + traceback.format_exc())
                         self.index = int(command) + 1
 
 
-            time.sleep(1)
+            time.sleep(.1)

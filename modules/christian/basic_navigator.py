@@ -33,7 +33,7 @@ class Module(modbase.Module):
         self.running = True
         self.success = False
         config = self.default_config
-        runtime_vars = {"last_out_x": 0, "last_out_y": 0, "last_accel_x": 0, "last_accel_y": 0}
+        runtime_vars = {"last_out_x": 0, "last_out_y": 0, "last_accel_x": 0, "last_accel_y": 0, "stage": 0}
         try:
             while self.running and not self.success and not self.stop_flag:
                 config.update(self.config_stream.get(self.default_config))
@@ -51,13 +51,13 @@ class Module(modbase.Module):
                     if abs(delta_x) > config["precision"]:
                         sign = abs(delta_x)/delta_x
                         out_x = sign * config["max-speed"]
-                        self.current_x += sign * 8 * wait_time * out_x
+                        self.current_x += 5 * wait_time * out_x
                         self.success = False
 
                     if abs(delta_y) > config["precision"]:
                         sign = abs(delta_y)/delta_y
                         out_y = sign * config["max-speed"]
-                        self.current_y += 8 * wait_time * out_y
+                        self.current_y += 5 * wait_time * out_y
                         self.success = False
 
                     self.drive_stream.push((out_x, out_y), self.name)
@@ -74,9 +74,9 @@ class Module(modbase.Module):
                         sign = abs(delta_x)/delta_x
                         out_x = runtime_vars["last_out_x"]
                         out_x += sign * config["acceleration"] * wait_time
-                        if abs(out_x) < config["max-speed"]:
-                            out_x = sign
-                        self.current_x += 8 * wait_time * out_x
+                        if abs(out_x) >= config["max-speed"]:
+                            out_x = sign * config["max-speed"]
+                        self.current_x += 5 * wait_time * out_x
                         self.success = False
 
                     if abs(delta_y) > config["precision"]:
@@ -84,8 +84,8 @@ class Module(modbase.Module):
                         out_y = runtime_vars["last_out_y"]
                         out_y += sign * config["acceleration"] * wait_time
                         if abs(out_y) >= config["max-speed"]:
-                            out_y = sign
-                        self.current_y += 8 * wait_time * out_y
+                            out_y = sign * config["max-speed"]
+                        self.current_y += 5 * wait_time * out_y
                         self.success = False
 
                     runtime_vars["last_out_x"] = out_x
@@ -93,35 +93,36 @@ class Module(modbase.Module):
 
                     self.drive_stream.push((out_x, out_y), self.name)
 
-                #C Drive (Acceleration and Deceleration limits, otherwise maxed)
+                #Trapezoidial Motion Profile
                 if config["mode"] is 2:
                     out_x = 0
                     out_y = 0
                     delta_x = config["x-goal"] - self.current_x
                     delta_y = config["y-goal"] - self.current_y
-                    self.success = True
 
-                    if abs(delta_x) > config["precision"]:
-                        sign = abs(delta_x)/delta_x
-
-                        out_x = runtime_vars["last_out_x"]
-                        out_x += sign * config["acceleration"] * wait_time
-                        if abs(out_x) < config["max-speed"]:
-                            out_x = sign
-                        self.current_x += 8 * wait_time * out_x
-                        self.success = False
-
-                    if abs(delta_y) > config["precision"]:
+                    if runtime_vars["stage"] is 0:
                         sign = abs(delta_y)/delta_y
                         out_y = runtime_vars["last_out_y"]
                         out_y += sign * config["acceleration"] * wait_time
-                        if abs(out_y) >= config["max-speed"]:
-                            out_y = sign
-                        self.current_y += 8 * wait_time * out_y
-                        self.success = False
+                        if abs(out_x) >= config["max-speed"]:
+                            runtime_vars["stage"] = 1
 
-                    runtime_vars["last_accel_x"] = (out_x - runtime_vars["last_out_x"]) / wait_time
-                    runtime_vars["last_accel_y"] = (out_y - runtime_vars["last_out_y"]) / wait_time
+                    elif runtime_vars["stage"] is 1:
+                        out_y = runtime_vars["last_out_y"]
+                        end_range = (out_y * out_y * config["acceleration"] * 2)
+                        if abs(delta_y) - end_range < config["precision"]:
+                            runtime_vars["stage"] = 2
+
+                    elif runtime_vars["stage"] is 2:
+                        sign = abs(delta_y)/delta_y
+                        out_y = runtime_vars["last_out_y"]
+                        out_y -= sign * config["acceleration"] * wait_time
+                        if abs(delta_y) < config["precision"]:
+                            runtime_vars["stage"] = 3
+                    else:
+                        self.success = True
+
+                    self.current_y += 5 * wait_time * out_y
 
                     runtime_vars["last_out_x"] = out_x
                     runtime_vars["last_out_y"] = out_y
@@ -136,4 +137,9 @@ class Module(modbase.Module):
 
     def stop_drive(self):
         self.running = False
+        time.sleep(.1)
+        try:
+            self.drive_stream.push((0, 0), self.name)
+        except datastreams.LockError:
+            pass
         logging.info("I will stop doing something!")
