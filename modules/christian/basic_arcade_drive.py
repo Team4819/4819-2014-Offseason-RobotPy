@@ -24,14 +24,14 @@ class Module(modbase.Module):
         while not self.stop_flag:
             drive = self.control_stream.get((0, 0))
 
-            output_left = drive[1] + drive[0]
+            output_left = drive[0] - drive[1]
 
             if output_left > 1:
                 output_left = 1
             elif output_left < -1:
                 output_left = -1
 
-            output_right = drive[0] - drive[1]
+            output_right = drive[0] + drive[1]
 
             if output_right > 1:
                 output_right = 1

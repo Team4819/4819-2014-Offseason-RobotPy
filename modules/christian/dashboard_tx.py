@@ -18,6 +18,7 @@ class Module(modbase.Module):
         self.joystick1 = datastreams.get_stream("joystick1")
         self.joystick2 = datastreams.get_stream("joystick2")
         self.ball_presence = datastreams.get_stream("ballpresence")
+        self.light_sensor = datastreams.get_stream("light_sensor")
         events.set_callback("run", self.run, self.name)
 
 
@@ -25,6 +26,7 @@ class Module(modbase.Module):
         while not self.stop_flag:
             wpilib.SmartDashboard.PutBoolean("Pressure Switch", self.pressure_switch.get(False))
             wpilib.SmartDashboard.PutBoolean("Ball Present", self.ball_presence.get(False))
+            wpilib.SmartDashboard.PutValue("Light Sensor", self.light_sensor.get(2))
             default = {"buttons": (False, False, False, False, False, False, False, False, False, False), "axes": (0,0,0,0)}
             joy1string = json.dumps(self.joystick1.get(default))
             joy2string = json.dumps(self.joystick2.get(default))
