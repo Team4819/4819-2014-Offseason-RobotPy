@@ -11,13 +11,15 @@ __author__ = 'christian'
 class ModWrapper:
 
     modindex = 0
-    pymodname = ""
     filename = ""
 
 
     def __init__(self):
         self.runningEvents = dict()
         self.modlist = list()
+        self.pymodname = ""
+        self.filename = ""
+        self.modname = ""
 
     def switch_module(self, retry_current=False):
         self.module_unload()
@@ -30,6 +32,7 @@ class ModWrapper:
             self.pymodule_load(modname)
             self.modlist.append(self.pymodname)
         else:
+            self.modname = modname
             self.modlist = configerator.parsed_config[modname]
             self.load_next_module(modname)
 
@@ -76,10 +79,15 @@ class ModWrapper:
         events.refresh_events(self.modname)
 
     def module_unload(self):
-        self.module.module_unload()
+
+        try:
+            self.module.module_unload()
+        except Exception as e:
+            logging.error("Error unloading module: " + self.modlist[self.modindex] + ": " + str(e) + "\n" + traceback.format_exc())
+
+        events.remove_callbacks(self.modname)
         events.set_event(self.modname + ".load", self.modname, False)
         events.trigger(self.modname + ".unload", self.modname)
-        events.remove_callbacks(self.modname)
         logging.info("unloaded module " + self.modname)
 
     def reload(self):
