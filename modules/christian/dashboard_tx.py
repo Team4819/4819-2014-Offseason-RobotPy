@@ -26,7 +26,7 @@ class Module(modbase.Module):
         while not self.stop_flag:
             wpilib.SmartDashboard.PutBoolean("Pressure Switch", self.pressure_switch.get(False))
             wpilib.SmartDashboard.PutBoolean("Ball Present", self.ball_presence.get(False))
-            wpilib.SmartDashboard.PutValue("Light Sensor", self.light_sensor.get(2))
+            wpilib.SmartDashboard.PutNumber("Light Sensor", self.light_sensor.get(2))
             default = {"buttons": (False, False, False, False, False, False, False, False, False, False), "axes": (0,0,0,0)}
             joy1string = json.dumps(self.joystick1.get(default))
             joy2string = json.dumps(self.joystick2.get(default))

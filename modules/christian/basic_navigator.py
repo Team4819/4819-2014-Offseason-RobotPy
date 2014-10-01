@@ -2,13 +2,15 @@ __author__ = 'christian'
 from framework import modbase, events, datastreams
 import logging
 import time
-
+import math
 
 class Module(modbase.Module):
 
     name = "navigator"
 
-    default_config = {"mode": 0, "x-goal": 0, "y-goal": 0, "max-speed": 1, "acceleration": 1, "iter-second": 4, "precision": 1}
+
+
+    default_config = {"mode": 0, "x-goal": 0, "y-goal": 0, "max-speed": 5, "acceleration": 3, "make-up": 5, "iter-second": 4, "precision": 1}
 
     def module_load(self):
         self.running = False
@@ -100,35 +102,46 @@ class Module(modbase.Module):
                     delta_x = config["x-goal"] - self.current_x
                     delta_y = config["y-goal"] - self.current_y
 
-                    if runtime_vars["stage"] is 0:
+
+                    if runtime_vars["stage"] is 2:
+                        out_y = runtime_vars["last_out_y"]
+                        accel_y = runtime_vars["last_accel_y"]
+                        target_accel = -(out_y * out_y / (2 * delta_y))
+                        target_delta_accel = target_accel - accel_y
+                        target_delta_accel *= config["make-up"]
+                        accel_y += target_delta_accel * wait_time
+                        out_y += accel_y * wait_time
+                        runtime_vars["last_accel_y"] = accel_y
+                        #out_y += planned_accel * wait_time
+                        if abs(delta_y) < config["precision"]:
+                            runtime_vars["stage"] = 3
+
+                    elif runtime_vars["stage"] is 1:
+                        out_y = runtime_vars["last_out_y"]
+                        end_range = (out_y * out_y / (config["acceleration"] * 2)) + out_y * wait_time
+                        if delta_y - end_range < config["precision"]:
+                            runtime_vars["stage"] = 2
+
+                    elif runtime_vars["stage"] is 0:
                         sign = abs(delta_y)/delta_y
                         out_y = runtime_vars["last_out_y"]
                         out_y += sign * config["acceleration"] * wait_time
                         if abs(out_y) >= config["max-speed"]:
                             out_y = sign * config["max-speed"]
                             runtime_vars["stage"] = 1
-
-                    elif runtime_vars["stage"] is 1:
-                        out_y = runtime_vars["last_out_y"]
-                        end_range = (out_y * out_y * config["acceleration"] * 2)
+                        end_range = (out_y * out_y / (config["acceleration"] * 2)) + out_y * wait_time
                         if delta_y - end_range < config["precision"]:
                             runtime_vars["stage"] = 2
 
-                    elif runtime_vars["stage"] is 2:
-                        sign = abs(delta_y)/delta_y
-                        out_y = runtime_vars["last_out_y"]
-                        out_y -= sign * config["acceleration"] * wait_time
-                        if abs(delta_y) < config["precision"]:
-                            runtime_vars["stage"] = 3
                     else:
                         self.success = True
 
-                    self.current_y += 5 * wait_time * out_y
+                    self.current_y += wait_time * out_y
 
                     runtime_vars["last_out_x"] = out_x
                     runtime_vars["last_out_y"] = out_y
 
-                    self.drive_stream.push((out_x, out_y), self.name)
+                    self.drive_stream.push((out_x/5, out_y/5), self.name)
 
 
                 time.sleep(wait_time)

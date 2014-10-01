@@ -16,7 +16,7 @@ class Module(modbase.Module):
 
 
     def module_load(self):
-        self.sensor = refrence_db.get_ref("light_sensor" ,wpilib.AnalogChannel, 2, 1)
+        self.sensor = refrence_db.get_ref("light_sensor", wpilib.AnalogChannel, 1)
         self.sensor_stream = datastreams.get_stream("light_sensor")
         events.set_callback("run", self.do_stuff, self.name)
 
