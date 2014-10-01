@@ -1,8 +1,12 @@
 __author__ = 'christian'
-from framework import modbase, events, datastreams
+from framework import modbase, events, datastreams, refrence_db
 import logging
 import time
 import math
+try:
+    import wpilib
+except ImportError:
+    from pyfrc import wpilib
 
 class Module(modbase.Module):
 
@@ -22,8 +26,18 @@ class Module(modbase.Module):
         events.set_callback("navigator.run", self.do_drive, self.name)
         events.set_callback("navigator.stop", self.stop_drive, self.name)
         events.set_callback("navigator.mark", self.mark, self.name)
+        self.right_encoder = refrence_db.get_ref("right_encoder", wpilib.Encoder, 1, 2)
+        self.left_encoder = refrence_db.get_ref("left_encoder", wpilib.Encoder, 3, 4)
+        self.gyroscope = refrence_db.get_ref("gyroscope", wpilib.Gyro, 1)
+        self.gyro_stream = datastreams.get_stream("gyroscope")
         self.current_x = 0
         self.current_y = 0
+
+    def sensor_poll(self):
+        while not self.stop_flag:
+            self.gyro_stream.push(self.gyroscope.value, self.name, autolock=True)
+            self.current_y = self.left_encoder.Get()
+            time.sleep(.2)
 
     def mark(self):
         self.current_x = 0
@@ -47,19 +61,12 @@ class Module(modbase.Module):
                 if config["mode"] is 0:
                     out_x = 0
                     out_y = 0
-                    delta_x = config["x-goal"] - self.current_x
                     delta_y = config["y-goal"] - self.current_y
                     self.success = True
-                    if abs(delta_x) > config["precision"]:
-                        sign = abs(delta_x)/delta_x
-                        out_x = sign * config["max-speed"]
-                        self.current_x += 5 * wait_time * out_x
-                        self.success = False
 
                     if abs(delta_y) > config["precision"]:
                         sign = abs(delta_y)/delta_y
                         out_y = sign * config["max-speed"]
-                        self.current_y += 5 * wait_time * out_y
                         self.success = False
 
                     self.drive_stream.push((out_x, out_y), self.name)
@@ -68,18 +75,9 @@ class Module(modbase.Module):
                 if config["mode"] is 1:
                     out_x = 0
                     out_y = 0
-                    delta_x = config["x-goal"] - self.current_x
                     delta_y = config["y-goal"] - self.current_y
                     self.success = True
 
-                    if abs(delta_x) > config["precision"]:
-                        sign = abs(delta_x)/delta_x
-                        out_x = runtime_vars["last_out_x"]
-                        out_x += sign * config["acceleration"] * wait_time
-                        if abs(out_x) >= config["max-speed"]:
-                            out_x = sign * config["max-speed"]
-                        self.current_x += 5 * wait_time * out_x
-                        self.success = False
 
                     if abs(delta_y) > config["precision"]:
                         sign = abs(delta_y)/delta_y
@@ -87,7 +85,6 @@ class Module(modbase.Module):
                         out_y += sign * config["acceleration"] * wait_time
                         if abs(out_y) >= config["max-speed"]:
                             out_y = sign * config["max-speed"]
-                        self.current_y += 5 * wait_time * out_y
                         self.success = False
 
                     runtime_vars["last_out_x"] = out_x
