@@ -1,13 +1,7 @@
-from framework import modbase, events, datastreams
-from framework.refrence_db import get_ref
+from framework import modbase, events, datastreams, wpiwrap
 import time
 import logging
 __author__ = 'christian'
-
-try:
-    import wpilib
-except ImportError:
-    from pyfrc import wpilib
 
 
 class Module(modbase.Module):
@@ -17,11 +11,10 @@ class Module(modbase.Module):
     dryfire_protection = False
 
     def module_load(self):
-
-        self.main_solenoid_1 = get_ref("main_solenoid_1", wpilib.Solenoid, 3)
-        self.main_solenoid_2 = get_ref("main_solenoid_2", wpilib.Solenoid, 4)
-        self.blowback_solenoid = get_ref("blowback_solenoid", wpilib.Solenoid, 5)
-        self.ballpresense_switch = get_ref("ballpresence_switch", wpilib.DigitalInput, 13)
+        self.main_solenoid_1 = wpiwrap.Solenoid("Cannon Solenoid 1", self.name, 3)
+        self.main_solenoid_2 = wpiwrap.Solenoid("Cannon Solenoid 2", self.name, 4)
+        self.blowback_solenoid = wpiwrap.Solenoid("Blowback Solenoid", self.name, 5)
+        self.ballpresense_switch = wpiwrap.DigitalInput("Ball Presence Switch", self.name, 13)
 
         self.ballpresense = False
 

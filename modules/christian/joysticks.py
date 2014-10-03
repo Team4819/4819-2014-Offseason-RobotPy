@@ -1,4 +1,4 @@
-from framework import events, datastreams, modbase, modmaster, refrence_db
+from framework import events, datastreams, modbase, modmaster
 import time
 import copy
 try:
@@ -14,8 +14,8 @@ class Module(modbase.Module):
 
 
     def module_load(self):
-        self.stick1 = refrence_db.get_ref("Joy1", wpilib.Joystick, 1)
-        self.stick2 = refrence_db.get_ref("Joy2", wpilib.Joystick, 2)
+        self.stick1 = wpilib.Joystick(1)
+        self.stick2 = wpilib.Joystick(2)
         self.buttons = {"trigger": False, "highShotSet": False, "medShotSet": False, "lowShotSet": False, "blowback": False, "armsUp": False, "armsDown": False, "flipper": False, "modReloader": True}
         self.axes = {"intake": 0, "drive-x": 0, "drive-y": 0}
         self.drivestream = datastreams.get_stream("drive")

@@ -1,5 +1,4 @@
-from framework import modmaster, modbase, datastreams, events
-from framework.refrence_db import get_ref
+from framework import modmaster, modbase, datastreams, events, wpiwrap
 import time
 try:
     import wpilib
@@ -15,9 +14,9 @@ class Module(modbase.Module):
     def module_load(self):
 
         #Get refrences
-        self.arm_solenoid = get_ref("arm_solenoid", wpilib.Solenoid, 2)
-        self.flipper_solenoid = get_ref("flipper_solenoid", wpilib.Solenoid, 1)
-        self.intake_motor = get_ref("intake_motor", wpilib.Talon, 3)
+        self.arm_solenoid = wpiwrap.Solenoid("Arm Solenoid", self.name, 2)
+        self.flipper_solenoid = wpiwrap.Solenoid("Flipper Solenoid", self.name, 1)
+        self.intake_motor = wpiwrap.Talon("Intake Motor", self.name, 3)
 
 
         self.armstream = datastreams.get_stream("arms")

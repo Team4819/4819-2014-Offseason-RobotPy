@@ -1,4 +1,6 @@
 __author__ = 'christian'
+"""DEPRECATED!! You should use framework.wpiwrap instead!!!"""
+
 refrences = dict()
 
 

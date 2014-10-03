@@ -1,12 +1,13 @@
 __author__ = 'christian'
 
-from framework import modbase, events, datastreams
+from framework import modbase, events, datastreams, wpiwrap
 try:
     import wpilib
 except ImportError:
     from pyfrc import wpilib
 import time
 import json
+import logging
 
 class Module(modbase.Module):
 
@@ -24,9 +25,10 @@ class Module(modbase.Module):
 
     def run(self):
         while not self.stop_flag:
-            wpilib.SmartDashboard.PutBoolean("Pressure Switch", self.pressure_switch.get(False))
-            wpilib.SmartDashboard.PutBoolean("Ball Present", self.ball_presence.get(False))
-            wpilib.SmartDashboard.PutNumber("Light Sensor", self.light_sensor.get(2))
+            try:
+                wpiwrap.publish_values()
+            except Exception as e:
+                logging.error(e)
             default = {"buttons": (False, False, False, False, False, False, False, False, False, False), "axes": (0,0,0,0)}
             joy1string = json.dumps(self.joystick1.get(default))
             joy2string = json.dumps(self.joystick2.get(default))

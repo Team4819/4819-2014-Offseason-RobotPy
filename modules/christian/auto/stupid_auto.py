@@ -14,7 +14,7 @@ class Module(modbase.Module):
     def run(self):
 
         events.trigger("navigator.mark", self.name)
-        self.navigator_config.push({"mode": 2, "y-goal": 5, "max-speed": 5, "acceleration": 3, "iter-second": 10, "precision": .1, "make-up": 5}, self.name, autolock=True)
+        self.navigator_config.push({"mode": 2, "y-goal": 20, "max-speed": 4, "acceleration": 2, "iter-second": 40, "precision": .01, "make-up": 1}, self.name, autolock=True)
         events.set_event("navigator.run", self.name, True)
         time.sleep(.2)
 

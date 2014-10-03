@@ -1,10 +1,6 @@
 __author__ = 'christian'
-from framework import modbase, events, datastreams, refrence_db
+from framework import modbase, events, datastreams, wpiwrap
 import time
-try:
-    import wpilib
-except ImportError:
-    from pyfrc import wpilib
 
 
 class Module(modbase.Module):
@@ -12,8 +8,8 @@ class Module(modbase.Module):
     name = "drivetrain"
 
     def module_load(self):
-        self.left_motor = refrence_db.get_ref("left_motor", wpilib.Talon, 1)
-        self.right_motor = refrence_db.get_ref("right_motor", wpilib.Talon, 2)
+        self.left_motor = wpiwrap.Talon("left motor", self.name, 1)
+        self.right_motor = wpiwrap.Talon("right motor", self.name, 2)
 
         events.set_callback("enabled", self.run, self.name)
         events.set_callback("disabled", self.stop, self.name)
@@ -26,20 +22,16 @@ class Module(modbase.Module):
 
             output_left = drive[0] - drive[1]
 
-            if output_left > 1:
-                output_left = 1
-            elif output_left < -1:
-                output_left = -1
+            if abs(output_left) > 1:
+                output_left = abs(output_left)/output_left
 
             output_right = drive[0] + drive[1]
 
-            if output_right > 1:
-                output_right = 1
-            elif output_right < -1:
-                output_right = -1
+            if abs(output_right) > 1:
+                output_right = abs(output_right)/output_right
 
-            self.left_motor.Set(output_left)
-            self.right_motor.Set(output_right)
+            self.left_motor.set(output_left)
+            self.right_motor.set(output_right)
 
             time.sleep(.05)
 

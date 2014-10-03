@@ -22,7 +22,7 @@ class Module(modbase.Module):
 
         #Drive to line
         events.trigger("navigator.mark", self.name)
-        self.navigator_config.push({"mode": 2, "y-goal": 3, "max-speed": 2, "acceleration": 3, "iter-second": 10, "precision": 1}, self.name, autolock=True)
+        self.navigator_config.push({"mode": 2, "y-goal": 3, "max-speed": 2, "acceleration": 3, "iter-second": 10, "precision": .1}, self.name, autolock=True)
         events.set_event("navigator.run", self.name, True)
         time.sleep(.2)
         start_time = time.clock()
@@ -39,7 +39,7 @@ class Module(modbase.Module):
 
         #Charge!
         events.trigger("navigator.mark", self.name)
-        self.navigator_config.push({"mode": 1, "y-goal": 15, "max-speed": 5, "acceleration": 3, "iter-second": 10, "precision": 1}, self.name, autolock=True)
+        self.navigator_config.push({"mode": 1, "y-goal": 15, "max-speed": 5, "acceleration": 10, "iter-second": 20, "precision": .1}, self.name, autolock=True)
         events.set_event("navigator.run", self.name, True)
         start_time = time.clock()
         pos = self.position_stream.get((0, 0))

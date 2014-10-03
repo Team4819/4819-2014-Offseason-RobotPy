@@ -1,4 +1,4 @@
-from framework import configerator, moderrors, events
+from framework import configerator, moderrors, events, wpiwrap
 import logging
 import threading
 import imp
@@ -88,6 +88,7 @@ class ModWrapper:
         events.remove_callbacks(self.modname)
         events.set_event(self.modname + ".load", self.modname, False)
         events.trigger(self.modname + ".unload", self.modname)
+        wpiwrap.clear_refrences(self.modname)
         logging.info("unloaded module " + self.modname)
 
     def reload(self):

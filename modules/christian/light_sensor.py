@@ -1,11 +1,7 @@
 
-from framework import modbase, events, datastreams, refrence_db
+from framework import modbase, events, datastreams, refrence_db, wpiwrap
 import time
 
-try:
-    import wpilib
-except ImportError:
-    from pyfrc import wpilib
 
 
 class Module(modbase.Module):
@@ -16,7 +12,7 @@ class Module(modbase.Module):
 
 
     def module_load(self):
-        self.sensor = refrence_db.get_ref("light_sensor", wpilib.AnalogChannel, 1)
+        self.sensor = wpiwrap.AnalogInput("Light Sensor", self.name, 1)
         self.sensor_stream = datastreams.get_stream("light_sensor")
         events.set_callback("run", self.do_stuff, self.name)
 

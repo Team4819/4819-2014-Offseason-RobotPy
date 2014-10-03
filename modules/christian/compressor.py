@@ -1,10 +1,5 @@
-from framework import modbase, datastreams, events
-from framework.refrence_db import get_ref
+from framework import modbase, datastreams, events, wpiwrap
 import time
-try:
-    import wpilib
-except ImportError:
-    from pyfrc import wpilib
 
 __author__ = 'christian'
 
@@ -13,18 +8,18 @@ class Module(modbase.Module):
     name = "compressor"
 
     def module_load(self):
-        self.compressor = get_ref("compressor", wpilib.Compressor, 14, 1)
-        self.pressure_switch = get_ref("pressure_switch", wpilib.DigitalInput, 6)
+        self.compressor = wpiwrap.Compressor("Compressor", self.name, 14, 1)
+        self.pressure_switch = wpiwrap.DigitalInput("Pressure Switch", self.name, 6)
         self.pressure_switch_datastream = datastreams.get_stream("pressure_switch")
-        self.compressor.Start()
+        self.compressor.set(True)
         events.set_callback("run", self.run, self.name)
 
     def run(self):
         while not self.stop_flag:
-            self.pressure_switch_datastream.push(self.pressure_switch.Get(), self.name, autolock=True)
+            self.pressure_switch_datastream.push(self.pressure_switch.get(), self.name, autolock=True)
             time.sleep(1)
 
     def module_unload(self):
         self.stop_flag = True
-        self.compressor.Stop()
+        self.compressor.set(False)
 
