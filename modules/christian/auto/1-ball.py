@@ -12,10 +12,15 @@ class Module(modbase.Module):
         self.autonomous_config = datastreams.get_stream("auto_config")
         self.position_stream =  datastreams.get_stream("position")
         self.arm_stream = datastreams.get_stream("arms")
+        self.light_sensor_stream = datastreams.get_stream("light_sensor")
         events.set_callback("autonomous", self.run, self.name)
+        events.set_callback("disabled", self.disable, self.name)
+
+    def disable(self):
+        self.stop_flag = True
 
     def run(self):
-
+        self.stop_flag = False
         #Drop Arms
         self.arm_stream.lock(self.name)
         self.arm_stream.push(False, self.name)
@@ -26,11 +31,11 @@ class Module(modbase.Module):
         events.set_event("navigator.run", self.name, True)
         time.sleep(.2)
         start_time = time.clock()
-        while not self.stop_flag and self.navigator_status.get(1) is 0 and time.clock() - start_time < 5:
+        while not self.stop_flag and self.navigator_status.get(1) is 0 and time.clock() - start_time < 5 and self.light_sensor_stream.get(1.5) < 2.5:
             if self.stop_flag:
                 return
             time.sleep(.5)
-
+        if self.stop_flag: return
         self.stop_nav()
 
         #Wait at line
@@ -48,6 +53,7 @@ class Module(modbase.Module):
             if self.stop_flag:
                 return
             time.sleep(.1)
+        if self.stop_flag: return
         if self.navigator_status.get(1) is -1:
             raise Exception("Error in navigator execution")
 

@@ -9,7 +9,7 @@ class Module(modbase.Module):
 
 
 
-    default_config = {"mode": 0, "x-goal": 0, "y-goal": 0, "max-speed": 5, "acceleration": 3, "make-up": 5, "iter-second": 4, "precision": 1, "gyroscope": True}
+    default_config = {"mode": 0, "x-goal": 0, "y-goal": 0, "max-speed": 5, "acceleration": 3, "make-up": 1, "iter-second": 4, "precision": 1, "gyroscope": True}
 
     def module_load(self):
         self.running = False

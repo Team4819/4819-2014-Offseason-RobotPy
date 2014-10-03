@@ -5,7 +5,6 @@ import json
 
 __author__ = 'christian'
 
-
 datastream_files = dict()
 last_datastream_updates = dict()
 starttime = 0

@@ -12,7 +12,18 @@ paths_made = False
 
 def gen_paths():
     global log_dir, events_file, log_file, datastream_dir
-    log_dir = os.path.join(root_dir, "recs", time.strftime("%m-%d-%y"), time.strftime("%H.%M.%S"))
+    index = 0
+    if os.path.exists(log_dir):
+        folders = os.listdir(log_dir)
+        for folder in folders:
+            try:
+                val = int(folder)
+                if val > index:
+                    index = val
+            except MemoryError:
+                pass
+        index += 1
+    log_dir = os.path.join(root_dir, "recs", str(index).zfill(4))
     log_file = os.path.join(log_dir, "main.log")
     events_file = os.path.join(log_dir, "events.rec")
     datastream_dir = os.path.join(log_dir, "datastreams")
