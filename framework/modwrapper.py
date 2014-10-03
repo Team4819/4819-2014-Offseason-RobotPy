@@ -21,26 +21,42 @@ class ModWrapper:
         self.filename = ""
         self.modname = ""
 
-    def switch_module(self, retry_current=False):
+    def switch_module(self, filename):
+        self.module_unload()
+        self.module_load(filename)
+
+
+    def cascade_module(self, retry_current=False):
         self.module_unload()
         if not retry_current:
             self.modindex += 1
-        self.load_next_module(self.name)
+        self.load_next_module(self.modname)
 
+    #Load module from string, either subsystem or filename
     def module_load(self, modname):
         if modname not in configerator.parsed_config:
-            self.pymodule_load(modname)
+            self.pymodname = modname
+            config = configerator.parsed_config
+            cascade_rules = list()
+            cascade_rules.append(self.pymodname)
+            for section in config:
+                if modname in config[section]:
+                    cascade_rules = config[section]
+            self.modindex = cascade_rules.index(modname)
+            self.modlist = cascade_rules
             self.modlist.append(self.pymodname)
+            self.load_next_module()
         else:
             self.modname = modname
             self.modlist = configerator.parsed_config[modname]
-            self.load_next_module(modname)
+            self.load_next_module()
 
-    def load_next_module(self, subsystem):
+    #Load next module on modlist starting with modindex
+    def load_next_module(self):
             success = False
             while not success:
                 if self.modindex == len(self.modlist):
-                    raise moderrors.ModuleLoadError(subsystem, "Cannot Load Module: no modules left to try and load for subsystem")
+                    raise moderrors.ModuleLoadError(self.modname, "Cannot Load Module: no modules left to try and load for subsystem")
                 try:
                     self.pymodule_load(self.modlist[self.modindex])
                     success = True
@@ -49,6 +65,7 @@ class ModWrapper:
                     self.module_unload()
                     self.modindex += 1
 
+    #Load file
     def pymodule_load(self, pymodname):
         logging.info("loading module " + pymodname)
         #Load Python file, use reload if it is just being reloaded!
@@ -72,6 +89,7 @@ class ModWrapper:
         self.pymodname = pymodname
         self.filename = pymodname
 
+
         self.module.module_load()
 
 
@@ -92,7 +110,7 @@ class ModWrapper:
         logging.info("unloaded module " + self.modname)
 
     def reload(self):
-        self.switch_module(retry_current=True)
+        self.cascade_module(retry_current=True)
 
     funcid_current = 0
 
@@ -108,7 +126,7 @@ class ModWrapper:
             del(self.runningEvents[id])
             logging.error("Exception calling func " + func.__name__ + ": " + str(e) + "\n" + traceback.format_exc())
             try:
-                self.switch_module()
+                self.cascade_module()
             except moderrors.ModuleLoadError as ex:
                 logging.error(ex)
 

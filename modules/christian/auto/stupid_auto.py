@@ -17,8 +17,9 @@ class Module(modbase.Module):
 
     def run(self):
         self.stop_flag = False
+        config = self.autonomous_config.get({"distance_from_tape": 5})
         events.trigger("navigator.mark", self.name)
-        self.navigator_config.push({"mode": 2, "y-goal": 3, "max-speed": 2, "acceleration": 2, "iter-second": 10, "precision": 1}, self.name, autolock=True)
+        self.navigator_config.push({"mode": 2, "y-goal": config["distance_from_tape"], "max-speed": 2, "acceleration": 2, "iter-second": 10, "precision": 1}, self.name, autolock=True)
         events.set_event("navigator.run", self.name, True)
         time.sleep(.2)
 

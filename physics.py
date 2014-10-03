@@ -45,11 +45,12 @@ class PhysicsEngine(object):
 
         distance_traveled = (-self.physics_controller.get_position()[0]) - self.last_distance
         rate = (distance_traveled)/tm_diff
-        if l_encoder.value is not None:
-            l_encoder.value += distance_traveled
-            l_encoder.rate = rate
-            r_encoder.value += distance_traveled
-            r_encoder.rate = rate
+        if l_encoder is not None:
+            if l_encoder.value is not None:
+                l_encoder.value += distance_traveled
+                l_encoder.rate = rate
+                r_encoder.value += distance_traveled
+                r_encoder.rate = rate
         self.last_distance += distance_traveled
 
         speed, rotation = drivetrains.two_motor_drivetrain(-l_motor.Get(), -r_motor.Get())

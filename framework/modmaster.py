@@ -1,3 +1,4 @@
+__author__ = 'christian'
 import time
 import threading
 import logging
@@ -6,7 +7,7 @@ import os
 
 from framework import modwrapper, configerator, events
 from framework.moderrors import ModuleLoadError, ModuleUnloadError
-__author__ = 'christian'
+
 
 mods = dict()
 

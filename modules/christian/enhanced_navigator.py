@@ -19,6 +19,7 @@ class Module(modbase.Module):
         self.status_stream = datastreams.get_stream("navigator.status")
         self.position_stream = datastreams.get_stream("position")
         events.set_callback("run", self.sensor_poll, self.name)
+        events.set_callback("disabled", self.stop_drive, self.name)
         events.set_callback("navigator.run", self.do_drive, self.name)
         events.set_callback("navigator.stop", self.stop_drive, self.name)
         events.set_callback("navigator.mark", self.mark, self.name)
@@ -49,7 +50,7 @@ class Module(modbase.Module):
 
             if not self.values_reset:
                 encoder_value = self.left_encoder.get_rate()
-                if (encoder_value - last_encoder)/.3 > 20:
+                if (encoder_value - last_encoder)/.3 > 10:
                     raise Exception("Encoder is returning a scary value!")
                 gyro_value = self.gyroscope.get()
                 if (gyro_value - last_gyro)/.3 > 400:
@@ -88,8 +89,10 @@ class Module(modbase.Module):
 
 
                 self.current_speed_y = self.left_encoder.get_rate()
-
+                out_x = 0
+                out_y = 0
                 delta_y = config["y-goal"] - self.current_y
+                move_mode = 0
 
                 #Bang Bang Navigation
                 if config["mode"] is 0:
@@ -101,6 +104,7 @@ class Module(modbase.Module):
                     accel_y = speed_delta
                     if delta_y < config["precision"]:
                         self.success = True
+                        move_mode = 1
 
                 #Acceleration
                 if config["mode"] is 1:
@@ -112,6 +116,7 @@ class Module(modbase.Module):
                             accel_y = - speed_delta * .1
                     if delta_y < config["precision"]:
                         self.success = True
+                        move_mode = 1
 
                 #Trapezoidial Motion Profile
                 if config["mode"] is 2:
@@ -121,6 +126,7 @@ class Module(modbase.Module):
                         if delta_y < config["precision"] or self.current_speed_y <= 0:
                             accel_y = 0
                             self.stage = 3
+                            move_mode = 1
 
                     elif self.stage is 1:
                         accel_y = config["max-speed"] - self.current_speed_y
@@ -142,15 +148,16 @@ class Module(modbase.Module):
                         self.success = True
 
 
-                self.current_accel_y = (self.current_speed_y - self.last_speed_y) * wait_time
 
-                accel_err = accel_y - self.current_accel_y
+                if move_mode is 0:
+                    self.current_accel_y = (self.current_speed_y - self.last_speed_y) * wait_time
 
-                if abs(accel_err) > config["make-up"]:
-                    accel_err = abs(accel_err)/accel_err * config["make-up"]
+                    accel_err = accel_y - self.current_accel_y
 
-                out_y = self.last_out_y + (accel_err * wait_time)
-                out_x = 0
+                    if abs(accel_err) > config["make-up"]:
+                        accel_err = abs(accel_err)/accel_err * config["make-up"]
+
+                    out_y = self.last_out_y + (accel_err * wait_time)
 
                 if config["gyroscope"]:
                     out_x = self.gyroscope.get()/-150
