@@ -53,6 +53,7 @@ class PhysicsEngine(object):
                 r_encoder.rate = rate
         self.last_distance += distance_traveled
 
-        speed, rotation = drivetrains.two_motor_drivetrain(-l_motor.Get(), -r_motor.Get())
-        self.physics_controller.drive(speed, rotation, tm_diff)
+        if l_motor is not None:
+            speed, rotation = drivetrains.two_motor_drivetrain(-l_motor.Get(), -r_motor.Get())
+            self.physics_controller.drive(speed, rotation, tm_diff)
 

@@ -27,50 +27,50 @@ class ModWrapper:
 
 
     def cascade_module(self, retry_current=False):
+        """Unload the current module and load the next one on the list"""
         self.module_unload()
         if not retry_current:
             self.modindex += 1
-        self.load_next_module(self.modname)
+        self.load_next_module()
 
-    #Load module from string, either subsystem or filename
     def module_load(self, modname):
+        """Load Module from string, either subsystem or filename"""
         if modname not in configerator.parsed_config:
-            self.pymodname = modname
             config = configerator.parsed_config
             cascade_rules = list()
-            cascade_rules.append(self.pymodname)
+            cascade_rules.append(modname)
             for section in config:
-                if modname in config[section]:
+                if section != "StartupMods" and modname in config[section]:
                     cascade_rules = config[section]
             self.modindex = cascade_rules.index(modname)
             self.modlist = cascade_rules
-            self.modlist.append(self.pymodname)
             self.load_next_module()
+
         else:
             self.modname = modname
             self.modlist = configerator.parsed_config[modname]
             self.load_next_module()
 
-    #Load next module on modlist starting with modindex
     def load_next_module(self):
-            success = False
-            while not success:
-                if self.modindex == len(self.modlist):
-                    raise moderrors.ModuleLoadError(self.modname, "Cannot Load Module: no modules left to try and load for subsystem")
-                try:
-                    self.pymodule_load(self.modlist[self.modindex])
-                    success = True
-                except Exception as e:
-                    logging.error("Error loading module: " + self.modlist[self.modindex] + ": " + str(e) + "\n" + traceback.format_exc())
-                    self.module_unload()
-                    self.modindex += 1
+        """Load next module on modlist starting with modindex"""
+        success = False
+        while not success:
+            if self.modindex == len(self.modlist):
+                raise moderrors.ModuleLoadError(self.modname, "Cannot Load Module: no modules left to try and load for subsystem")
+            try:
+                self.pymodule_load(self.modlist[self.modindex])
+                success = True
+            except Exception as e:
+                logging.error("Error loading module: " + self.modlist[self.modindex] + ": " + str(e) + "\n" + traceback.format_exc())
+                self.module_unload()
+                self.modindex += 1
 
-    #Load file
     def pymodule_load(self, pymodname):
+        """Load file straight from pymodname"""
         logging.info("loading module " + pymodname)
         #Load Python file, use reload if it is just being reloaded!
         try:
-            if pymodname is not self.pymodname:
+            if pymodname != self.pymodname:
                 self.pymod = __import__(pymodname, fromlist=[''])
             else:
                 path = getattr(self.pymod, "__cached__")
@@ -130,8 +130,9 @@ class ModWrapper:
             except moderrors.ModuleLoadError as ex:
                 logging.error(ex)
 
-
     def __getattr__(self, item):
+        if item == "module":
+            raise AttributeError(item)
         return getattr(self.module, item)
 
 

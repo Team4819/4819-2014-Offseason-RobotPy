@@ -46,14 +46,14 @@ def get_mod(modname):
     else:
         if "placeholder" not in mods:
             load_mod("framework.dummy_module")
-        mods["placeholder"].set_target(modname)
+        mods["placeholder"].module.target = modname
         return mods["placeholder"]
 
 
 def load_mod(pymodname):
     modwrap = modwrapper.ModWrapper()
     modwrap.module_load(pymodname)
-    modname = modwrap.module.name
+    modname = modwrap.modname
     if modname in mods:
         raise ModuleLoadError(modname, ": Already module with name " + modname)
     mods[modname] = modwrap
