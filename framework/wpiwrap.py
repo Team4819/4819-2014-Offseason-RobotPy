@@ -276,14 +276,14 @@ class Encoder(Refrence):
     def get(self):
         value = self.wpiobject.Get()
         if value is None:
-            value = 0
-        return value
+            return 0
+        return value/360
 
     def get_rate(self):
         value = self.wpiobject.GetRate()
         if value is None:
-            value = 0
-        return value
+            return 0
+        return value/360
 
     def reset(self):
         self.wpiobject.Reset()

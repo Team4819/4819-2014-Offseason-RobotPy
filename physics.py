@@ -43,7 +43,7 @@ class PhysicsEngine(object):
         l_encoder = wpilib.DigitalModule._io[0]
         r_encoder = wpilib.DigitalModule._io[2]
 
-        distance_traveled = (-self.physics_controller.get_position()[0]) - self.last_distance
+        distance_traveled = ((-self.physics_controller.get_position()[0]) - self.last_distance) * 360
         rate = (distance_traveled)/tm_diff
         if l_encoder is not None:
             if l_encoder.value is not None:
