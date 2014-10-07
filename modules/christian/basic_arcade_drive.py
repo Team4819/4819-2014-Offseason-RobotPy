@@ -37,3 +37,6 @@ class Module(modbase.Module):
 
     def stop(self):
         self.stop_flag = True
+        self.control_stream.push((0,0), self.name, autolock=True)
+        self.left_motor.set(0)
+        self.right_motor.set(0)

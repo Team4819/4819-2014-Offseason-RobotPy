@@ -1,6 +1,10 @@
 __author__ = 'christian'
 from framework import modbase, events, datastreams
 import time
+try:
+    import wpilib
+except ImportError:
+    from pyfrc import wpilib
 
 class Module(modbase.Module):
 
@@ -30,11 +34,16 @@ class Module(modbase.Module):
 
     def run(self):
         self.stop_flag = False
+        auto_start_time = time.time()
 
         config = self.autonomous_config.get({"first_shot": 12, "second_shot": 7, "distance_from_tape": 3, "start_position": 0})
         #Drop Arms
         self.arm_stream.lock(self.name)
         self.arm_stream.push(False, self.name)
+
+        #Trigger Vision
+        wpilib.SmartDashboard.PutNumber("hot goal", 0)
+        wpilib.SmartDashboard.PutBoolean("do vision", True)
 
         #Drive to line
         events.trigger("navigator.mark", self.name)
@@ -47,8 +56,14 @@ class Module(modbase.Module):
         if self.stop_flag: return
         self.stop_nav()
 
-        #Wait at line
-        time.sleep(5)
+        #Fork for hot
+        time.sleep(1)
+        hot_goal = wpilib.SmartDashboard.GetNumber("hot goal")
+        current_time_elapsed = time.time() - auto_start_time
+        if config["start_position"] != hot_goal:
+            sleep_time = 5 - current_time_elapsed
+            if sleep_time > 0:
+                time.sleep(sleep_time)
 
         first_shot_drive = 18 - config["first_shot"]
         second_shot_drive = 18 - config["second_shot"]

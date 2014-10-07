@@ -17,13 +17,14 @@ class Module(modbase.Module):
         wpilib.SmartDashboard.init()
         self.joystick1 = datastreams.get_stream("joystick1")
         self.joystick2 = datastreams.get_stream("joystick2")
+        self.ultrasonic_stream = datastreams.get_stream("ultrasonic")
         self.autonomous_conf_stream = datastreams.get_stream("autonomous_config")
         events.set_callback("run", self.run, self.name)
         wpilib.SmartDashboard.PutNumber("Auto Routine", 2)
         wpilib.SmartDashboard.PutNumber("1st Shoot Distance", 12)
         wpilib.SmartDashboard.PutNumber("2nd Shoot Distance", 7)
         wpilib.SmartDashboard.PutNumber("Distance from Tape", 3)
-        wpilib.SmartDashboard.PutNumber("Start Position", 0)
+        wpilib.SmartDashboard.PutNumber("Start Position", 1)
 
 
 
@@ -39,6 +40,7 @@ class Module(modbase.Module):
             joy2string = json.dumps(self.joystick2.get(default))
             wpilib.SmartDashboard.PutString("joystick1", joy1string)
             wpilib.SmartDashboard.PutString("joystick2", joy2string)
+            wpilib.SmartDashboard.PutNumber("Ultrasonic Sensor", self.ultrasonic_stream.get(0))
 
             auto_routine = wpilib.SmartDashboard.GetNumber("Auto Routine")
             if auto_routine != last_auto_routine:

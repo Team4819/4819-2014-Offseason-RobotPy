@@ -9,6 +9,7 @@ class Module(modbase.Module):
     def module_load(self):
         self.navigator_config = datastreams.get_stream("navigator.config", True)
         self.navigator_status = datastreams.get_stream("navigator.status", True)
+        self.autonomous_config = datastreams.get_stream("auto_config")
         events.set_callback("autonomous", self.run, self.name)
         events.set_callback("disabled", self.disabled, self.name)
 

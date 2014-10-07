@@ -2,6 +2,7 @@ __author__ = 'christian'
 from framework import modbase, events, datastreams, wpiwrap
 import logging
 import time
+import copy
 
 class Module(modbase.Module):
 
@@ -49,8 +50,8 @@ class Module(modbase.Module):
         while not self.stop_flag:
 
             if not self.values_reset:
-                encoder_value = self.left_encoder.get_rate()
-                if (encoder_value - last_encoder)/.3 > 10:
+                encoder_value = self.left_encoder.get_rate()/360
+                if (encoder_value - last_encoder)/.3 > 40:
                     raise Exception("Encoder is returning a scary value!")
                 gyro_value = self.gyroscope.get()
                 if (gyro_value - last_gyro)/.3 > 400:
@@ -77,18 +78,15 @@ class Module(modbase.Module):
         config = self.default_config
         self.stage = 0
         self.last_encoder = 0
-
         try:
             while self.running and not self.success and not self.stop_flag:
                 config.update(self.config_stream.get(self.default_config))
                 self.position_stream.push((self.current_x, self.current_y), self.name, autolock=True)
-                #TODO get something better here
                 wait_time = 1/config["iter-second"]
-                self.current_y = self.left_encoder.get()
+                self.current_y = self.left_encoder.get()/360
+                starttime = time.clock()
 
-
-
-                self.current_speed_y = self.left_encoder.get_rate()
+                self.current_speed_y = self.left_encoder.get_rate()/360
                 out_x = 0
                 out_y = 0
                 delta_y = config["y-goal"] - self.current_y
@@ -180,7 +178,8 @@ class Module(modbase.Module):
                 self.last_x = self.current_x
                 self.last_y = self.current_y
 
-                time.sleep(wait_time)
+
+                time.sleep((1/config["iter-second"]) - (time.clock() - starttime))
             self.status_stream.push(1, self.name, autolock=True)
         except datastreams.LockError:
             self.status_stream.push(-1, self.name, autolock=True)

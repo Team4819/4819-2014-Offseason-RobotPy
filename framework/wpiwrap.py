@@ -38,12 +38,15 @@ class Refrence:
         self.modulename = modulename
         self.port = port
         if name in refrences:
-            raise Exception("Create Refrence error: refrence already registered under the name " + name)
-        if port in self.portrefs:
-            if self.portrefs[port].__class__.__name__ is self.wpi_object_name:
+            if refrences[name].__class__.__name__ == self.wpi_object_name and refrences[name].port == self.port:
+                self.wpiobject = refrences[name].wpiobject
+            else:
+                raise Exception("Create Refrence error: refrence already registered under the name " + name)
+        elif port in self.portrefs:
+            if self.portrefs[port].__class__.__name__ == self.wpi_object_name:
                 self.wpiobject = self.portrefs[port]
             else:
-                Exception("Create Refrence error: port " + str(port) + " already used with another type of refrence.")
+                raise Exception("Create Refrence error: port " + str(port) + " already used with another type of refrence.")
         else:
             self.init_wpilib_refrence(name, port)
         self.portrefs[port] = self.wpiobject
@@ -127,11 +130,21 @@ class Counter(Refrence):
     portrefs = dioRefs
 
     def init_wpilib_refrence(self, name, port):
-        self.wpiobject = wpilib.Counter(port)
+        self.wpiobject = wpilib.Counter()
+        self.wpiobject.SetUpSource(port)
         self.wpiobject.label = name
 
     def get(self):
         return self.wpiobject.Get()
+
+    def reset(self):
+        return self.wpiobject.Reset()
+
+    def start(self):
+        return self.wpiobject.Start()
+
+    def publish_to_table(self):
+        wpilib.SmartDashboard.PutNumber(self.name, self.get())
 
 
 
@@ -276,14 +289,14 @@ class Encoder(Refrence):
     def get(self):
         value = self.wpiobject.Get()
         if value is None:
-            return 0
-        return value/360
+            value = 0
+        return value
 
     def get_rate(self):
         value = self.wpiobject.GetRate()
         if value is None:
-            return 0
-        return value/360
+            value = 0
+        return value
 
     def reset(self):
         self.wpiobject.Reset()
