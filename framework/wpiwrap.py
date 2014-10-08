@@ -1,5 +1,6 @@
 __author__ = 'christian'
 import time
+import logging
 try:
     import wpilib
 except ImportError:
@@ -246,13 +247,13 @@ class Compressor(Refrence):
             raise Exception("Create Refrence error: refrence already registered under the name " + name)
 
         if switchport in dioRefs:
-            if dioRefs[switchport].__class__.__name__ is "Compressor":
+            if dioRefs[switchport].__class__.__name__ == "Compressor":
                 self.wpiobject = dioRefs[switchport]
             else:
                 Exception("Create Refrence error: port " + str(switchport) + " already used with another type of refrence.")
 
         if relayport in relayRefs:
-            if relayRefs[relayport].__class__.__name__ is "Compressor":
+            if relayRefs[relayport].__class__.__name__ == "Compressor":
                 self.wpiobject = relayRefs[relayport]
             else:
                 Exception("Create Refrence error: port " + str(relayport) + " already used with another type of refrence.")
@@ -298,16 +299,19 @@ class Encoder(Refrence):
         self.wpiobject = None
 
         if name in refrences:
-            raise Exception("Create Refrence error: refrence already registered under the name " + name)
+            if refrences[name].__class__.__name__ == self.wpi_object_name and refrences[name].A_port == self.A_port and refrences[name].B_port == self.B_port:
+                self.wpiobject = refrences[name].wpiobject
+            else:
+                raise Exception("Create Refrence error: refrence already registered under the name " + name)
 
         if A_port in dioRefs:
-            if dioRefs[A_port].__class__.__name__ is "Encoder":
+            if dioRefs[A_port].__class__.__name__ == "Encoder":
                 self.wpiobject = dioRefs[A_port]
             else:
                 Exception("Create Refrence error: port " + str(A_port) + " already used with another type of refrence.")
 
         if B_port in dioRefs:
-            if dioRefs[B_port].__class__.__name__ is "Encoder":
+            if dioRefs[B_port].__class__.__name__ == "Encoder":
                 self.wpiobject = dioRefs[B_port]
             else:
                 Exception("Create Refrence error: port " + str(A_port) + " already used with another type of refrence.")
