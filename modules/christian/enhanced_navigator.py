@@ -19,14 +19,13 @@ class Module(modbase.Module):
         self.default_config.update(self.config_stream.get(dict()))
         self.status_stream = datastreams.get_stream("navigator.status")
         self.position_stream = datastreams.get_stream("position")
-        events.set_callback("run", self.sensor_poll, self.name)
         events.set_callback("disabled", self.stop_drive, self.name)
         events.set_callback("navigator.run", self.do_drive, self.name)
         events.set_callback("navigator.stop", self.stop_drive, self.name)
         events.set_callback("navigator.mark", self.mark, self.name)
-        self.right_encoder = wpiwrap.Encoder("Right Encoder", self.name, 1, 2)
-        self.left_encoder = wpiwrap.Encoder("Left Encoder", self.name, 3, 4)
-        self.gyroscope = wpiwrap.Gyro("Gyroscope", self.name, 2)
+        self.right_encoder = wpiwrap.Encoder("Right Encoder", self.name, 1, 2, 360, 60)
+        self.left_encoder = wpiwrap.Encoder("Left Encoder", self.name, 3, 4, 360, 60)
+        self.gyroscope = wpiwrap.Gyro("Gyroscope", self.name, 2, 400)
         self.current_x = 0
         self.current_y = 0
         self.current_speed_x = 0
@@ -42,33 +41,13 @@ class Module(modbase.Module):
         self.last_accel_y = 0
         self.last_accel_x = 0
         self.stage = 0
-        self.values_reset = False
-
-    def sensor_poll(self):
-        last_gyro = 0
-        last_encoder = 0
-        while not self.stop_flag:
-
-            if not self.values_reset:
-                encoder_value = self.left_encoder.get_rate()/360
-                if (encoder_value - last_encoder)/.3 > 40:
-                    raise Exception("Encoder is returning a scary value!")
-                gyro_value = self.gyroscope.get()
-                if (gyro_value - last_gyro)/.3 > 400:
-                    raise Exception("Gyro is returning a scary value!")
-                last_encoder = encoder_value
-            else:
-                self.values_reset = False
-            last_gyro = gyro_value
-            time.sleep(.3)
 
     def mark(self):
         self.current_x = 0
         self.current_y = 0
-        self.left_encoder.Reset()
-        self.right_encoder.Reset()
-        #self.gyroscope.reset()
-        self.values_reset = True
+        self.left_encoder.reset()
+        self.right_encoder.reset()
+        self.gyroscope.reset()
 
     def do_drive(self):
         self.status_stream.push(0, self.name, autolock=True)
@@ -83,10 +62,10 @@ class Module(modbase.Module):
                 config.update(self.config_stream.get(self.default_config))
                 self.position_stream.push((self.current_x, self.current_y), self.name, autolock=True)
                 wait_time = 1/config["iter-second"]
-                self.current_y = self.left_encoder.get()/360
+                self.current_y = self.left_encoder.get()
                 starttime = time.clock()
 
-                self.current_speed_y = self.left_encoder.get_rate()/360
+                self.current_speed_y = self.left_encoder.get_rate()
                 out_x = 0
                 out_y = 0
                 delta_y = config["y-goal"] - self.current_y

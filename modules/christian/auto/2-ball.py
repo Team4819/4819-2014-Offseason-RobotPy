@@ -29,8 +29,8 @@ class Module(modbase.Module):
     def stop_nav(self):
         events.set_event("navigator.run", self.name, False)
         events.trigger("navigator.stop", self.name)
-        if self.navigator_status.get(1) is -1:
-            raise Exception("Error in navigator execution")
+        #if self.navigator_status.get(1) is -1:
+        #    raise Exception("Error in navigator execution")
 
     def run(self):
         self.stop_flag = False

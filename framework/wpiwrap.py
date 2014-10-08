@@ -1,4 +1,5 @@
 __author__ = 'christian'
+import time
 try:
     import wpilib
 except ImportError:
@@ -26,6 +27,9 @@ def clear_refrences(mod):
 def publish_values():
     for ref in refrences:
         refrences[ref].publish_to_table()
+
+class DeviceInErrorStateError(Exception):
+    pass
 
 class Refrence:
 
@@ -186,19 +190,47 @@ class Solenoid(Refrence):
 class Gyro(Refrence):
     portrefs = analogRefs
     wpi_object_name = "Gyro"
+    error = False
+    last_read_time = 0
+    last_read_val = 0
+    reseting = False
+
+    def __init__(self, name, modulename, port, max_rate):
+        Refrence.__init__(self, name, modulename, port)
+        self.max_rate = max_rate
 
     def init_wpilib_refrence(self, name, port):
         self.wpiobject = wpilib.Gyro(port)
         self.wpiobject.label = name
 
     def get(self):
-        return self.wpiobject.GetAngle()
+        angle = self.wpiobject.GetAngle()
+        current_time = time.time()
+
+        if self.reseting:
+            self.reseting = abs(angle) > 1
+            angle = 0
+
+        if self.last_read_time is not 0 and not self.error and not self.reseting:
+            rate = (angle - self.last_read_val)/(current_time - self.last_read_time)
+            if abs(rate) > self.max_rate:
+                self.error = True
+                raise DeviceInErrorStateError("value: {}, last_value: {}, time: {}, last_time: {}".format(angle, self.last_read_val, current_time, self.last_read_time))
+        self.last_read_time = current_time
+        self.last_read_val = angle
+        if self.error:
+            raise DeviceInErrorStateError()
+        return angle
 
     def reset(self):
         return self.wpiobject.Reset()
+        self.reseting = True
 
     def publish_to_table(self):
-        wpilib.SmartDashboard.PutNumber(self.name, self.get())
+        if not self.error:
+            wpilib.SmartDashboard.PutNumber(self.name, self.get())
+        else:
+            wpilib.SmartDashboard.PutNumber(self.name, 0)
 
 
 class Compressor(Refrence):
@@ -251,11 +283,18 @@ class Compressor(Refrence):
 
 class Encoder(Refrence):
 
-    def __init__(self, name, modulename, A_port, B_port):
+    last_value = 0
+    last_time = 0
+    error = False
+    reseting = False
+
+    def __init__(self, name, modulename, A_port, B_port, tics_per_foot, max_rate):
         self.name = name
         self.modulename = modulename
         self.A_port = A_port
         self.B_port = B_port
+        self.tics_per_foot = float(tics_per_foot)
+        self.max_rate = max_rate
         self.wpiobject = None
 
         if name in refrences:
@@ -290,16 +329,40 @@ class Encoder(Refrence):
         value = self.wpiobject.Get()
         if value is None:
             value = 0
-        return value
+        feet = float(value/self.tics_per_foot)
+        current_time = time.time()
+        if self.reseting:
+            self.reseting = abs(feet) > .5
+            feet = 0
+
+        if self.last_time is not 0 and not self.error and not self.reseting:
+            rate = (feet - self.last_value)/(current_time - self.last_time)
+            if abs(rate) > self.max_rate:
+                self.error = True
+                raise DeviceInErrorStateError("value: {}, last_value: {}, time: {}, last_time: {}".format(feet, self.last_value, current_time, self.last_time))
+
+        self.last_time = current_time
+        self.last_value = feet
+
+        if self.error:
+            raise DeviceInErrorStateError()
+
+        return feet
 
     def get_rate(self):
-        value = self.wpiobject.GetRate()
+        value = self.wpiobject.GetRate()/self.tics_per_foot
         if value is None:
             value = 0
+        if self.error:
+            raise DeviceInErrorStateError()
         return value
 
     def reset(self):
         self.wpiobject.Reset()
+        self.reseting = True
 
     def publish_to_table(self):
-        wpilib.SmartDashboard.PutNumber(self.name, self.get())
+        if not self.error:
+            wpilib.SmartDashboard.PutNumber(self.name, self.get())
+        else:
+            wpilib.SmartDashboard.PutNumber(self.name, 0)
