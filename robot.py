@@ -39,6 +39,7 @@ class RobotTrunk(wpilib.SimpleRobot):
         fh.setFormatter(formatter)
         logging.root.addHandler(fh)
         logging.root.setLevel(logging.INFO)
+        logging.info("Saving logs to " + filesystem.log_file)
 
     def Disabled(self):
         '''Called when the robot is disabled'''
