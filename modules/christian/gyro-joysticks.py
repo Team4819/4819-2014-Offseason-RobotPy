@@ -28,7 +28,7 @@ class Module(modbase.Module):
         self.joy2stream = datastreams.get_stream("joystick2")
         self.gyro = wpiwrap.Gyro("Gyroscope", self.name, 2, 475)
 
-        events.set_callback("enable", self.start, self.name)
+        events.set_callback("run", self.start, self.name)
 
     def start(self):
         while not self.stop_flag:
@@ -57,13 +57,13 @@ class Module(modbase.Module):
             self.buttons["trigger"] = self.stick1.GetRawButton(1)
             self.buttons["highShotSet"] = self.stick1.GetRawButton(2)
             self.buttons["medShotSet"] = self.stick1.GetRawButton(3)
-            self.buttons["lowShotSet"] = self.stick1.GetRawButton(4)
+            self.buttons["lowShotSet"] = self.stick1.GetRawButton(5)
             self.buttons["blowback"] = self.stick1.GetRawButton(8)
             self.buttons["armsUp"] = self.stick2.GetRawButton(3)
             self.buttons["armsDown"] = self.stick2.GetRawButton(2)
             self.buttons["flipper"] = self.stick2.GetRawButton(4)
             self.buttons["modReloader"] = self.stick2.GetRawButton(10)
-            self.buttons["overrideBackup"] = self.stick1.GetRawButton(5)
+            self.buttons["overrideBackup"] = self.stick1.GetRawButton(4)
             self.buttons["gyro_reset"] = self.stick1.GetRawButton(9)
 
 
@@ -94,7 +94,7 @@ class Module(modbase.Module):
             angle = self.gyro.get()
             speed_command = max(abs(joy_x), abs(joy_y))
 
-            direction_command = math.atan2(joy_x, joy_y) * (180/math.pi)
+            direction_command = math.atan2(joy_x, joy_y) * (-180/math.pi)
 
             angle_error = direction_command - angle
 
@@ -104,8 +104,8 @@ class Module(modbase.Module):
             if abs(angle_error) > 100 and not self.buttons["overrideBackup"]:
                 angle_error -= abs(angle_error)/angle_error * 180
                 speed_command = -speed_command
-            clockwise_command = angle_error/45
-            if(abs(speed_command)<0.1):
+            clockwise_command = angle_error/100
+            if(abs(speed_command)<0.2):
                 clockwise_command = 0
 
             self.axes["drive-x"] = clockwise_command

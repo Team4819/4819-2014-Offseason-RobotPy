@@ -24,7 +24,7 @@ class Module(modbase.Module):
         events.set_callback("navigator.stop", self.stop_drive, self.name)
         events.set_callback("navigator.mark", self.mark, self.name)
         self.right_encoder = wpiwrap.Encoder("Right Encoder", self.name, 1, 2, 360, 20)
-        self.left_encoder = wpiwrap.Encoder("Left Encoder", self.name, 3, 4, 360, 20)
+        self.left_encoder = wpiwrap.Encoder("Left Encoder", self.name, 4, 3, 360, 20)
         self.gyroscope = wpiwrap.Gyro("Gyroscope", self.name, 2, 300)
         self.current_x = 0
         self.current_y = 0
