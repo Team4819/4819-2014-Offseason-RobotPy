@@ -32,29 +32,73 @@ def publish_values():
 class DeviceInErrorStateError(Exception):
     pass
 
+class DeviceWatchdog():
+    max_rate = 0
+    last_value = 0
+    last_time = 0
+    last_time_changed = 0
+    reset_at = 0
+    reset_grace = 1
+
+    def __init__(self, max_rate):
+        self.max_rate = max_rate
+        self.reset()
+
+    def sniff(self, value):
+        current_time = time.time()
+        status = True
+        message = ""
+        if value != self.last_value:
+            time_delta = current_time - self.last_time_changed
+            rate = (value - self.last_value)/time_delta
+            status = rate <= self.max_rate
+            if not status:
+                message = "rate exceeded max rate! the rate was {}, and the other values were: max_rate: {}, value: {}, last_value: {}, time_delta: {}".format(rate, self.max_rate, value, self.last_value, time_delta)
+            self.last_time_changed = current_time
+            self.last_value = value
+        if abs(current_time - self.reset_at) < self.reset_grace:
+            status = True
+        return message, status
+
+    def reset(self):
+        self.reset_at = time.time()
+
 class Refrence:
 
     name = ""
-    portrefs = dioRefs
-    wpi_object_name = "DigitalInput"
+    portrefs = [dioRefs]
+    wpi_object_name = wpilib.DigitalInput.__name__
+    status = True
+    statmsg = ""
 
     def __init__(self, name, modulename, port):
         self.name = name
         self.modulename = modulename
-        self.port = port
+        self.get_wpiobject(name, port)
+
+    def get_wpiobject(self, name, *ports):
+        self.ports = ports
+        self.wpiobject = None
+
         if name in refrences:
-            if refrences[name].__class__.__name__ == self.wpi_object_name and refrences[name].port == self.port:
+            if refrences[name].__class__.__name__ == self.__class__.__name__ and refrences[name].ports == self.ports:
                 self.wpiobject = refrences[name].wpiobject
             else:
                 raise Exception("Create Refrence error: refrence already registered under the name " + name)
-        elif port in self.portrefs:
-            if self.portrefs[port].__class__.__name__ == self.wpi_object_name:
-                self.wpiobject = self.portrefs[port]
-            else:
-                raise Exception("Create Refrence error: port " + str(port) + " already used with another type of refrence.")
-        else:
-            self.init_wpilib_refrence(name, port)
-        self.portrefs[port] = self.wpiobject
+
+        for port, refs in zip(ports, self.portrefs):
+            if port in refs:
+                if refs[port].__class__.__name__ == self.wpi_object_name:
+                    self.wpiobject = refs[port]
+                else:
+                    raise Exception("Create Refrence error: port " + str(port) + " already in use with another type of refrence, " + refs[port].__class__.__name__)
+
+        if self.wpiobject is None:
+            self.init_wpilib_refrence(name, *ports)
+
+        for port, refs in zip(ports, self.portrefs):
+            refs[port] = self.wpiobject
+
         refrences[name] = self
 
     def init_wpilib_refrence(self, name, port):
@@ -81,8 +125,8 @@ class Refrence:
 
 class DigitalInput(Refrence):
 
-    wpi_object_name = "DigitalInput"
-    portrefs = dioRefs
+    wpi_object_name = wpilib.DigitalInput.__name__
+    portrefs = [dioRefs]
 
     def init_wpilib_refrence(self, name, port):
         self.wpiobject = wpilib.DigitalInput(port)
@@ -97,8 +141,8 @@ class DigitalInput(Refrence):
 
 class AnalogInput(Refrence):
 
-    wpi_object_name = "AnalogChannel"
-    portrefs = analogRefs
+    wpi_object_name = wpilib.AnalogChannel.__name__
+    portrefs = [analogRefs]
 
     def init_wpilib_refrence(self, name, port):
         self.wpiobject = wpilib.AnalogChannel(port)
@@ -113,8 +157,8 @@ class AnalogInput(Refrence):
 
 class DigitalOutput(Refrence):
 
-    wpi_object_name = "DigitalOutput"
-    portrefs = dioRefs
+    wpi_object_name = wpilib.DigitalOutput.__name__
+    portrefs = [dioRefs]
 
     def init_wpilib_refrence(self, name, port):
         self.wpiobject = wpilib.DigitalOutput(port)
@@ -131,12 +175,13 @@ class DigitalOutput(Refrence):
 
 
 class Counter(Refrence):
-    wpi_object_name = "Counter"
-    portrefs = dioRefs
+    wpi_object_name = wpilib.Counter.__name__
+    portrefs = [dioRefs]
 
     def init_wpilib_refrence(self, name, port):
         self.wpiobject = wpilib.Counter()
         self.wpiobject.SetUpSource(port)
+        self.wpiobject.Start()
         self.wpiobject.label = name
 
     def get(self):
@@ -154,8 +199,8 @@ class Counter(Refrence):
 
 
 class Talon(Refrence):
-    portrefs = pwmRefs
-    wpi_object_name = "Talon"
+    portrefs = [pwmRefs]
+    wpi_object_name = wpilib.Talon.__name__
 
     def init_wpilib_refrence(self, name, port):
         self.wpiobject = wpilib.Talon(port)
@@ -172,8 +217,8 @@ class Talon(Refrence):
 
 
 class Solenoid(Refrence):
-    portrefs = solenoidRefs
-    wpi_object_name = "Solenoid"
+    portrefs = [solenoidRefs]
+    wpi_object_name = wpilib.Solenoid.__name__
 
     def init_wpilib_refrence(self, name, port):
         self.wpiobject = wpilib.Solenoid(port)
@@ -189,16 +234,16 @@ class Solenoid(Refrence):
         wpilib.SmartDashboard.PutBoolean(self.name, self.wpiobject.Get())
 
 class Gyro(Refrence):
-    portrefs = analogRefs
-    wpi_object_name = "Gyro"
-    error = False
+    portrefs = [analogRefs]
+    wpi_object_name = wpilib.Gyro.__name__
     last_read_time = 0
     last_read_val = 0
-    reseting = False
 
     def __init__(self, name, modulename, port, max_rate):
-        Refrence.__init__(self, name, modulename, port)
-        self.max_rate = max_rate
+        self.name = name
+        self.modulename = modulename
+        self.dog = DeviceWatchdog(max_rate)
+        self.get_wpiobject(name, port)
 
     def init_wpilib_refrence(self, name, port):
         self.wpiobject = wpilib.Gyro(port)
@@ -206,29 +251,19 @@ class Gyro(Refrence):
 
     def get(self):
         angle = self.wpiobject.GetAngle()
-        current_time = time.time()
+        self.statmsg, self.status = self.dog.sniff(angle)
 
-        if self.reseting:
-            self.reseting = abs(angle) > 1
-            angle = 0
-
-        if self.last_read_time is not 0 and not self.error and not self.reseting:
-            rate = (angle - self.last_read_val)/(current_time - self.last_read_time)
-            if abs(rate) > self.max_rate:
-                self.error = True
-                raise DeviceInErrorStateError("value: {}, last_value: {}, time: {}, last_time: {}".format(angle, self.last_read_val, current_time, self.last_read_time))
-        self.last_read_time = current_time
-        self.last_read_val = angle
-        if self.error:
-            raise DeviceInErrorStateError()
-        return angle
+        if not self.status:
+            raise DeviceInErrorStateError(self.statmsg)
+        else:
+            return angle
 
     def reset(self):
+        self.dog.reset()
         return self.wpiobject.Reset()
-        self.reseting = True
 
     def publish_to_table(self):
-        if not self.error:
+        if self.status:
             wpilib.SmartDashboard.PutNumber(self.name, self.get())
         else:
             wpilib.SmartDashboard.PutNumber(self.name, 0)
@@ -236,34 +271,13 @@ class Gyro(Refrence):
 
 class Compressor(Refrence):
 
+    wpi_object_name = wpilib.Compressor.__name__
+    portrefs = [dioRefs, relayRefs]
+
     def __init__(self, name, modulename, switchport, relayport):
         self.name = name
         self.modulename = modulename
-        self.relayport = relayport
-        self.switchport = switchport
-        self.wpiobject = None
-
-        if name in refrences:
-            raise Exception("Create Refrence error: refrence already registered under the name " + name)
-
-        if switchport in dioRefs:
-            if dioRefs[switchport].__class__.__name__ == "Compressor":
-                self.wpiobject = dioRefs[switchport]
-            else:
-                Exception("Create Refrence error: port " + str(switchport) + " already used with another type of refrence.")
-
-        if relayport in relayRefs:
-            if relayRefs[relayport].__class__.__name__ == "Compressor":
-                self.wpiobject = relayRefs[relayport]
-            else:
-                Exception("Create Refrence error: port " + str(relayport) + " already used with another type of refrence.")
-
-        if self.wpiobject is None:
-            self.init_wpilib_refrence(name, switchport, relayport)
-
-        relayRefs[relayport] = self.wpiobject
-        dioRefs[switchport] = self.wpiobject
-        refrences[name] = self
+        self.get_wpiobject(name, switchport, relayport)
 
     def init_wpilib_refrence(self, name, switch, relay):
         self.wpiobject = wpilib.Compressor(switch, relay)
@@ -284,44 +298,16 @@ class Compressor(Refrence):
 
 class Encoder(Refrence):
 
-    last_value = 0
-    last_time = 0
-    error = False
-    reseting = False
+    portrefs = [dioRefs, dioRefs]
+    wpi_object_name = wpilib.Encoder.__name__
 
     def __init__(self, name, modulename, A_port, B_port, tics_per_foot, max_rate):
         self.name = name
         self.modulename = modulename
-        self.A_port = A_port
-        self.B_port = B_port
-        self.tics_per_foot = float(tics_per_foot)
-        self.max_rate = max_rate
-        self.wpiobject = None
+        self.tics_per_foot = tics_per_foot
+        self.dog = DeviceWatchdog(max_rate)
+        self.get_wpiobject(name, A_port, B_port)
 
-        if name in refrences:
-            if refrences[name].__class__.__name__ == self.wpi_object_name and refrences[name].A_port == self.A_port and refrences[name].B_port == self.B_port:
-                self.wpiobject = refrences[name].wpiobject
-            else:
-                raise Exception("Create Refrence error: refrence already registered under the name " + name)
-
-        if A_port in dioRefs:
-            if dioRefs[A_port].__class__.__name__ == "Encoder":
-                self.wpiobject = dioRefs[A_port]
-            else:
-                Exception("Create Refrence error: port " + str(A_port) + " already used with another type of refrence.")
-
-        if B_port in dioRefs:
-            if dioRefs[B_port].__class__.__name__ == "Encoder":
-                self.wpiobject = dioRefs[B_port]
-            else:
-                Exception("Create Refrence error: port " + str(A_port) + " already used with another type of refrence.")
-
-        if self.wpiobject is None:
-            self.init_wpilib_refrence(name, A_port, B_port)
-
-        dioRefs[A_port] = self.wpiobject
-        dioRefs[B_port] = self.wpiobject
-        refrences[name] = self
 
     def init_wpilib_refrence(self, name, A_port, B_port):
         self.wpiobject = wpilib.Encoder(A_port, B_port)
@@ -334,39 +320,28 @@ class Encoder(Refrence):
         if value is None:
             value = 0
         feet = float(value/self.tics_per_foot)
-        current_time = time.time()
-        if self.reseting:
-            self.reseting = abs(feet) > .5
-            feet = 0
+        self.statmsg, self.status = self.dog.sniff(feet)
 
-        if self.last_time is not 0 and not self.error and not self.reseting:
-            rate = (feet - self.last_value)/(current_time - self.last_time)
-            if abs(rate) > self.max_rate:
-                self.error = True
-                raise DeviceInErrorStateError("value: {}, last_value: {}, time: {}, last_time: {}".format(feet, self.last_value, current_time, self.last_time))
-
-        self.last_time = current_time
-        self.last_value = feet
-
-        if self.error:
-            raise DeviceInErrorStateError()
-
-        return feet
+        if not self.status:
+            raise DeviceInErrorStateError(self.statmsg)
+        else:
+            return feet
 
     def get_rate(self):
         value = self.wpiobject.GetRate()/self.tics_per_foot
         if value is None:
             value = 0
-        if self.error:
-            raise DeviceInErrorStateError()
-        return value
+        if not self.status:
+            raise DeviceInErrorStateError(self.statmsg)
+        else:
+            return value
 
     def reset(self):
         self.wpiobject.Reset()
-        self.reseting = True
+        self.dog.reset()
 
     def publish_to_table(self):
-        if not self.error:
+        if self.status:
             wpilib.SmartDashboard.PutNumber(self.name, self.get())
         else:
             wpilib.SmartDashboard.PutNumber(self.name, 0)

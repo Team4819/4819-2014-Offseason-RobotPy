@@ -23,9 +23,9 @@ class Module(modbase.Module):
         events.set_callback("navigator.run", self.do_drive, self.name)
         events.set_callback("navigator.stop", self.stop_drive, self.name)
         events.set_callback("navigator.mark", self.mark, self.name)
-        self.right_encoder = wpiwrap.Encoder("Right Encoder", self.name, 1, 2, 360, 60)
-        self.left_encoder = wpiwrap.Encoder("Left Encoder", self.name, 3, 4, 360, 60)
-        self.gyroscope = wpiwrap.Gyro("Gyroscope", self.name, 2, 400)
+        self.right_encoder = wpiwrap.Encoder("Right Encoder", self.name, 1, 2, 360, 20)
+        self.left_encoder = wpiwrap.Encoder("Left Encoder", self.name, 3, 4, 360, 20)
+        self.gyroscope = wpiwrap.Gyro("Gyroscope", self.name, 2, 300)
         self.current_x = 0
         self.current_y = 0
         self.current_speed_x = 0
@@ -160,7 +160,8 @@ class Module(modbase.Module):
 
                 time.sleep((1/config["iter-second"]) - (time.clock() - starttime))
             self.status_stream.push(1, self.name, autolock=True)
-        except datastreams.LockError:
+        except datastreams.LockError as e:
+            logging.error(e)
             self.status_stream.push(-1, self.name, autolock=True)
 
     def stop_drive(self):

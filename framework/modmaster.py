@@ -81,6 +81,7 @@ def reload_mods():
             logging.error("Error reloading module: " + key + ": " + str(e) + "\n" + traceback.format_exc())
 
 
+
 #   This is my solution to the threads that would not die!
 class GrimReaper(threading.Thread):
     timer = 0
@@ -89,7 +90,7 @@ class GrimReaper(threading.Thread):
         super().__init__()
 
     def run(self):
-        while self.timer < 4:
+        while self.timer < 6:
             self.timer += 1
             if self.timer > 2:
                 logging.info("The Reaper is coming!")

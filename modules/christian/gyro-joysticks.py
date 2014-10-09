@@ -17,7 +17,7 @@ class Module(modbase.Module):
     def module_load(self):
         self.stick1 = wpilib.Joystick(1)
         self.stick2 = wpilib.Joystick(2)
-        self.buttons = {"trigger": False, "highShotSet": False, "medShotSet": False, "lowShotSet": False, "blowback": False, "armsUp": False, "armsDown": False, "flipper": False, "modReloader": True}
+        self.buttons = {"trigger": False, "highShotSet": False, "medShotSet": False, "lowShotSet": False, "blowback": False, "armsUp": False, "armsDown": False, "flipper": False, "modReloader": True, "gyro_reset": False}
         self.axes = {"intake": 0, "drive-x": 0, "drive-y": 0}
         self.drivestream = datastreams.get_stream("drive")
         self.intakestream = datastreams.get_stream("intake")
@@ -26,9 +26,9 @@ class Module(modbase.Module):
         self.blowbackstream = datastreams.get_stream("blowback")
         self.joy1stream = datastreams.get_stream("joystick1")
         self.joy2stream = datastreams.get_stream("joystick2")
-        self.gyro = wpiwrap.Gyro("Gyroscope", self.name, 2, 600)
+        self.gyro = wpiwrap.Gyro("Gyroscope", self.name, 2, 475)
 
-        events.set_callback("run", self.start, self.name)
+        events.set_callback("enable", self.start, self.name)
 
     def start(self):
         while not self.stop_flag:
@@ -58,12 +58,14 @@ class Module(modbase.Module):
             self.buttons["highShotSet"] = self.stick1.GetRawButton(2)
             self.buttons["medShotSet"] = self.stick1.GetRawButton(3)
             self.buttons["lowShotSet"] = self.stick1.GetRawButton(4)
-            self.buttons["blowback"] = self.stick1.GetRawButton(10)
+            self.buttons["blowback"] = self.stick1.GetRawButton(8)
             self.buttons["armsUp"] = self.stick2.GetRawButton(3)
             self.buttons["armsDown"] = self.stick2.GetRawButton(2)
             self.buttons["flipper"] = self.stick2.GetRawButton(4)
             self.buttons["modReloader"] = self.stick2.GetRawButton(10)
             self.buttons["overrideBackup"] = self.stick1.GetRawButton(5)
+            self.buttons["gyro_reset"] = self.stick1.GetRawButton(9)
+
 
             if self.buttons["modReloader"] and not last_buttons["modReloader"]:
                 modmaster.reload_mods()
@@ -79,6 +81,10 @@ class Module(modbase.Module):
 
             if self.buttons["armsUp"] and not last_buttons["armsUp"]:
                 self.armsstream.push(False, self.name, autolock=True)
+
+            if self.buttons["gyro_reset"] and not last_buttons["gyro_reset"]:
+                self.gyro.reset()
+
 
             #Get Axis values and threshold
             last_axis = copy.copy(self.axes)

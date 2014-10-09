@@ -5,6 +5,7 @@
 
 from pyfrc import wpilib
 from pyfrc.physics import drivetrains
+import math
 
 
 class PhysicsEngine(object):
@@ -21,9 +22,6 @@ class PhysicsEngine(object):
     def __init__(self, physics_controller):
 
         self.physics_controller = physics_controller
-
-        self.position = 0
-        self.last_distance = 0
         self.last_tm = None
 
 
@@ -43,15 +41,15 @@ class PhysicsEngine(object):
         l_encoder = wpilib.DigitalModule._io[0]
         r_encoder = wpilib.DigitalModule._io[2]
 
-        distance_traveled = (self.physics_controller.get_position()[0]*360) - self.last_distance
-        rate = -(distance_traveled)/tm_diff
+        l_enc_disp = -l_motor.Get() * 5 * 360 * tm_diff
+        r_enc_disp = r_motor.Get() * 5 * 360 * tm_diff
+
         if l_encoder is not None:
             if l_encoder.value is not None:
-                l_encoder.value -= distance_traveled
-                l_encoder.rate = rate
-                r_encoder.value -= distance_traveled
-                r_encoder.rate = rate
-        self.last_distance += distance_traveled
+                l_encoder.value += l_enc_disp
+                l_encoder.rate = l_enc_disp/tm_diff
+                r_encoder.value += r_enc_disp
+                r_encoder.rate = r_enc_disp/tm_diff
 
         if l_motor is not None:
             speed, rotation = drivetrains.two_motor_drivetrain(-l_motor.Get(), -r_motor.Get())
