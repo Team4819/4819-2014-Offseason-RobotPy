@@ -63,7 +63,7 @@ class Module(modbase.Module):
                 self.position_stream.push((self.current_x, self.current_y), self.name, autolock=True)
                 wait_time = 1/config["iter-second"]
                 self.current_y = self.left_encoder.get()
-                starttime = time.clock()
+                starttime = time.time()
 
                 self.current_speed_y = self.left_encoder.get_rate()
                 out_x = 0
@@ -158,7 +158,7 @@ class Module(modbase.Module):
                 self.last_y = self.current_y
 
 
-                time.sleep((1/config["iter-second"]) - (time.clock() - starttime))
+                time.sleep((1/config["iter-second"]) - (time.time() - starttime))
             self.status_stream.push(1, self.name, autolock=True)
         except datastreams.LockError as e:
             logging.error(e)

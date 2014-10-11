@@ -117,7 +117,7 @@ class ModWrapper:
     def call_wrap(self, func):
         id = self.funcid_current
         self.funcid_current = self.funcid_current + 1
-        obj = {"name": func.__name__, "starttime": time.clock()}
+        obj = {"name": func.__name__, "starttime": time.time()}
         self.runningEvents[id] = obj
         try:
             func()

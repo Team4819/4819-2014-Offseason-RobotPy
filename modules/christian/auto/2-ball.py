@@ -50,8 +50,8 @@ class Module(modbase.Module):
         self.navigator_config.push({"mode": 2, "y-goal": config["distance_from_tape"], "max-speed": 2, "acceleration": 2, "iter-second": 10}, self.name, autolock=True)
         events.set_event("navigator.run", self.name, True)
         time.sleep(.2)
-        start_time = time.clock()
-        while not self.stop_flag and self.navigator_status.get(1) is 0 and time.clock() - start_time < 5 and self.light_sensor_stream.get(1.5) < 2.5:
+        start_time = time.time()
+        while not self.stop_flag and self.navigator_status.get(1) is 0 and time.time() - start_time < 5 and self.light_sensor_stream.get(1.5) < 2.5:
             time.sleep(.5)
         if self.stop_flag: return
         self.stop_nav()
@@ -71,9 +71,9 @@ class Module(modbase.Module):
         events.trigger("navigator.mark", self.name)
         self.navigator_config.push({"mode": 2, "y-goal": second_shot_drive, "max-speed": 5, "acceleration": 3, "iter-second": 10}, self.name, autolock=True)
         events.set_event("navigator.run", self.name, True)
-        start_time = time.clock()
+        start_time = time.time()
         pos = self.position_stream.get((0, 0))
-        while not self.stop_flag and self.navigator_status.get(1) is 0 and time.clock() - start_time < 5 and abs(pos[1] - first_shot_drive) > 1:
+        while not self.stop_flag and self.navigator_status.get(1) is 0 and time.time() - start_time < 5 and abs(pos[1] - first_shot_drive) > 1:
             pos = self.position_stream.get((0, 0))
             time.sleep(.2)
         if self.stop_flag: return
@@ -88,7 +88,7 @@ class Module(modbase.Module):
         self.intake_stream.push(.5, self.name, True)
 
         #Wait for finish of drive arc
-        while not self.stop_flag and self.navigator_status.get(1) is 0 and time.clock() - start_time < 7:
+        while not self.stop_flag and self.navigator_status.get(1) is 0 and time.time() - start_time < 7:
             time.sleep(.5)
         if self.stop_flag: return
         self.stop_nav()

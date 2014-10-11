@@ -67,9 +67,9 @@ class Module(modbase.Module):
         events.trigger("navigator.mark", self.name)
         self.navigator_config.push({"mode": 1, "y-goal": shot_drive + 1, "max-speed": 5, "acceleration": 15, "iter-second": 10, "make-up": 1.5}, self.name, autolock=True)
         events.set_event("navigator.run", self.name, True)
-        start_time = time.clock()
+        start_time = time.time()
         pos = self.position_stream.get((0, 0))
-        while not self.stop_flag and self.navigator_status.get(1) is 0 and time.clock() - start_time < 5 and abs(pos[1] - shot_drive) > 1:
+        while not self.stop_flag and self.navigator_status.get(1) is 0 and time.time() - start_time < 5 and abs(pos[1] - shot_drive) > 1:
             pos = self.position_stream.get((0, 0))
             if self.stop_flag:
                 return

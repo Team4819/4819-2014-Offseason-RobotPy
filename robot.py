@@ -30,10 +30,6 @@ except ImportError:
 
 class RobotTrunk(wpilib.SimpleRobot):
 
-    def check_restart(self):
-        if self.joystick1.GetRawButton(10):
-            raise Exception("Restart requested, raising the white flag!")
-
     def __init__(self):
         super().__init__()
         self.joystick1 = wpilib.Joystick(1)
@@ -64,7 +60,6 @@ class RobotTrunk(wpilib.SimpleRobot):
         events.set_event("disabled", "RobotTrunk", True)
         while self.IsDisabled():
             self.reaper.delay_death()
-            self.check_restart()
             wpilib.Wait(0.1)
         events.set_event("disabled", "RobotTrunk", False)
 
@@ -75,7 +70,6 @@ class RobotTrunk(wpilib.SimpleRobot):
         events.set_event("autonomous", "RobotTrunk", True)
         while self.IsAutonomous() and self.IsEnabled():
             self.reaper.delay_death()
-            self.check_restart()
             wpilib.Wait(0.1)
         events.set_event("enabled", "RobotTrunk", False)
         events.set_event("autonomous", "RobotTrunk", False)
@@ -86,7 +80,6 @@ class RobotTrunk(wpilib.SimpleRobot):
         events.set_event("teleoperated", "RobotTrunk", True)
         while self.IsOperatorControl() and self.IsEnabled():
             self.reaper.delay_death()
-            self.check_restart()
             wpilib.Wait(0.04)
         events.set_event("enabled", "RobotTrunk", False)
         events.set_event("teleoperated", "RobotTrunk", False)

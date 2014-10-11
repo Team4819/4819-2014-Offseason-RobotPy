@@ -24,7 +24,7 @@ def replay_recording(recpath="latest"):
 
     global starttime
     logging.info("Playing recording at " + recpath)
-    starttime = time.clock()
+    starttime = time.time()
     threading.Thread(target=replay_datastreams, args={os.path.join(recpath, "datastreams")}).start()
     threading.Thread(target=replay_events, args={os.path.join(recpath, "events.rec")}).start()
 
@@ -57,7 +57,7 @@ def replay_datastreams(datastreampath):
         stream_handles[stream] = datastreams.get_stream(stream)
 
     while not finished:
-        timestamp = time.clock() - starttime
+        timestamp = time.time() - starttime
         finished = True
         for stream in parsed_streams:
             if len(parsed_streams[stream]) is 0:
@@ -92,7 +92,7 @@ def replay_events(eventsfile):
     logging.info("Parsed events file " + eventsfile)
     #do it
     while not finished:
-        timestamp = time.clock() - starttime
+        timestamp = time.time() - starttime
         if len(parsed_events) is 0:
             finished = True
             continue

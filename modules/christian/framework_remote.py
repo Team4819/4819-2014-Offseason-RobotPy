@@ -11,6 +11,8 @@ try:
 except ImportError:
     from pyfrc import wpilib
 
+#import pynetworktables as wpilib
+
 class Module(modbase.Module):
     name = "remote"
     index = 1
@@ -18,22 +20,33 @@ class Module(modbase.Module):
     def module_load(self):
         events.set_callback("run", self.run, self.name)
         wpilib.SmartDashboard.init()
-        wpilib.SmartDashboard.PutString("frameworkcommands", "{}")
+        self.table = wpilib.NetworkTable.GetTable("framework_remote")
+        self.table.PutString("frameworkcommands", "{}")
 
     def run(self):
         while not self.stop_flag:
             modnames = modmaster.list_modules()
-            modsummary = list()
+            self.table.PutString("modlist", json.dumps(modnames))
             for name in modnames:
                 mod = modmaster.get_mod(name)
-                modsummary.append({"name": mod.name, "filename": mod.filename, "runningTasks": mod.runningEvents})
-            wpilib.SmartDashboard.PutString("modulesummary", json.dumps(modsummary))
+                modsummary = {"name": mod.name, "filename": mod.filename, "runningTasks": mod.runningEvents, "fallbackList": mod.modlist}
+                self.table.PutString("mod." + name, json.dumps(modsummary))
 
-            commandsString = wpilib.SmartDashboard.GetString("frameworkcommands")
+            try:
+                remoteindex = self.table.GetNumber("globalCommandIndex")
+                if self.index < remoteindex:
+                    self.index = remoteindex
+            except wpilib.TableKeyNotDefinedException:
+                pass
+
+            commandsString = self.table.GetString("frameworkcommands")
             if not commandsString == "{}":
                 commands = json.loads(commandsString)
                 for command in commands:
                     if int(command) >= self.index:
+                        self.index = int(command) + 1
+                        print(self.index)
+                        self.table.PutNumber("globalCommandIndex", self.index)
                         try:
                             if commands[command]["command"] == "reload module":
                                 modmaster.get_mod(commands[command]["target"]).reload()
@@ -45,7 +58,7 @@ class Module(modbase.Module):
                                 logging.error("Framework Remote: No such command - " + commands[command]["command"])
                         except Exception as e:
                             logging.error("Error running command: " + commands[command]["command"] + ": " + str(e) + "\n" + traceback.format_exc())
-                        self.index = int(command) + 1
+
 
 
             time.sleep(.1)

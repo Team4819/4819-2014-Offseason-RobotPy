@@ -41,17 +41,17 @@ class PhysicsEngine(object):
         l_encoder = wpilib.DigitalModule._io[0]
         r_encoder = wpilib.DigitalModule._io[2]
 
-        l_enc_disp = -l_motor.Get() * 5 * 360 * tm_diff
-        r_enc_disp = r_motor.Get() * 5 * 360 * tm_diff
-
-        if l_encoder is not None:
-            if l_encoder.value is not None:
-                l_encoder.value += l_enc_disp
-                l_encoder.rate = l_enc_disp/tm_diff
-                r_encoder.value += r_enc_disp
-                r_encoder.rate = r_enc_disp/tm_diff
-
         if l_motor is not None:
+            l_enc_disp = -l_motor.Get() * 5 * 360 * tm_diff
+            r_enc_disp = r_motor.Get() * 5 * 360 * tm_diff
+
+            if l_encoder is not None:
+                if l_encoder.value is not None:
+                    l_encoder.value += l_enc_disp
+                    l_encoder.rate = l_enc_disp/tm_diff
+                    r_encoder.value += r_enc_disp
+                    r_encoder.rate = r_enc_disp/tm_diff
+
             speed, rotation = drivetrains.two_motor_drivetrain(-l_motor.Get(), -r_motor.Get())
             self.physics_controller.drive(speed, rotation, tm_diff)
 
