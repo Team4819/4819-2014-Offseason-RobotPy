@@ -39,7 +39,7 @@ class Module(modbase.Module):
 
         #Drive to line
         events.trigger("navigator.mark", self.name)
-        self.navigator_config.push({"mode": 2, "y-goal": config["distance_from_tape"], "max-speed": 5, "acceleration": 5, "iter-second": 10, "make-up": 1.5}, self.name, autolock=True)
+        self.navigator_config.push({"mode": 1, "y-goal": config["distance_from_tape"], "max-speed": 3, "acceleration": 5, "iter-second": 10, "make-up": 1.5, "precision": .1}, self.name, autolock=True)
         events.set_event("navigator.run", self.name, True)
         time.sleep(.2)
         start_time = time.time()

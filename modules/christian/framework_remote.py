@@ -61,4 +61,4 @@ class Module(modbase.Module):
 
 
 
-            time.sleep(.1)
+            time.sleep(.5)

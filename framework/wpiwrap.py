@@ -181,6 +181,8 @@ class Counter(Refrence):
     def init_wpilib_refrence(self, name, port):
         self.wpiobject = wpilib.Counter()
         self.wpiobject.SetUpSource(port)
+        self.wpiobject.SetSemiPeriodMode(True)
+        #self.wpiobject.SetUpSourceEdge(port, False)
         self.wpiobject.Start()
         self.wpiobject.label = name
 

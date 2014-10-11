@@ -62,10 +62,10 @@ class Module(modbase.Module):
                 config.update(self.config_stream.get(self.default_config))
                 self.position_stream.push((self.current_x, self.current_y), self.name, autolock=True)
                 wait_time = 1/config["iter-second"]
-                self.current_y = self.left_encoder.get()
+                self.current_y = self.right_encoder.get()
                 starttime = time.time()
 
-                self.current_speed_y = self.left_encoder.get_rate()
+                self.current_speed_y = self.right_encoder.get_rate()
                 out_x = 0
                 out_y = 0
                 delta_y = config["y-goal"] - self.current_y
@@ -146,7 +146,7 @@ class Module(modbase.Module):
                     out_x = 0
                     out_y = 0
 
-                self.drive_stream.push((out_x, out_y), self.name)
+                self.drive_stream.push((out_x, -out_y), self.name)
 
                 self.last_out_y = out_y
                 self.last_out_x = out_x
