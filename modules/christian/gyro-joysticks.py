@@ -11,7 +11,7 @@ __author__ = 'christian'
 
 class Module(modbase.Module):
 
-    name = "controls"
+    subsystem = "controls"
 
 
     def module_load(self):
@@ -26,9 +26,9 @@ class Module(modbase.Module):
         self.blowbackstream = datastreams.get_stream("blowback")
         self.joy1stream = datastreams.get_stream("joystick1")
         self.joy2stream = datastreams.get_stream("joystick2")
-        self.gyro = wpiwrap.Gyro("Gyroscope", self.name, 2, 475)
+        self.gyro = wpiwrap.Gyro("Gyroscope", self.subsystem, 2, 475)
 
-        events.set_callback("run", self.start, self.name)
+        events.set_callback("run", self.start, self.subsystem)
 
     def start(self):
         while not self.stop_flag:
@@ -40,14 +40,14 @@ class Module(modbase.Module):
             joy1axes = list()
             for i in range(1,4):
                 joy1axes.append(self.stick1.GetRawAxis(i))
-            self.joy1stream.push({"buttons": joy1buttons, "axes": joy1axes}, self.name, autolock=True)
+            self.joy1stream.push({"buttons": joy1buttons, "axes": joy1axes}, self.subsystem, autolock=True)
             joy2buttons = list()
             for i in range(1,10):
                 joy2buttons.append(self.stick2.GetRawButton(i))
             joy2axes = list()
             for i in range(1,4):
                 joy2axes.append(self.stick2.GetRawAxis(i))
-            self.joy2stream.push({"buttons": joy2buttons, "axes": joy2axes}, self.name, autolock=True)
+            self.joy2stream.push({"buttons": joy2buttons, "axes": joy2axes}, self.subsystem, autolock=True)
 
 
 
@@ -71,16 +71,16 @@ class Module(modbase.Module):
                 modmaster.reload_mods()
 
             if self.buttons["flipper"] is not last_buttons["flipper"]:
-                self.flipperstream.push(self.buttons["flipper"], self.name, autolock=True)
+                self.flipperstream.push(self.buttons["flipper"], self.subsystem, autolock=True)
 
             if self.buttons["blowback"] is not last_buttons["blowback"]:
-                self.blowbackstream.push(self.buttons["blowback"], self.name, autolock=True)
+                self.blowbackstream.push(self.buttons["blowback"], self.subsystem, autolock=True)
 
             if self.buttons["armsDown"] and not last_buttons["armsDown"]:
-                self.armsstream.push(True, self.name, autolock=True)
+                self.armsstream.push(True, self.subsystem, autolock=True)
 
             if self.buttons["armsUp"] and not last_buttons["armsUp"]:
-                self.armsstream.push(False, self.name, autolock=True)
+                self.armsstream.push(False, self.subsystem, autolock=True)
 
             if self.buttons["gyro_reset"] and not last_buttons["gyro_reset"]:
                 self.gyro.reset()
@@ -117,19 +117,19 @@ class Module(modbase.Module):
 
             #Push to data streams
             if not self.axes["drive-x"] == last_axis["drive-x"] or not self.axes["drive-y"] == last_axis["drive-y"]:
-                self.drivestream.push((self.axes["drive-x"], self.axes["drive-y"]), self.name, autolock=True)
+                self.drivestream.push((self.axes["drive-x"], self.axes["drive-y"]), self.subsystem, autolock=True)
             if not self.axes["intake"] == last_axis["intake"]:
-                self.intakestream.push(self.axes["intake"], self.name, autolock=True)
+                self.intakestream.push(self.axes["intake"], self.subsystem, autolock=True)
 
 
             #Shoot events:
             if self.buttons["trigger"] and not last_buttons["trigger"]:
                 if self.buttons["highShotSet"]:
-                    events.trigger("highShot", self.name)
+                    events.trigger("highShot", self.subsystem)
                 elif self.buttons["medShotSet"]:
-                    events.trigger("medShot", self.name)
+                    events.trigger("medShot", self.subsystem)
                 elif self.buttons["lowShotSet"]:
-                    events.trigger("lowShot", self.name)
+                    events.trigger("lowShot", self.subsystem)
 
             time.sleep(.025)
 

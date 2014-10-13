@@ -3,7 +3,7 @@ __author__ = 'christian'
 
 class Module(object):
 
-    name = "generic"
+    subsystem = "generic"
     stop_flag = False
 
     def module_load(self):

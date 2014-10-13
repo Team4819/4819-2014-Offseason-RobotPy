@@ -14,11 +14,11 @@ except ImportError:
 #import pynetworktables as wpilib
 
 class Module(modbase.Module):
-    name = "remote"
+    subsystem = "remote"
     index = 1
 
     def module_load(self):
-        events.set_callback("run", self.run, self.name)
+        events.set_callback("run", self.run, self.subsystem)
         wpilib.SmartDashboard.init()
         self.table = wpilib.NetworkTable.GetTable("framework_remote")
         self.table.PutString("frameworkcommands", "{}")
@@ -29,7 +29,7 @@ class Module(modbase.Module):
             self.table.PutString("modlist", json.dumps(modnames))
             for name in modnames:
                 mod = modmaster.get_mod(name)
-                modsummary = {"name": mod.name, "filename": mod.filename, "runningTasks": mod.runningEvents, "fallbackList": mod.modlist}
+                modsummary = {"name": mod.subsystem, "filename": mod.filename, "runningTasks": mod.running_events, "fallbackList": mod.fallback_list}
                 self.table.PutString("mod." + name, json.dumps(modsummary))
 
             try:
@@ -49,7 +49,7 @@ class Module(modbase.Module):
                         self.table.PutNumber("globalCommandIndex", self.index)
                         try:
                             if commands[command]["command"] == "reload module":
-                                modmaster.get_mod(commands[command]["target"]).reload()
+                                modmaster.get_mod(commands[command]["target"]).load()
                             elif commands[command]["command"] == "unload module":
                                 modmaster.unload_mod(commands[command]["target"])
                             elif commands[command]["command"] == "load module":

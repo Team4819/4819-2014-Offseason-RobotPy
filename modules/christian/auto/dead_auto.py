@@ -4,7 +4,7 @@ from framework import modbase
 
 class Module(modbase.Module):
 
-    name = "autonomous"
+    subsystem = "autonomous"
 
 
     def module_load(self):

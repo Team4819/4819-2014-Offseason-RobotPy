@@ -4,11 +4,11 @@ from framework import modbase, events
 
 
 class Module(modbase.Module):
-    name = "test1"
+    subsystem = "test1"
     index = 1
 
     def set_callback(self):
-        events.set_callback("test", self.callback, self.name)
+        events.set_callback("test", self.callback, self.subsystem)
 
     def callback(self):
         self.index += 1

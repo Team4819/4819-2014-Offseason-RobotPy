@@ -3,7 +3,7 @@ __author__ = 'christian'
 from framework import modbase, datastreams
 
 class Module(modbase.Module):
-    name = "test1"
+    subsystem = "test1"
 
     def module_load(self):
         self.streamData = "blank"

@@ -6,7 +6,7 @@ import copy
 
 class Module(modbase.Module):
 
-    name = "navigator"
+    subsystem = "navigator"
 
 
 
@@ -19,13 +19,13 @@ class Module(modbase.Module):
         self.default_config.update(self.config_stream.get(dict()))
         self.status_stream = datastreams.get_stream("navigator.status")
         self.position_stream = datastreams.get_stream("position")
-        events.set_callback("disabled", self.stop_drive, self.name)
-        events.set_callback("navigator.run", self.do_drive, self.name)
-        events.set_callback("navigator.stop", self.stop_drive, self.name)
-        events.set_callback("navigator.mark", self.mark, self.name)
-        self.right_encoder = wpiwrap.Encoder("Right Encoder", self.name, 1, 2, 360, 20)
-        self.left_encoder = wpiwrap.Encoder("Left Encoder", self.name, 4, 3, 360, 20)
-        self.gyroscope = wpiwrap.Gyro("Gyroscope", self.name, 2, 300)
+        events.set_callback("disabled", self.stop_drive, self.subsystem)
+        events.set_callback("navigator.run", self.do_drive, self.subsystem)
+        events.set_callback("navigator.stop", self.stop_drive, self.subsystem)
+        events.set_callback("navigator.mark", self.mark, self.subsystem)
+        self.right_encoder = wpiwrap.Encoder("Right Encoder", self.subsystem, 1, 2, 360, 20)
+        self.left_encoder = wpiwrap.Encoder("Left Encoder", self.subsystem, 4, 3, 360, 20)
+        self.gyroscope = wpiwrap.Gyro("Gyroscope", self.subsystem, 2, 300)
         self.current_x = 0
         self.current_y = 0
         self.current_speed_x = 0
@@ -50,8 +50,8 @@ class Module(modbase.Module):
         self.gyroscope.reset()
 
     def do_drive(self):
-        self.status_stream.push(0, self.name, autolock=True)
-        self.drive_stream.lock(self.name)
+        self.status_stream.push(0, self.subsystem, autolock=True)
+        self.drive_stream.lock(self.subsystem)
         self.running = True
         self.success = False
         config = self.default_config
@@ -60,7 +60,7 @@ class Module(modbase.Module):
         try:
             while self.running and not self.success and not self.stop_flag:
                 config.update(self.config_stream.get(self.default_config))
-                self.position_stream.push((self.current_x, self.current_y), self.name, autolock=True)
+                self.position_stream.push((self.current_x, self.current_y), self.subsystem, autolock=True)
                 wait_time = 1/config["iter-second"]
                 self.current_y = self.right_encoder.get()
                 starttime = time.time()
@@ -146,7 +146,7 @@ class Module(modbase.Module):
                     out_x = 0
                     out_y = 0
 
-                self.drive_stream.push((out_x, -out_y), self.name)
+                self.drive_stream.push((out_x, -out_y), self.subsystem)
 
                 self.last_out_y = out_y
                 self.last_out_x = out_x
@@ -159,16 +159,16 @@ class Module(modbase.Module):
 
 
                 time.sleep((1/config["iter-second"]) - (time.time() - starttime))
-            self.status_stream.push(1, self.name, autolock=True)
+            self.status_stream.push(1, self.subsystem, autolock=True)
         except datastreams.LockError as e:
             logging.error(e)
-            self.status_stream.push(-1, self.name, autolock=True)
+            self.status_stream.push(-1, self.subsystem, autolock=True)
 
     def stop_drive(self):
         self.running = False
         time.sleep(.1)
         try:
-            self.drive_stream.push((0, 0), self.name)
+            self.drive_stream.push((0, 0), self.subsystem)
         except datastreams.LockError:
             pass
         logging.info("I will stop doing something!")

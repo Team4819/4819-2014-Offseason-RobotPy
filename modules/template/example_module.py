@@ -14,7 +14,7 @@ class Module(modbase.Module):
 
     """This is the name used for module communication and logging.
      this should be the name of the subsystem, eg: 'drivetrain' or 'compressor' """
-    name = "hello world"
+    subsystem = "hello world"
 
 
     def module_load(self):
@@ -23,7 +23,7 @@ class Module(modbase.Module):
         #This sets the method "self.do_stuff" to be run upon the event "run".
         #   The "run" event is triggered automatically, and should be used to start any loops
         #   designed to be run while the module is loaded
-        events.set_callback("run", self.do_stuff, self.name)
+        events.set_callback("run", self.do_stuff, self.subsystem)
 
     def do_stuff(self):
         """This is a simple run loop that says 'Hello World!' every second until the module is told to terminate."""

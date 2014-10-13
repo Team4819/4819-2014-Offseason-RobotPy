@@ -9,36 +9,36 @@ __author__ = 'christian'
 
 class Module(modbase.Module):
 
-    name = "intake"
+    subsystem = "intake"
 
     def module_load(self):
 
         #Get refrences
-        self.arm_solenoid = wpiwrap.Solenoid("Arm Solenoid", self.name, 2)
-        self.flipper_solenoid = wpiwrap.Solenoid("Flipper Solenoid", self.name, 1)
-        self.intake_motor = wpiwrap.Talon("Intake Motor", self.name, 3)
+        self.arm_solenoid = wpiwrap.Solenoid("Arm Solenoid", self.subsystem, 2)
+        self.flipper_solenoid = wpiwrap.Solenoid("Flipper Solenoid", self.subsystem, 1)
+        self.intake_motor = wpiwrap.Talon("Intake Motor", self.subsystem, 3)
 
 
         self.armstream = datastreams.get_stream("arms")
         self.armstream.on_update("update_arms")
-        events.set_callback("update_arms", self.update_arms, self.name)
+        events.set_callback("update_arms", self.update_arms, self.subsystem)
 
         self.flipperstream = datastreams.get_stream("flipper")
         self.intakestream = datastreams.get_stream("intake")
 
-        events.set_callback("enabled", self.run, self.name)
-        events.set_callback("disabled", self.disable, self.name)
-        events.set_callback("cannon.load", self.refresh_cannon_disable, self.name)
+        events.set_callback("enabled", self.run, self.subsystem)
+        events.set_callback("disabled", self.disable, self.subsystem)
+        events.set_callback("cannon.load", self.refresh_cannon_disable, self.subsystem)
 
     def refresh_cannon_disable(self):
         if self.armstream.get(True):
-            modmaster.get_mod("cannon").disable(self.name)
+            modmaster.get_mod("cannon").disable(self.subsystem)
         else:
-            modmaster.get_mod("cannon").enable(self.name)
+            modmaster.get_mod("cannon").enable(self.subsystem)
 
     def disable(self):
         self.stop_flag = True
-        self.armstream.push(True, self.name, autolock=True)
+        self.armstream.push(True, self.subsystem, autolock=True)
 
     def run(self):
         self.stop_flag = False
@@ -49,10 +49,10 @@ class Module(modbase.Module):
 
     def update_arms(self):
         if self.armstream.get(True):
-            modmaster.get_mod("cannon").disable(self.name)
+            modmaster.get_mod("cannon").disable(self.subsystem)
             self.arm_solenoid.Set(False)
         else:
-            modmaster.get_mod("cannon").enable(self.name)
+            modmaster.get_mod("cannon").enable(self.subsystem)
             self.arm_solenoid.Set(True)
 
 

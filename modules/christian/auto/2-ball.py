@@ -8,7 +8,7 @@ except ImportError:
 
 class Module(modbase.Module):
 
-    name = "autonomous"
+    subsystem = "autonomous"
 
     def module_load(self):
         self.navigator_config = datastreams.get_stream("navigator.config", True)
@@ -19,16 +19,16 @@ class Module(modbase.Module):
         self.intake_stream = datastreams.get_stream("intake")
         self.ball_presence_stream = datastreams.get_stream("ballpresence")
         self.light_sensor_stream = datastreams.get_stream("light_sensor")
-        events.set_callback("autonomous", self.run, self.name)
-        events.set_callback("disabled", self.disable, self.name)
+        events.set_callback("autonomous", self.run, self.subsystem)
+        events.set_callback("disabled", self.disable, self.subsystem)
 
     def disable(self):
         self.stop_flag = True
         self.stop_nav()
 
     def stop_nav(self):
-        events.set_event("navigator.run", self.name, False)
-        events.trigger("navigator.stop", self.name)
+        events.set_event("navigator.run", self.subsystem, False)
+        events.trigger("navigator.stop", self.subsystem)
         #if self.navigator_status.get(1) is -1:
         #    raise Exception("Error in navigator execution")
 
@@ -38,17 +38,17 @@ class Module(modbase.Module):
 
         config = self.autonomous_config.get({"first_shot": 12, "second_shot": 7, "distance_from_tape": 3, "start_position": 0})
         #Drop Arms
-        self.arm_stream.lock(self.name)
-        self.arm_stream.push(False, self.name)
+        self.arm_stream.lock(self.subsystem)
+        self.arm_stream.push(False, self.subsystem)
 
         #Trigger Vision
         wpilib.SmartDashboard.PutNumber("hot goal", 0)
         wpilib.SmartDashboard.PutBoolean("do vision", True)
 
         #Drive to line
-        events.trigger("navigator.mark", self.name)
-        self.navigator_config.push({"mode": 2, "y-goal": config["distance_from_tape"], "max-speed": 2, "acceleration": 2, "iter-second": 10}, self.name, autolock=True)
-        events.set_event("navigator.run", self.name, True)
+        events.trigger("navigator.mark", self.subsystem)
+        self.navigator_config.push({"mode": 2, "y-goal": config["distance_from_tape"], "max-speed": 2, "acceleration": 2, "iter-second": 10}, self.subsystem, autolock=True)
+        events.set_event("navigator.run", self.subsystem, True)
         time.sleep(.2)
         start_time = time.time()
         while not self.stop_flag and self.navigator_status.get(1) is 0 and time.time() - start_time < 5 and self.light_sensor_stream.get(1.5) < 2.5:
@@ -68,9 +68,9 @@ class Module(modbase.Module):
         first_shot_drive = 18 - config["first_shot"]
         second_shot_drive = 18 - config["second_shot"]
         #Charge
-        events.trigger("navigator.mark", self.name)
-        self.navigator_config.push({"mode": 2, "y-goal": second_shot_drive, "max-speed": 5, "acceleration": 3, "iter-second": 10}, self.name, autolock=True)
-        events.set_event("navigator.run", self.name, True)
+        events.trigger("navigator.mark", self.subsystem)
+        self.navigator_config.push({"mode": 2, "y-goal": second_shot_drive, "max-speed": 5, "acceleration": 3, "iter-second": 10}, self.subsystem, autolock=True)
+        events.set_event("navigator.run", self.subsystem, True)
         start_time = time.time()
         pos = self.position_stream.get((0, 0))
         while not self.stop_flag and self.navigator_status.get(1) is 0 and time.time() - start_time < 5 and abs(pos[1] - first_shot_drive) > 1:
@@ -81,11 +81,11 @@ class Module(modbase.Module):
             raise Exception("Error in navigator execution")
 
         #Shoot
-        events.trigger("highShot", self.name)
+        events.trigger("highShot", self.subsystem)
 
         #Run intake
-        self.intake_stream.lock(self.name)
-        self.intake_stream.push(.5, self.name, True)
+        self.intake_stream.lock(self.subsystem)
+        self.intake_stream.push(.5, self.subsystem, True)
 
         #Wait for finish of drive arc
         while not self.stop_flag and self.navigator_status.get(1) is 0 and time.time() - start_time < 7:
@@ -99,10 +99,10 @@ class Module(modbase.Module):
         if self.stop_flag: return
 
         #Shoot
-        events.trigger("highShot", self.name)
+        events.trigger("highShot", self.subsystem)
 
         #stop intake
-        self.intake_stream.push(0, self.name)
+        self.intake_stream.push(0, self.subsystem)
 
 
 

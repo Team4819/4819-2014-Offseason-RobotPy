@@ -2,7 +2,7 @@ __author__ = 'christian'
 from framework import modbase
 
 class Module(modbase.Module):
-    name = "test"
+    subsystem = "test"
 
     def getMessage(self):
         return "hello there most excellent tester!"

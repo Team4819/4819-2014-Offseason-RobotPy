@@ -52,8 +52,8 @@ def get_mod(modname):
 
 def load_mod(pymodname):
     modwrap = modwrapper.ModWrapper()
-    modwrap.module_load(pymodname)
-    modname = modwrap.modname
+    modwrap.load(pymodname)
+    modname = modwrap.subsystem
     if modname in mods:
         raise ModuleLoadError(modname, ": Already module with name " + modname)
     mods[modname] = modwrap

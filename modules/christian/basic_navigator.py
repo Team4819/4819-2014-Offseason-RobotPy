@@ -6,7 +6,7 @@ import math
 
 class Module(modbase.Module):
 
-    name = "navigator"
+    subsystem = "navigator"
 
 
 
@@ -19,9 +19,9 @@ class Module(modbase.Module):
         self.default_config.update(self.config_stream.get(dict()))
         self.status_stream = datastreams.get_stream("navigator.status")
         self.position_stream = datastreams.get_stream("position")
-        events.set_callback("navigator.run", self.do_drive, self.name)
-        events.set_callback("navigator.stop", self.stop_drive, self.name)
-        events.set_callback("navigator.mark", self.mark, self.name)
+        events.set_callback("navigator.run", self.do_drive, self.subsystem)
+        events.set_callback("navigator.stop", self.stop_drive, self.subsystem)
+        events.set_callback("navigator.mark", self.mark, self.subsystem)
         self.current_x = 0
         self.current_y = 0
 
@@ -30,8 +30,8 @@ class Module(modbase.Module):
         self.current_y = 0
 
     def do_drive(self):
-        self.status_stream.push(0, self.name, autolock=True)
-        self.drive_stream.lock(self.name)
+        self.status_stream.push(0, self.subsystem, autolock=True)
+        self.drive_stream.lock(self.subsystem)
         self.running = True
         self.success = False
         config = self.default_config
@@ -39,7 +39,7 @@ class Module(modbase.Module):
         try:
             while self.running and not self.success and not self.stop_flag:
                 config.update(self.config_stream.get(self.default_config))
-                self.position_stream.push((self.current_x, self.current_y), self.name, autolock=True)
+                self.position_stream.push((self.current_x, self.current_y), self.subsystem, autolock=True)
                 #TODO get something better here
                 wait_time = 1/config["iter-second"]
 
@@ -62,7 +62,7 @@ class Module(modbase.Module):
                         self.current_y += 5 * wait_time * out_y
                         self.success = False
 
-                    self.drive_stream.push((out_x, out_y), self.name)
+                    self.drive_stream.push((out_x, out_y), self.subsystem)
 
                 #Acceleration
                 if config["mode"] is 1:
@@ -93,7 +93,7 @@ class Module(modbase.Module):
                     runtime_vars["last_out_x"] = out_x
                     runtime_vars["last_out_y"] = out_y
 
-                    self.drive_stream.push((out_x, out_y), self.name)
+                    self.drive_stream.push((out_x, out_y), self.subsystem)
 
                 #Trapezoidial Motion Profile
                 if config["mode"] is 2:
@@ -141,19 +141,19 @@ class Module(modbase.Module):
                     runtime_vars["last_out_x"] = out_x
                     runtime_vars["last_out_y"] = out_y
 
-                    self.drive_stream.push((out_x/5, out_y/5), self.name)
+                    self.drive_stream.push((out_x/5, out_y/5), self.subsystem)
 
 
                 time.sleep(wait_time)
-            self.status_stream.push(1, self.name, autolock=True)
+            self.status_stream.push(1, self.subsystem, autolock=True)
         except datastreams.LockError:
-            self.status_stream.push(-1, self.name, autolock=True)
+            self.status_stream.push(-1, self.subsystem, autolock=True)
 
     def stop_drive(self):
         self.running = False
         time.sleep(.1)
         try:
-            self.drive_stream.push((0, 0), self.name)
+            self.drive_stream.push((0, 0), self.subsystem)
         except datastreams.LockError:
             pass
         logging.info("I will stop doing something!")

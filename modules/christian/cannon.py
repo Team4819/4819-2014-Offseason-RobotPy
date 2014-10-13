@@ -6,15 +6,15 @@ __author__ = 'christian'
 
 class Module(modbase.Module):
 
-    name = "cannon"
+    subsystem = "cannon"
     disableFlags = dict()
     dryfire_protection = False
 
     def module_load(self):
-        self.main_solenoid_1 = wpiwrap.Solenoid("Cannon Solenoid 1", self.name, 3)
-        self.main_solenoid_2 = wpiwrap.Solenoid("Cannon Solenoid 2", self.name, 4)
-        self.blowback_solenoid = wpiwrap.Solenoid("Blowback Solenoid", self.name, 5)
-        self.ballpresense_switch = wpiwrap.DigitalInput("Ball Presence Switch", self.name, 13)
+        self.main_solenoid_1 = wpiwrap.Solenoid("Cannon Solenoid 1", self.subsystem, 3)
+        self.main_solenoid_2 = wpiwrap.Solenoid("Cannon Solenoid 2", self.subsystem, 4)
+        self.blowback_solenoid = wpiwrap.Solenoid("Blowback Solenoid", self.subsystem, 5)
+        self.ballpresense_switch = wpiwrap.DigitalInput("Ball Presence Switch", self.subsystem, 13)
 
         self.ballpresense = False
 
@@ -23,10 +23,10 @@ class Module(modbase.Module):
 
         self.blowback_stream = datastreams.get_stream("blowback")
 
-        events.set_callback("highShot", self.high_shot, self.name)
-        events.set_callback("medShot", self.med_shot, self.name)
-        events.set_callback("lowShot", self.low_shot, self.name)
-        events.set_callback("run", self.run, self.name)
+        events.set_callback("highShot", self.high_shot, self.subsystem)
+        events.set_callback("medShot", self.med_shot, self.subsystem)
+        events.set_callback("lowShot", self.low_shot, self.subsystem)
+        events.set_callback("run", self.run, self.subsystem)
 
     #Controls for externally enabling and disabling cannon
     def disable(self, srcmod):
@@ -44,7 +44,7 @@ class Module(modbase.Module):
     def run(self):
         while not self.stop_flag:
             self.ballpresense = self.ballpresense_switch.Get()
-            self.ballpresense_stream.push(self.ballpresense, self.name, True)
+            self.ballpresense_stream.push(self.ballpresense, self.subsystem, True)
             self.blowback_solenoid.Set(self.blowback_stream.get(False))
             time.sleep(.1)
 
@@ -73,6 +73,6 @@ class Module(modbase.Module):
         self.main_solenoid_1.Set(False)
         self.main_solenoid_2.Set(False)
         time.sleep(.2)
-        self.blowback_stream.push(True, self.name, autolock=True)
+        self.blowback_stream.push(True, self.subsystem, autolock=True)
         time.sleep(.2)
-        self.blowback_stream.push(False, self.name, autolock=True)
+        self.blowback_stream.push(False, self.subsystem, autolock=True)

@@ -8,13 +8,13 @@ except ImportError:
     from pyfrc import wpilib
 
 class Module(modbase.Module):
-    name = "encoder_test"
+    subsystem = "encoder_test"
 
     def module_load(self):
         wpilib.SmartDashboard.init()
-        self.encoder_1 = wpiwrap.Encoder("encoder_1", self.name, 1, 2, 360, 20)
-        self.encoder_2 = wpiwrap.Encoder("encoder_2", self.name, 3, 4, 360, 20)
-        events.set_callback("run", self.do_stuff, self.name)
+        self.encoder_1 = wpiwrap.Encoder("encoder_1", self.subsystem, 1, 2, 360, 20)
+        self.encoder_2 = wpiwrap.Encoder("encoder_2", self.subsystem, 3, 4, 360, 20)
+        events.set_callback("run", self.do_stuff, self.subsystem)
 
 
     def do_stuff(self):

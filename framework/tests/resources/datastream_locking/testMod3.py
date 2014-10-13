@@ -4,13 +4,13 @@ from framework import modbase, datastreams
 
 
 class Module(modbase.Module):
-    name = "test3"
+    subsystem = "test3"
 
     def module_load(self):
         self.stream = datastreams.get_stream("testStream")
 
     def lockStream(self):
-        self.stream.lock(self.name)
+        self.stream.lock(self.subsystem)
 
     def pushStream(self):
-        self.stream.push(50, self.name)
+        self.stream.push(50, self.subsystem)

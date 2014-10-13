@@ -5,14 +5,14 @@ import time
 
 class Module(modbase.Module):
 
-    name = "drivetrain"
+    subsystem = "drivetrain"
 
     def module_load(self):
-        self.left_motor = wpiwrap.Talon("left motor", self.name, 1)
-        self.right_motor = wpiwrap.Talon("right motor", self.name, 2)
+        self.left_motor = wpiwrap.Talon("left motor", self.subsystem, 1)
+        self.right_motor = wpiwrap.Talon("right motor", self.subsystem, 2)
 
-        events.set_callback("enabled", self.run, self.name)
-        events.set_callback("disabled", self.stop, self.name)
+        events.set_callback("enabled", self.run, self.subsystem)
+        events.set_callback("disabled", self.stop, self.subsystem)
         self.control_stream = datastreams.get_stream("drive")
 
     def run(self):
@@ -37,6 +37,6 @@ class Module(modbase.Module):
 
     def stop(self):
         self.stop_flag = True
-        self.control_stream.push((0,0), self.name, autolock=True)
+        self.control_stream.push((0,0), self.subsystem, autolock=True)
         self.left_motor.set(0)
         self.right_motor.set(0)

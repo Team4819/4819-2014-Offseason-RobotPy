@@ -5,7 +5,7 @@ import logging
 
 class Module(modbase.Module):
 
-    name = "placeholder"
+    subsystem = "placeholder"
     target = ""
 
     def set_target(self, target):
