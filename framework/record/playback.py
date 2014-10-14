@@ -1,4 +1,4 @@
-from framework import modmaster, datastreams, events
+from framework import module_engine, datastreams, events
 import json
 import logging
 import os
@@ -46,7 +46,7 @@ def replay_datastreams(datastreampath):
             update = dict()
             update["timestamp"] = float(splitdata[0][11:].strip()[1:-1])
             update["srcmod"] = splitdata[1][6:].strip()[1:-1]
-            if update["srcmod"] in modmaster.list_modules():
+            if update["srcmod"] in module_engine.list_modules():
                 continue
             update["autolock"] = bool(splitdata[2][10:].strip()[1:-1])
             jsondata = splitdata[3][6:].strip()[1:-1]
@@ -86,7 +86,7 @@ def replay_events(eventsfile):
         update["action"] = splitdata[1][7:].strip()[1:-1]
         update["timestamp"] = float(splitdata[2][11:].strip()[1:-1])
         update["srcmod"] = splitdata[3][5:].strip()[1:-1]
-        if update["srcmod"] in modmaster.list_modules() or update["srcmod"] in ("modmaster", "RobotTrunk", "datastream"):
+        if update["srcmod"] in module_engine.list_modules() or update["srcmod"] in ("modmaster", "RobotTrunk", "datastream"):
             continue
         parsed_events.append(update)
     logging.info("Parsed events file " + eventsfile)

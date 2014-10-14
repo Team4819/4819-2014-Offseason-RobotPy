@@ -1,8 +1,10 @@
+from framework.module_engine import ModuleBase
+
 __author__ = 'christian'
 
-from framework import modbase, datastreams, events
+from framework import datastreams, events
 
-class Module(modbase.Module):
+class Module(ModuleBase):
     subsystem = "test1"
 
     def module_load(self):

@@ -1,7 +1,8 @@
-__author__ = 'christian'
-from framework import modbase
+from framework.module_engine import ModuleBase
 
-class Module(modbase.Module):
+__author__ = 'christian'
+
+class Module(ModuleBase):
     subsystem = "test2"
 
     def getMessage(self):

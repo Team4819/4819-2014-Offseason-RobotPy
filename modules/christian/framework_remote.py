@@ -1,6 +1,8 @@
+from framework.module_engine import ModuleBase
+
 __author__ = 'christian'
 
-from framework import modbase, events, modmaster
+from framework import events, module_engine
 import logging
 import traceback
 import time
@@ -13,7 +15,7 @@ except ImportError:
 
 #import pynetworktables as wpilib
 
-class Module(modbase.Module):
+class Module(ModuleBase):
     subsystem = "remote"
     index = 1
 
@@ -25,10 +27,10 @@ class Module(modbase.Module):
 
     def run(self):
         while not self.stop_flag:
-            modnames = modmaster.list_modules()
+            modnames = module_engine.list_modules()
             self.table.PutString("modlist", json.dumps(modnames))
             for name in modnames:
-                mod = modmaster.get_mod(name)
+                mod = module_engine.get_modules(name)
                 modsummary = {"name": mod.subsystem, "filename": mod.filename, "runningTasks": mod.running_events, "fallbackList": mod.fallback_list}
                 self.table.PutString("mod." + name, json.dumps(modsummary))
 
@@ -49,11 +51,11 @@ class Module(modbase.Module):
                         self.table.PutNumber("globalCommandIndex", self.index)
                         try:
                             if commands[command]["command"] == "reload module":
-                                modmaster.get_mod(commands[command]["target"]).load()
+                                module_engine.get_modules(commands[command]["target"]).load()
                             elif commands[command]["command"] == "unload module":
-                                modmaster.unload_mod(commands[command]["target"])
+                                module_engine.unload_module(commands[command]["target"])
                             elif commands[command]["command"] == "load module":
-                                modmaster.load_mod(commands[command]["target"])
+                                module_engine.load_module(commands[command]["target"])
                             else:
                                 logging.error("Framework Remote: No such command - " + commands[command]["command"])
                         except Exception as e:

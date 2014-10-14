@@ -1,9 +1,11 @@
+from framework.module_engine import ModuleBase
+
 __author__ = 'christian'
-from framework import modbase, wpiwrap, datastreams, events
+from framework import wpiwrap, datastreams, events
 import time
 
 
-class Module(modbase.Module):
+class Module(ModuleBase):
     subsystem = "ultrasonic"
 
     def module_load(self):

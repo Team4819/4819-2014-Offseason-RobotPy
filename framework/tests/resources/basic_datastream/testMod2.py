@@ -1,9 +1,11 @@
+from framework.module_engine import ModuleBase
+
 __author__ = 'christian'
 
-from framework import modbase, datastreams
+from framework import datastreams
 
 
-class Module(modbase.Module):
+class Module(ModuleBase):
     subsystem = "test2"
 
     def module_load(self):

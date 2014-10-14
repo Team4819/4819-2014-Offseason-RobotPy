@@ -13,7 +13,7 @@ def my_excepthook(type, value, tb):
 
 sys.excepthook = my_excepthook
 
-from framework import modmaster, events, filesystem
+from framework import module_engine, events, filesystem
 from framework.record import recorder, playback
 import logging
 
@@ -37,11 +37,13 @@ class RobotTrunk(wpilib.SimpleRobot):
         filesystem.gen_paths()
         self.init_logs()
 
-        modmaster.load_startup_mods(os.path.join(filesystem.root_dir, "modules", "mods.conf"))
+        module_engine.load_startup_mods(os.path.join(filesystem.root_dir, "modules", "mods.conf"))
+        #Toggle the run event
+        events.set_event("run", "modmaster", True)
 
         recorder.startRecording()
 
-        self.reaper = modmaster.GrimReaper()
+        self.reaper = module_engine.GrimReaper()
         self.reaper.start()
 
 

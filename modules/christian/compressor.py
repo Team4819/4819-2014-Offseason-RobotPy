@@ -1,10 +1,11 @@
-from framework import modbase, datastreams, events, wpiwrap
+from framework import datastreams, events, wpiwrap
 import time
+from framework.module_engine import ModuleBase
 
 __author__ = 'christian'
 
 
-class Module(modbase.Module):
+class Module(ModuleBase):
     subsystem = "compressor"
 
     def module_load(self):

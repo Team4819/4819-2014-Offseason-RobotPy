@@ -1,12 +1,14 @@
+from framework.module_engine import ModuleBase
+
 __author__ = 'christian'
-from framework import modbase, events, datastreams
+from framework import events, datastreams
 import time
 try:
     import wpilib
 except ImportError:
     from pyfrc import wpilib
 
-class Module(modbase.Module):
+class Module(ModuleBase):
 
     subsystem = "autonomous"
 

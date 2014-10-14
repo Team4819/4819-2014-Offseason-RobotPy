@@ -1,9 +1,11 @@
+from framework.module_engine import ModuleBase
+
 __author__ = 'christian'
 
-from framework import modbase, events
+from framework import events
 
 
-class Module(modbase.Module):
+class Module(ModuleBase):
     subsystem = "test2"
 
     def fireEvent(self):

@@ -1,5 +1,7 @@
+from framework.module_engine import ModuleBase
+
 __author__ = 'christian'
-from framework import modbase, events, wpiwrap
+from framework import events, wpiwrap
 import time
 
 try:
@@ -7,7 +9,7 @@ try:
 except ImportError:
     from pyfrc import wpilib
 
-class Module(modbase.Module):
+class Module(ModuleBase):
     subsystem = "encoder_test"
 
     def module_load(self):

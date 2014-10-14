@@ -1,10 +1,10 @@
 
-from framework import modbase, events, datastreams, wpiwrap
+from framework import events, datastreams, wpiwrap
 import time
+from framework.module_engine import ModuleBase
 
 
-
-class Module(modbase.Module):
+class Module(ModuleBase):
 
     """This is the name used for module communication and logging.
      this should be the name of the subsystem, eg: 'drivetrain' or 'compressor' """

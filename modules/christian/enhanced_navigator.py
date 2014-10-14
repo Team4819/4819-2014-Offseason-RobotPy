@@ -1,10 +1,12 @@
+from framework.module_engine import ModuleBase
+
 __author__ = 'christian'
-from framework import modbase, events, datastreams, wpiwrap
+from framework import events, datastreams, wpiwrap
 import logging
 import time
 import copy
 
-class Module(modbase.Module):
+class Module(ModuleBase):
 
     subsystem = "navigator"
 

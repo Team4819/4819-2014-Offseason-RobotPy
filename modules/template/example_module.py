@@ -1,5 +1,5 @@
 """This is an example module, you can use this as a base when you go to create your own module."""
-from framework import modbase, events
+from framework import events
 import time
 
 ##Need Wpilib? use this code snippit
@@ -8,9 +8,10 @@ import time
 #    import wpilib
 #except ImportError:
 #    from pyfrc import wpilib
+from framework.module_engine import ModuleBase
 
 
-class Module(modbase.Module):
+class Module(ModuleBase):
 
     """This is the name used for module communication and logging.
      this should be the name of the subsystem, eg: 'drivetrain' or 'compressor' """

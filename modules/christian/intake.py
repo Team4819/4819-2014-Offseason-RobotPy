@@ -1,5 +1,7 @@
-from framework import modmaster, modbase, datastreams, events, wpiwrap
+from framework import module_engine, datastreams, events, wpiwrap
 import time
+from framework.module_engine import ModuleBase
+
 try:
     import wpilib
 except ImportError:
@@ -7,7 +9,7 @@ except ImportError:
 __author__ = 'christian'
 
 
-class Module(modbase.Module):
+class Module(ModuleBase):
 
     subsystem = "intake"
 
@@ -32,9 +34,9 @@ class Module(modbase.Module):
 
     def refresh_cannon_disable(self):
         if self.armstream.get(True):
-            modmaster.get_mod("cannon").disable(self.subsystem)
+            module_engine.get_modules("cannon").disable(self.subsystem)
         else:
-            modmaster.get_mod("cannon").enable(self.subsystem)
+            module_engine.get_modules("cannon").enable(self.subsystem)
 
     def disable(self):
         self.stop_flag = True
@@ -49,10 +51,10 @@ class Module(modbase.Module):
 
     def update_arms(self):
         if self.armstream.get(True):
-            modmaster.get_mod("cannon").disable(self.subsystem)
+            module_engine.get_modules("cannon").disable(self.subsystem)
             self.arm_solenoid.Set(False)
         else:
-            modmaster.get_mod("cannon").enable(self.subsystem)
+            module_engine.get_modules("cannon").enable(self.subsystem)
             self.arm_solenoid.Set(True)
 
 

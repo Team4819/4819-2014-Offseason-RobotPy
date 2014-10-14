@@ -1,6 +1,8 @@
+from framework.module_engine import ModuleBase
+
 __author__ = 'christian'
 
-from framework import modbase, events, datastreams, wpiwrap, modmaster, moderrors
+from framework import events, datastreams, wpiwrap, module_engine
 try:
     import wpilib
 except ImportError:
@@ -9,7 +11,7 @@ import time
 import json
 import logging
 
-class Module(modbase.Module):
+class Module(ModuleBase):
 
     subsystem = "dashboard"
 
@@ -46,26 +48,26 @@ class Module(modbase.Module):
             if auto_routine != last_auto_routine:
                 if auto_routine == 0:
                     try:
-                        modmaster.get_mod("autonomous").load("modules.christian.auto.dead_auto")
-                    except moderrors.ModuleUnloadError:
+                        module_engine.get_modules("autonomous").load("modules.christian.auto.dead_auto")
+                    except module_engine.ModuleUnloadError:
                         pass
 
                 elif auto_routine == 3:
                     try:
-                        modmaster.get_mod("autonomous").load("modules.christian.auto.stupid_auto")
-                    except (moderrors.ModuleUnloadError, moderrors.ModuleLoadError) as e:
+                        module_engine.get_modules("autonomous").load("modules.christian.auto.stupid_auto")
+                    except (module_engine.ModuleUnloadError, module_engine.ModuleLoadError) as e:
                         logging.error(e)
 
                 elif auto_routine == 1:
                     try:
-                        modmaster.get_mod("autonomous").load("modules.christian.auto.1-ball")
-                    except (moderrors.ModuleUnloadError, moderrors.ModuleLoadError) as e:
+                        module_engine.get_modules("autonomous").load("modules.christian.auto.1-ball")
+                    except (module_engine.ModuleUnloadError, module_engine.ModuleLoadError) as e:
                         logging.error(e)
 
                 elif auto_routine == 2:
                     try:
-                        modmaster.get_mod("autonomous").load("modules.christian.auto.2-ball")
-                    except (moderrors.ModuleUnloadError, moderrors.ModuleLoadError) as e:
+                        module_engine.get_modules("autonomous").load("modules.christian.auto.2-ball")
+                    except (module_engine.ModuleUnloadError, module_engine.ModuleLoadError) as e:
                         logging.error(e)
 
                 last_auto_routine = auto_routine

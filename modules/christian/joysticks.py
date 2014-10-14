@@ -1,6 +1,8 @@
-from framework import events, datastreams, modbase, modmaster
+from framework import events, datastreams, module_engine
 import time
 import copy
+from framework.module_engine import ModuleBase
+
 try:
     import wpilib
 except ImportError:
@@ -8,7 +10,7 @@ except ImportError:
 
 __author__ = 'christian'
 
-class Module(modbase.Module):
+class Module(ModuleBase):
 
     subsystem = "controls"
 
@@ -74,7 +76,7 @@ class Module(modbase.Module):
             self.buttons["modReloader"] = self.stick2.GetRawButton(10)
             
             if self.buttons["modReloader"] and not last_buttons["modReloader"]:
-                modmaster.reload_mods()
+                module_engine.reload_mods()
 
             if self.buttons["flipper"] is not last_buttons["flipper"]:
                 self.flipperstream.push(self.buttons["flipper"], self.subsystem, autolock=True)

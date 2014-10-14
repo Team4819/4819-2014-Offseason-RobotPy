@@ -1,10 +1,12 @@
-from framework import modbase, events, datastreams, wpiwrap
+from framework import events, datastreams, wpiwrap
 import time
 import logging
+from framework.module_engine import ModuleBase
+
 __author__ = 'christian'
 
 
-class Module(modbase.Module):
+class Module(ModuleBase):
 
     subsystem = "cannon"
     disableFlags = dict()

@@ -1,8 +1,10 @@
+from framework.module_engine import ModuleBase
+
 __author__ = 'christian'
-from framework import modbase, events, datastreams
+from framework import events, datastreams
 import time
 
-class Module(modbase.Module):
+class Module(ModuleBase):
 
     subsystem = "autonomous"
 

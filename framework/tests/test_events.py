@@ -1,14 +1,14 @@
 __author__ = 'christian'
 
-from framework import events, modmaster
+from framework import events, module_engine
 import time
 
 
 def test_basic_events():
-    modmaster.load_mod("framework.tests.resources.basic_events.testMod1")
-    modmaster.load_mod("framework.tests.resources.basic_events.testMod2")
-    mod1 = modmaster.get_mod("test1")
-    mod2 = modmaster.get_mod("test2")
+    module_engine.load_module("framework.tests.resources.basic_events.testMod1")
+    module_engine.load_module("framework.tests.resources.basic_events.testMod2")
+    mod1 = module_engine.get_modules("test1")
+    mod2 = module_engine.get_modules("test2")
     assert mod1.index is 1
     mod1.set_callback()
     assert mod1.index is 1
@@ -18,12 +18,12 @@ def test_basic_events():
     events.trigger("test", "Tester")
     time.sleep(.1)
     assert mod1.index is 3
-    modmaster.kill_all_mods()
+    module_engine.kill_all_modules()
 
 
 def test_state_events():
-    modmaster.load_mod("framework.tests.resources.state_events.testMod1")
-    mod1 = modmaster.get_mod("test1")
+    module_engine.load_module("framework.tests.resources.state_events.testMod1")
+    mod1 = module_engine.get_modules("test1")
     assert mod1.index is 1
     events.trigger("test", "Tester")
     time.sleep(.1)
@@ -45,5 +45,5 @@ def test_state_events():
     events.refresh_events("test")
     time.sleep(.1)
     assert mod1.index is 1
-    modmaster.kill_all_mods()
+    module_engine.kill_all_modules()
     events.purge_events()

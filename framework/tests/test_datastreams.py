@@ -1,30 +1,30 @@
 __author__ = 'christian'
 
-from framework import modmaster, datastreams
+from framework import module_engine, datastreams
 import pytest
 import time
 
 def test_basic_datastream():
-    modmaster.load_mod("framework.tests.resources.basic_datastream.testMod1")
-    modmaster.load_mod("framework.tests.resources.basic_datastream.testMod2")
-    mod1 = modmaster.get_mod("test1")
-    mod2 = modmaster.get_mod("test2")
+    module_engine.load_module("framework.tests.resources.basic_datastream.testMod1")
+    module_engine.load_module("framework.tests.resources.basic_datastream.testMod2")
+    mod1 = module_engine.get_modules("test1")
+    mod2 = module_engine.get_modules("test2")
     assert mod1.streamData == "blank"
     mod1.readStream()
     assert mod1.streamData == "blank"
     mod2.pushStream()
     mod1.readStream()
     assert mod1.streamData == "fart"
-    modmaster.kill_all_mods()
+    module_engine.kill_all_modules()
 
 
 def test_datastream_locking():
-    modmaster.load_mod("framework.tests.resources.datastream_locking.testMod1")
-    modmaster.load_mod("framework.tests.resources.datastream_locking.testMod2")
-    modmaster.load_mod("framework.tests.resources.datastream_locking.testMod3")
-    mod1 = modmaster.get_mod("test1")
-    mod2 = modmaster.get_mod("test2")
-    mod3 = modmaster.get_mod("test3")
+    module_engine.load_module("framework.tests.resources.datastream_locking.testMod1")
+    module_engine.load_module("framework.tests.resources.datastream_locking.testMod2")
+    module_engine.load_module("framework.tests.resources.datastream_locking.testMod3")
+    mod1 = module_engine.get_modules("test1")
+    mod2 = module_engine.get_modules("test2")
+    mod3 = module_engine.get_modules("test3")
     mod2.pushStream()
     mod1.readStream()
     assert mod1.streamData is 100
@@ -39,14 +39,14 @@ def test_datastream_locking():
     mod2.pushStream()
     mod1.readStream()
     assert mod1.streamData is 100
-    modmaster.kill_all_mods()
+    module_engine.kill_all_modules()
     datastreams.purge_datastreams()
 
 
 def test_datastream_events():
-    modmaster.load_mod("framework.tests.resources.datastream_events.testMod1")
-    mod1 = modmaster.get_mod("test1")
-    assert len(modmaster.list_modules()) is 1
+    module_engine.load_module("framework.tests.resources.datastream_events.testMod1")
+    mod1 = module_engine.get_modules("test1")
+    assert len(module_engine.list_modules()) is 1
     mod1.reset()
     assert mod1.updated is False
     assert mod1.incremented is False
@@ -65,5 +65,5 @@ def test_datastream_events():
     mod1.reset()
     assert mod1.updated is False
     assert mod1.incremented is False
-    modmaster.kill_all_mods()
+    module_engine.kill_all_modules()
     datastreams.purge_datastreams()

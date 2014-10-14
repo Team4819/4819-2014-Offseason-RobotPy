@@ -1,14 +1,136 @@
-from framework import configerator, moderrors, events, wpiwrap
-import logging
-import threading
-import imp
-import os
-import traceback
-import time
+"""
+This is as it's name describes, the core engine for the module system. It contains both top-level functions to
+manipulate the module system, as well as the various classes necessary to perform those actions.
+"""
 __author__ = 'christian'
+from framework import configerator, events, wpiwrap
+import time
+import threading
+import logging
+import traceback
+import os
+import imp
+
+mods = dict()
+"""The dictionary of all loaded modules, with the module's subsystem as it's key."""
+
+#Initialize console logs
+ch = logging.StreamHandler()
+ch.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+ch.setFormatter(formatter)
+logging.root.addHandler(ch)
+
+
+def list_modules():
+    """Returns a copy of the list of all loaded mods"""
+    return [x for x in mods]
+
+
+def load_startup_mods(config=os.path.join("modules", "mods.conf")):
+    """Load all modules listed in the [StartupMods] tag in a config file"""
+    try:
+        #Try to get the config file parsed
+        startup_mods = configerator.parse_config(config)["StartupMods"]
+    except Exception as e:
+        #Oops, ERROR! ERROR!
+        logging.error(e)
+        #Well, try the backup config file then
+        startup_mods = configerator.parse_config(os.path.join("framework", "defaults", "mods.conf"))["StartupMods"]
+
+    #For each module in the config, try to load it.
+    for mod in startup_mods:
+        try:
+            load_module(mod)
+        except ModuleLoadError as e:
+            #If we get an error, report it!
+            logging.error(e)
+
+
+def get_modules(subsystem):
+    """Return the wanted module"""
+    if subsystem in mods:
+        #We have it? Then return it!
+        return mods[subsystem]
+    else:
+        #404 no module found, return the elusive Phantom Object!
+        return PhantomObject([subsystem])
+
+
+def load_module(name):
+    """Load a module"""
+    #Check to make sure we do not already have one by that name
+    if name in mods:
+        raise ModuleLoadError(name, ": Already module with name " + name)
+
+    #Create the ModWrapper object and load the module
+    modwrap = ModWrapper()
+    modwrap.load(name)
+    modname = modwrap.subsystem
+
+    #Check again, do we have a duplicate now?
+    if modname in mods:
+        #Oops, lets clean up this mess we have made
+        modwrap.unload()
+        raise ModuleLoadError(modname, ": Already module with name " + modname)
+
+    #Save it!
+    mods[modname] = modwrap
+
+
+def unload_module(subsystem):
+    """Unload a module by subsystem"""
+    if subsystem not in mods:
+        raise ModuleUnloadError(subsystem, "No such module loaded")
+    #Unload it
+    mods[subsystem].unload()
+    #Delete it
+    mods.pop(subsystem, None)
+
+
+def kill_all_modules():
+    """KILL ALL THE MODULES"""
+    modules = list_modules()
+    for mod in modules:
+        unload_module(mod)
+
+
+def reload_mods():
+    """Reload all modules"""
+    for key in mods:
+        try:
+            mods[key].reload()
+        except Exception as e:
+            logging.error("Error reloading module: " + key + ": " + str(e) + "\n" + traceback.format_exc())
+
+
+#   This is my solution to the threads that would not die!
+class GrimReaper(threading.Thread):
+    """This watches for the status of the main thread, and kills the modules when the main thread dies."""
+
+    timer = 0
+    #How many seconds have elapsed since last we heard from the main thread
+
+    def run(self):
+        while self.timer < 2:
+            #Increment the timer each iteration
+            self.timer += .1
+            #If we have less than 1 second left,
+            if self.timer > 1:
+                #Give a warning
+                logging.info("The Reaper is coming!")
+            time.sleep(.1)
+        #Notify the system and kill all modules
+        logging.info("KILL ALL THE THREADS!!!!!")
+        kill_all_modules()
+
+    def delay_death(self):
+        """Reset the death timer"""
+        self.timer = 0
 
 
 class ModWrapper:
+    """This is the final layer managing a module,"""
 
     def __init__(self):
         self.running_events = dict()
@@ -48,7 +170,7 @@ class ModWrapper:
 
         #Start by unloading any previously loaded module
         if self.mod_loaded:
-            self.module_unload()
+            self.unload()
 
         #Setup module fallback lists
 
@@ -80,7 +202,7 @@ class ModWrapper:
         while not success:
             #Do we have any more to try?
             if self.fallback_index >= len(self.fallback_list):
-                raise moderrors.ModuleLoadError(self.subsystem, "No files left to try and load in the fallback list")
+                raise ModuleLoadError(self.subsystem, "No files left to try and load in the fallback list")
 
             #Lets try this module, the one selected by modindex
             file_to_load = self.fallback_list[self.fallback_index]
@@ -118,10 +240,10 @@ class ModWrapper:
                 #Oops, something happened. We must try the next one on the fallback list!
                 logging.error("Error loading module: " + file_to_load + ": " + str(e) + "\n" + traceback.format_exc())
                 if self.mod_loaded:
-                    self.module_unload()
+                    self.unload()
                 self.fallback_index += 1
 
-    def module_unload(self):
+    def unload(self):
         """Unload the currently loaded module"""
 
         #If we actually have a module loaded, run it's unload function
@@ -165,7 +287,7 @@ class ModWrapper:
             logging.error("Exception calling func " + func.__name__ + ": " + str(e) + "\n" + traceback.format_exc())
             try:
                 self.replace_faulty()
-            except moderrors.ModuleLoadError as ex:
+            except ModuleLoadError as ex:
                 #I guess that did not work either, well better report it also.
                 logging.error(ex)
 
@@ -180,9 +302,50 @@ class ModWrapper:
         return getattr(self.module, item)
 
 
+class ModuleLoadError(Exception):
+    """This error is for errors during module load"""
+    def __init__(self, name, message):
+        super().__init__(name + ": " + message)
 
 
+class ModuleUnloadError(Exception):
+    """This error is for errors during module unload"""
+    def __init__(self, name, message):
+        super().__init__(name + ": " + message)
 
 
+class PhantomObject():
+    """This is what is returned when a non-existant module is asked for"""
+
+    chain = list()
+    """The chain of objects called to get to the called function."""
+
+    def __init__(self, chain=list()):
+        self.chain = chain
+
+    def __getattr__(self, item):
+        #If an attribute is wanted, return another PhantomObject, appending the currently requested attribute name
+        self.chain.append(item)
+        return PhantomObject(self.chain)
+
+    def __call__(self, *args, **kwargs):
+        #The attribute was called, so print a warning with the chain of phantom attributes
+        function_name = self.chain[len(self.chain) - 1]
+        text = "Phantom object reports phantom call! Called " + function_name + ", chain:"
+        for link in self.chain:
+            text += "Phantom object " + link + ",\n"
+        logging.warning(text)
 
 
+class ModuleBase(object):
+    """The parent class for all modules"""
+    subsystem = "generic"
+    stop_flag = False
+
+    def module_load(self):
+        """The module's constructor, initialize all references and interfaces here"""
+        pass
+
+    def module_unload(self):
+        """The module's destructor, stop any loops and do any clean-up here."""
+        self.stop_flag = True
