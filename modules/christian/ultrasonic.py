@@ -8,10 +8,10 @@ import time
 class Module(ModuleBase):
     subsystem = "ultrasonic"
 
-    def module_load(self):
-        self.output_datastream  =  datastreams.get_stream("ultrasonic")
+    def __init__(self):
+        self.output_datastream = datastreams.get_stream("ultrasonic")
         self.counter = wpiwrap.Counter("Ultrasonic_Sensor", self.subsystem, 11)
-        events.set_callback("run", self.run, self.subsystem)
+        events.add_callback("run", self.subsystem, self.run)
 
     def run(self):
         while not self.stop_flag:

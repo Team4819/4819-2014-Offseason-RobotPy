@@ -1,33 +1,39 @@
-from framework.module_engine import ModuleBase
-
 __author__ = 'christian'
-from framework import events, datastreams, wpiwrap
+from framework import events, wpiwrap
 import time
 
 
-class Module(ModuleBase):
+class Module:
 
     subsystem = "drivetrain"
+    stop_flag = False
 
-    def module_load(self):
+    def __init__(self):
+        self.joystick = wpiwrap.Joystick("Joystick 1", self.subsystem, 1)
         self.left_motor = wpiwrap.Talon("left motor", self.subsystem, 1)
         self.right_motor = wpiwrap.Talon("right motor", self.subsystem, 2)
 
-        events.set_callback("enabled", self.run, self.subsystem)
-        events.set_callback("disabled", self.stop, self.subsystem)
-        self.control_stream = datastreams.get_stream("drive")
+        events.add_callback("teleoperated", self.subsystem, callback=self.run, inverse_callback=self.stop)
 
     def run(self):
         self.stop_flag = False
         while not self.stop_flag:
-            drive = self.control_stream.get((0, 0))
+            input_y = self.joystick.get_axis(0)
+            input_x = self.joystick.get_axis(1)
 
-            output_left = drive[0] - drive[1]
+            #Deadbands
+            if abs(input_x) < .1:
+                input_x = 0
+
+            if abs(input_y) < .1:
+                input_y = 0
+
+            output_left = input_y - input_x
 
             if abs(output_left) > 1:
                 output_left = abs(output_left)/output_left
 
-            output_right = drive[0] + drive[1]
+            output_right = input_y + input_x
 
             if abs(output_right) > 1:
                 output_right = abs(output_right)/output_right
@@ -39,6 +45,5 @@ class Module(ModuleBase):
 
     def stop(self):
         self.stop_flag = True
-        self.control_stream.push((0,0), self.subsystem, autolock=True)
         self.left_motor.set(0)
         self.right_motor.set(0)

@@ -12,15 +12,15 @@ class Module(ModuleBase):
 
     subsystem = "autonomous"
 
-    def module_load(self):
-        self.navigator_config = datastreams.get_stream("navigator.config", True)
-        self.navigator_status = datastreams.get_stream("navigator.status", True)
-        self.autonomous_config = datastreams.get_stream("auto_config", True)
-        self.position_stream =  datastreams.get_stream("position")
+    def __init__(self):
+        self.navigator_config = datastreams.get_stream("navigator.config")
+        self.navigator_status = datastreams.get_stream("navigator.status")
+        self.autonomous_config = datastreams.get_stream("auto_config")
+        self.position_stream = datastreams.get_stream("position")
         self.arm_stream = datastreams.get_stream("arms")
         self.light_sensor_stream = datastreams.get_stream("light_sensor")
-        events.set_callback("autonomous", self.run, self.subsystem)
-        events.set_callback("disabled", self.disable, self.subsystem)
+        events.add_callback("autonomous", self.subsystem, self.run)
+        events.add_callback("disabled", self.subsystem, self.disable)
 
 
     def disable(self):
@@ -40,7 +40,7 @@ class Module(ModuleBase):
         wpilib.SmartDashboard.PutBoolean("do vision", True)
 
         #Drive to line
-        events.trigger("navigator.mark", self.subsystem)
+        events.trigger_event("navigator.mark")
         self.navigator_config.push({"mode": 1, "y-goal": config["distance_from_tape"], "max-speed": 3, "acceleration": 5, "iter-second": 10, "make-up": 1.5, "precision": .1}, self.subsystem, autolock=True)
         events.set_event("navigator.run", self.subsystem, True)
         time.sleep(.2)
@@ -66,7 +66,7 @@ class Module(ModuleBase):
 
         shot_drive = 18 - config["first_shot"]
 
-        events.trigger("navigator.mark", self.subsystem)
+        events.trigger_event("navigator.mark")
         self.navigator_config.push({"mode": 1, "y-goal": shot_drive + 1, "max-speed": 5, "acceleration": 15, "iter-second": 10, "make-up": 1.5}, self.subsystem, autolock=True)
         events.set_event("navigator.run", self.subsystem, True)
         start_time = time.time()
@@ -81,7 +81,7 @@ class Module(ModuleBase):
             raise Exception("Error in navigator execution")
 
         #Shoot
-        events.trigger("highShot", self.subsystem)
+        events.trigger_event("highShot")
 
         #Wait for shooting to end
         time.sleep(.5)
@@ -93,7 +93,7 @@ class Module(ModuleBase):
 
     def stop_nav(self):
         events.set_event("navigator.run", self.subsystem, False)
-        events.trigger("navigator.stop", self.subsystem)
+        events.trigger_event("navigator.stop")
         #if self.navigator_status.get(1) is -1:
         #    raise Exception("Error in navigator execution")
 

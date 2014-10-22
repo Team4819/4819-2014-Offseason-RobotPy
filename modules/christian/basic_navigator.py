@@ -1,29 +1,34 @@
-from framework.module_engine import ModuleBase
-
 __author__ = 'christian'
 from framework import events, datastreams
 import logging
 import time
-import math
 
-class Module(ModuleBase):
+
+class Module:
 
     subsystem = "navigator"
 
+    #Navigator Config dictionary:
+    #x-goal: The target x value for the robot
+    #y-goal: The target y value for the robot
+    #max-speed: The maximum desired speed of the robot in feet per second
+    #max-acceleration: The maximum desired acceleration of the robot in feet per second squared
+    #max-jerk: The maximum desired jerk of the robot in feet per second cubed
+    #iter-second: The speed in iterations per second of the navigation loop
+    #precision: The distance from the end goal to be in order to finish
 
+    default_config = {"x-goal": 0, "y-goal": 0, "max-speed": 5, "max-acceleration": 3, "max-jerk": 5, "iter-second": 4, "precision": 1}
 
-    default_config = {"mode": 0, "x-goal": 0, "y-goal": 0, "max-speed": 5, "acceleration": 3, "make-up": 5, "iter-second": 4, "precision": 1}
+    tunings = {"acceleration-factor": 1}
 
-    def module_load(self):
+    def __init__(self):
         self.running = False
-        self.drive_stream = datastreams.get_stream("drive")
         self.config_stream = datastreams.get_stream("navigator.config")
         self.default_config.update(self.config_stream.get(dict()))
         self.status_stream = datastreams.get_stream("navigator.status")
         self.position_stream = datastreams.get_stream("position")
-        events.set_callback("navigator.run", self.do_drive, self.subsystem)
-        events.set_callback("navigator.stop", self.stop_drive, self.subsystem)
-        events.set_callback("navigator.mark", self.mark, self.subsystem)
+        events.add_callback("navigator.run", self.subsystem, callback=self.do_drive, inverse_callback=self.stop_drive)
+        events.add_callback("navigator.mark", self.subsystem, self.mark)
         self.current_x = 0
         self.current_y = 0
 

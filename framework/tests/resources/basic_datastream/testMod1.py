@@ -1,13 +1,11 @@
-from framework.module_engine import ModuleBase
-
 __author__ = 'christian'
 
 from framework import datastreams
 
-class Module(ModuleBase):
+class Module:
     subsystem = "test1"
 
-    def module_load(self):
+    def __init__(self):
         self.streamData = "blank"
         self.stream = datastreams.get_stream("testStream")
 

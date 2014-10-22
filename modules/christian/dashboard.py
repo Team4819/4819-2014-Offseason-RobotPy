@@ -1,7 +1,4 @@
-from framework.module_engine import ModuleBase
-
 __author__ = 'christian'
-
 from framework import events, datastreams, wpiwrap, module_engine
 try:
     import wpilib
@@ -10,39 +7,39 @@ except ImportError:
 import time
 import json
 import logging
+import traceback
 
-class Module(ModuleBase):
+
+class Module:
 
     subsystem = "dashboard"
+    stop_flag = False
 
-    def module_load(self):
+    def __init__(self):
         wpilib.SmartDashboard.init()
-        self.joystick1 = datastreams.get_stream("joystick1")
-        self.joystick2 = datastreams.get_stream("joystick2")
-        self.ultrasonic_stream = datastreams.get_stream("ultrasonic")
+        #self.ultrasonic_stream = datastreams.get_stream("ultrasonic", "r")
         self.autonomous_conf_stream = datastreams.get_stream("autonomous_config")
-        events.set_callback("run", self.run, self.subsystem)
+        events.add_callback("run", self.subsystem, callback=self.run, inverse_callback=self.stop)
         wpilib.SmartDashboard.PutNumber("Auto Routine", 2)
         wpilib.SmartDashboard.PutNumber("1st Shoot Distance", 12)
         wpilib.SmartDashboard.PutNumber("2nd Shoot Distance", 7)
         wpilib.SmartDashboard.PutNumber("Distance from Tape", 3)
         wpilib.SmartDashboard.PutNumber("Start Position", 1)
 
-
-
     def run(self):
         last_auto_routine = 5
+        self.stop_flag = False
         while not self.stop_flag:
             try:
                 wpiwrap.publish_values()
             except Exception as e:
-                logging.error(e)
-            default = {"buttons": (False, False, False, False, False, False, False, False, False, False), "axes": (0,0,0,0)}
-            joy1string = json.dumps(self.joystick1.get(default))
-            joy2string = json.dumps(self.joystick2.get(default))
-            wpilib.SmartDashboard.PutString("joystick1", joy1string)
-            wpilib.SmartDashboard.PutString("joystick2", joy2string)
-            wpilib.SmartDashboard.PutNumber("Ultrasonic Sensor", self.ultrasonic_stream.get(0))
+                logging.error("Error: " + str(e) + "\n" + traceback.format_exc())
+            #default = {"buttons": (False, False, False, False, False, False, False, False, False, False), "axes": (0,0,0,0)}
+            #joy1string = json.dumps(self.joystick1.get(default))
+            #joy2string = json.dumps(self.joystick2.get(default))
+            #wpilib.SmartDashboard.PutString("joystick1", joy1string)
+            #wpilib.SmartDashboard.PutString("joystick2", joy2string)
+            #wpilib.SmartDashboard.PutNumber("Ultrasonic Sensor", self.ultrasonic_stream.get(0))
 
             auto_routine = wpilib.SmartDashboard.GetNumber("Auto Routine")
             if auto_routine != last_auto_routine:
@@ -79,8 +76,9 @@ class Module(ModuleBase):
 
                 self.autonomous_conf_stream.push({"first_shot": first_shot, "second_shot": second_shot, "distance_from_tape": distance_from_tape, "start_position": start_position}, self.subsystem, autolock=True)
 
-
-
             time.sleep(.5)
+
+    def stop(self):
+        self.stop_flag = True
 
 

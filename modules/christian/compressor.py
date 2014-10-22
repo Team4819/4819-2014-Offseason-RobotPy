@@ -1,26 +1,18 @@
-from framework import datastreams, events, wpiwrap
-import time
-from framework.module_engine import ModuleBase
-
+from framework import events, wpiwrap
 __author__ = 'christian'
 
 
-class Module(ModuleBase):
+class Module:
     subsystem = "compressor"
 
-    def module_load(self):
+    def __init__(self):
         self.compressor = wpiwrap.Compressor("Compressor", self.subsystem, 14, 1)
         self.pressure_switch = wpiwrap.DigitalInput("Pressure Switch", self.subsystem, 6)
-        self.pressure_switch_datastream = datastreams.get_stream("pressure_switch")
+        events.add_callback("enabled", self.subsystem, callback=self.start, inverse_callback=self.stop)
+
+    def start(self):
         self.compressor.set(True)
-        events.set_callback("run", self.run, self.subsystem)
 
-    def run(self):
-        while not self.stop_flag:
-            self.pressure_switch_datastream.push(self.pressure_switch.get(), self.subsystem, autolock=True)
-            time.sleep(1)
-
-    def module_unload(self):
-        self.stop_flag = True
+    def stop(self):
         self.compressor.set(False)
 

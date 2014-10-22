@@ -15,7 +15,7 @@ def test_basic_events():
     mod2.fireEvent()
     time.sleep(.1)
     assert mod1.index is 2
-    events.trigger("test", "Tester")
+    events.trigger_event("test", "tester")
     time.sleep(.1)
     assert mod1.index is 3
     module_engine.kill_all_modules()
@@ -25,12 +25,12 @@ def test_state_events():
     module_engine.load_module("framework.tests.resources.state_events.testMod1")
     mod1 = module_engine.get_modules("test1")
     assert mod1.index is 1
-    events.trigger("test", "Tester")
+    events.trigger_event("test", "tester")
     time.sleep(.1)
     assert mod1.index is 2
     mod1.reset()
     assert mod1.index is 1
-    events.set_event("test", "Tester", True)
+    events.start_event("test", "Tester")
     time.sleep(.1)
     assert mod1.index is 2
     mod1.reset()
@@ -38,7 +38,7 @@ def test_state_events():
     events.refresh_events("test1")
     time.sleep(.1)
     assert mod1.index is 2
-    events.set_event("test", "Tester", False)
+    events.stop_event("test", "Tester")
     time.sleep(.1)
     mod1.reset()
     assert mod1.index is 1
@@ -46,4 +46,4 @@ def test_state_events():
     time.sleep(.1)
     assert mod1.index is 1
     module_engine.kill_all_modules()
-    events.purge_events()
+    events.cleanup_events()

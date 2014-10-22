@@ -1,62 +1,56 @@
-from framework import module_engine, datastreams, events, wpiwrap
+from framework import events, wpiwrap
 import time
-from framework.module_engine import ModuleBase
-
-try:
-    import wpilib
-except ImportError:
-    from pyfrc import wpilib
 __author__ = 'christian'
 
 
-class Module(ModuleBase):
+class Module:
 
     subsystem = "intake"
+    stop_flag = False
 
-    def module_load(self):
-
+    def __init__(self):
         #Get refrences
+        self.joystick = wpiwrap.Joystick("Joystick 2", self.subsystem, 2)
         self.arm_solenoid = wpiwrap.Solenoid("Arm Solenoid", self.subsystem, 2)
         self.flipper_solenoid = wpiwrap.Solenoid("Flipper Solenoid", self.subsystem, 1)
         self.intake_motor = wpiwrap.Talon("Intake Motor", self.subsystem, 3)
 
-
-        self.armstream = datastreams.get_stream("arms")
-        self.armstream.on_update("update_arms")
-        events.set_callback("update_arms", self.update_arms, self.subsystem)
-
-        self.flipperstream = datastreams.get_stream("flipper")
-        self.intakestream = datastreams.get_stream("intake")
-
-        events.set_callback("enabled", self.run, self.subsystem)
-        events.set_callback("disabled", self.disable, self.subsystem)
-        events.set_callback("cannon.load", self.refresh_cannon_disable, self.subsystem)
-
-    def refresh_cannon_disable(self):
-        if self.armstream.get(True):
-            module_engine.get_modules("cannon").disable(self.subsystem)
-        else:
-            module_engine.get_modules("cannon").enable(self.subsystem)
-
-    def disable(self):
-        self.stop_flag = True
-        self.armstream.push(True, self.subsystem, autolock=True)
+        #Set a run loop
+        events.add_callback("teleoperated", self.subsystem, callback=self.run, inverse_callback=self.stop)
 
     def run(self):
         self.stop_flag = False
+        #The last state of the arms up and arms down buttons
+        arms_up_last = False
+        arms_down_last = False
+
         while not self.stop_flag:
-            self.intake_motor.Set(float(self.intakestream.get(0)))
-            self.flipper_solenoid.Set(not self.flipperstream.get(False))
+
+            #Read buttons
+            intake_speed = self.joystick.get_axis(1)
+            flipper_button = self.joystick.get_button(4)
+            arms_up = self.joystick.get_button(3)
+            arms_down = self.joystick.get_button(2)
+
+            #Deadband intake speed
+            if abs(intake_speed) < .1:
+                intake_speed = 0
+
+            if arms_up and not arms_up_last:
+                events.start_event("disable_cannon", self.subsystem)
+                self.arm_solenoid.set(False)
+            elif arms_down and not arms_down_last:
+                events.stop_event("disable_cannon", self.subsystem)
+                self.arm_solenoid.set(True)
+
+            arms_down_last = arms_down
+            arms_up_last = arms_up
+
+            self.intake_motor.Set(intake_speed)
+            self.flipper_solenoid.Set(not flipper_button)
             time.sleep(.05)
 
-    def update_arms(self):
-        if self.armstream.get(True):
-            module_engine.get_modules("cannon").disable(self.subsystem)
-            self.arm_solenoid.Set(False)
-        else:
-            module_engine.get_modules("cannon").enable(self.subsystem)
-            self.arm_solenoid.Set(True)
-
-
-
-
+    def stop(self):
+        self.stop_flag = True
+        self.arm_solenoid.set(False)
+        events.start_event("disable_cannon", self.subsystem)

@@ -1,8 +1,6 @@
-from framework.module_engine import ModuleBase
-
 __author__ = 'christian'
 
-class Module(ModuleBase):
+class Module:
     subsystem = "test"
 
     def getMessage(self):

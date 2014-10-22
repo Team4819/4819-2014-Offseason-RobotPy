@@ -1,7 +1,4 @@
-from framework.module_engine import ModuleBase
-
 __author__ = 'christian'
-
 from framework import events, module_engine
 import logging
 import traceback
@@ -15,17 +12,20 @@ except ImportError:
 
 #import pynetworktables as wpilib
 
-class Module(ModuleBase):
+
+class Module:
     subsystem = "remote"
+    stop_flag = False
     index = 1
 
-    def module_load(self):
-        events.set_callback("run", self.run, self.subsystem)
+    def __init__(self):
+        events.add_callback("run", self.subsystem, callback=self.run, inverse_callback=self.stop)
         wpilib.SmartDashboard.init()
         self.table = wpilib.NetworkTable.GetTable("framework_remote")
         self.table.PutString("frameworkcommands", "{}")
 
     def run(self):
+        self.stop_flag = False
         while not self.stop_flag:
             modnames = module_engine.list_modules()
             self.table.PutString("modlist", json.dumps(modnames))
@@ -47,7 +47,6 @@ class Module(ModuleBase):
                 for command in commands:
                     if int(command) >= self.index:
                         self.index = int(command) + 1
-                        print(self.index)
                         self.table.PutNumber("globalCommandIndex", self.index)
                         try:
                             if commands[command]["command"] == "reload module":
@@ -61,6 +60,7 @@ class Module(ModuleBase):
                         except Exception as e:
                             logging.error("Error running command: " + commands[command]["command"] + ": " + str(e) + "\n" + traceback.format_exc())
 
-
-
             time.sleep(.5)
+
+    def stop(self):
+        self.stop_flag = True

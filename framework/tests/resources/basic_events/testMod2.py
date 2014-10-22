@@ -1,12 +1,9 @@
-from framework.module_engine import ModuleBase
-
 __author__ = 'christian'
-
 from framework import events
 
 
-class Module(ModuleBase):
+class Module:
     subsystem = "test2"
 
     def fireEvent(self):
-        events.trigger("test", self.subsystem)
+        events.trigger_event("test", self.subsystem)

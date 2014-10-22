@@ -12,11 +12,11 @@ except ImportError:
 class Module(ModuleBase):
     subsystem = "encoder_test"
 
-    def module_load(self):
+    def __init__(self):
         wpilib.SmartDashboard.init()
         self.encoder_1 = wpiwrap.Encoder("encoder_1", self.subsystem, 1, 2, 360, 20)
         self.encoder_2 = wpiwrap.Encoder("encoder_2", self.subsystem, 3, 4, 360, 20)
-        events.set_callback("run", self.do_stuff, self.subsystem)
+        events.add_callback("run", self.subsystem, self.do_stuff)
 
 
     def do_stuff(self):

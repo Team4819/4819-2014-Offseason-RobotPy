@@ -7,5 +7,5 @@ class Module(ModuleBase):
     subsystem = "autonomous"
 
 
-    def module_load(self):
+    def __init__(self):
         pass

@@ -14,17 +14,17 @@ class Module(ModuleBase):
 
     default_config = {"mode": 0, "x-goal": 0, "y-goal": 0, "max-speed": 5, "acceleration": 3, "make-up": 1, "iter-second": 4, "precision": 1, "gyroscope": True}
 
-    def module_load(self):
+    def __init__(self):
         self.running = False
         self.drive_stream = datastreams.get_stream("drive")
         self.config_stream = datastreams.get_stream("navigator.config")
         self.default_config.update(self.config_stream.get(dict()))
         self.status_stream = datastreams.get_stream("navigator.status")
         self.position_stream = datastreams.get_stream("position")
-        events.set_callback("disabled", self.stop_drive, self.subsystem)
-        events.set_callback("navigator.run", self.do_drive, self.subsystem)
-        events.set_callback("navigator.stop", self.stop_drive, self.subsystem)
-        events.set_callback("navigator.mark", self.mark, self.subsystem)
+        events.add_callback("disabled", self.subsystem, self.stop_drive)
+        events.add_callback("navigator.run", self.subsystem, self.do_drive)
+        events.add_callback("navigator.stop", self.subsystem, self.stop_drive)
+        events.add_callback("navigator.mark", self.subsystem, self.mark)
         self.right_encoder = wpiwrap.Encoder("Right Encoder", self.subsystem, 1, 2, 360, 20)
         self.left_encoder = wpiwrap.Encoder("Left Encoder", self.subsystem, 4, 3, 360, 20)
         self.gyroscope = wpiwrap.Gyro("Gyroscope", self.subsystem, 2, 300)

@@ -12,6 +12,7 @@ analogRefs = dict()
 pwmRefs = dict()
 solenoidRefs = dict()
 relayRefs = dict()
+usbRefs = dict()
 
 
 def clear_refrences(mod):
@@ -347,3 +348,26 @@ class Encoder(Refrence):
             wpilib.SmartDashboard.PutNumber(self.name, self.get())
         else:
             wpilib.SmartDashboard.PutNumber(self.name, 0)
+
+class Joystick(Refrence):
+
+    portrefs = [usbRefs]
+    wpi_object_name = wpilib.Joystick.__name__
+
+    def __init__(self, name, modulename, port):
+        self.name = name
+        self.modulename = modulename
+        self.get_wpiobject(name, port)
+
+    def init_wpilib_refrence(self, name, port):
+        self.wpiobject = wpilib.Joystick(port)
+
+    def get_button(self, button):
+        return self.wpiobject.GetRawButton(button)
+
+    def get_axis(self, axis):
+        return self.wpiobject.GetAxis(axis)
+
+    def publish_to_table(self):
+        pass
+        #wpilib.SmartDashboard.PutString(self.name, self.dumpValues())

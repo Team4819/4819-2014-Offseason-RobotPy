@@ -100,7 +100,7 @@ def replay_events(eventsfile):
             event = parsed_events[0]
             del parsed_events[0]
             if event['action'] == "triggered":
-                events.trigger(event["event"], event["srcmod"])
+                events.trigger_event(event["event"])
             else:
                 events.set_event(event["event"], event["srcmod"], event["action"] is "on")
         time.sleep(.1)

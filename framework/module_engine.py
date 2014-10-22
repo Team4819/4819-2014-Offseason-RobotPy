@@ -2,8 +2,9 @@
 This is as it's name describes, the core engine for the module system. It contains both top-level functions to
 manipulate the module system, as well as the various classes necessary to perform those actions.
 """
+
 __author__ = 'christian'
-from framework import configerator, events, wpiwrap
+from framework import events, wpiwrap, filesystem
 import time
 import threading
 import logging
@@ -11,7 +12,7 @@ import traceback
 import os
 import imp
 
-mods = dict()
+_loaded_modules = dict()
 """The dictionary of all loaded modules, with the module's subsystem as it's key."""
 
 #Initialize console logs
@@ -24,19 +25,19 @@ logging.root.addHandler(ch)
 
 def list_modules():
     """Returns a copy of the list of all loaded mods"""
-    return [x for x in mods]
+    return [x for x in _loaded_modules]
 
 
 def load_startup_mods(config=os.path.join("modules", "mods.conf")):
     """Load all modules listed in the [StartupMods] tag in a config file"""
     try:
         #Try to get the config file parsed
-        startup_mods = configerator.parse_config(config)["StartupMods"]
+        startup_mods = filesystem.parse_config(config)["StartupMods"]
     except Exception as e:
         #Oops, ERROR! ERROR!
         logging.error(e)
         #Well, try the backup config file then
-        startup_mods = configerator.parse_config(os.path.join("framework", "defaults", "mods.conf"))["StartupMods"]
+        startup_mods = filesystem.parse_config(os.path.join("framework", "defaults", "mods.conf"))["StartupMods"]
 
     #For each module in the config, try to load it.
     for mod in startup_mods:
@@ -49,9 +50,9 @@ def load_startup_mods(config=os.path.join("modules", "mods.conf")):
 
 def get_modules(subsystem):
     """Return the wanted module"""
-    if subsystem in mods:
+    if subsystem in _loaded_modules:
         #We have it? Then return it!
-        return mods[subsystem]
+        return _loaded_modules[subsystem]
     else:
         #404 no module found, return the elusive Phantom Object!
         return PhantomObject([subsystem])
@@ -60,32 +61,37 @@ def get_modules(subsystem):
 def load_module(name):
     """Load a module"""
     #Check to make sure we do not already have one by that name
-    if name in mods:
+    if name in _loaded_modules:
         raise ModuleLoadError(name, ": Already module with name " + name)
 
-    #Create the ModWrapper object and load the module
-    modwrap = ModWrapper()
+    #Create the _ModWrapper object and load the module
+    modwrap = _ModWrapper()
     modwrap.load(name)
-    modname = modwrap.subsystem
+    subsystem = modwrap.subsystem
 
     #Check again, do we have a duplicate now?
-    if modname in mods:
+    if subsystem in _loaded_modules:
         #Oops, lets clean up this mess we have made
         modwrap.unload()
-        raise ModuleLoadError(modname, ": Already module with name " + modname)
+        raise ModuleLoadError(subsystem, ": Already module with name " + subsystem)
 
     #Save it!
-    mods[modname] = modwrap
+    _loaded_modules[subsystem] = modwrap
+
+    #Trigger a *subsystem*.load event for the rest of the system to hear, and get our newly-loaded module
+    #up-to-date on current events
+    events.start_event(subsystem + ".load", subsystem)
+    events.refresh_events(subsystem)
 
 
 def unload_module(subsystem):
     """Unload a module by subsystem"""
-    if subsystem not in mods:
+    if subsystem not in _loaded_modules:
         raise ModuleUnloadError(subsystem, "No such module loaded")
     #Unload it
-    mods[subsystem].unload()
+    _loaded_modules[subsystem].unload()
     #Delete it
-    mods.pop(subsystem, None)
+    _loaded_modules.pop(subsystem, None)
 
 
 def kill_all_modules():
@@ -97,15 +103,15 @@ def kill_all_modules():
 
 def reload_mods():
     """Reload all modules"""
-    for key in mods:
+    for key in _loaded_modules:
         try:
-            mods[key].reload()
+            _loaded_modules[key].reload()
         except Exception as e:
             logging.error("Error reloading module: " + key + ": " + str(e) + "\n" + traceback.format_exc())
 
 
 #   This is my solution to the threads that would not die!
-class GrimReaper(threading.Thread):
+class Janitor(threading.Thread):
     """This watches for the status of the main thread, and kills the modules when the main thread dies."""
 
     timer = 0
@@ -114,14 +120,14 @@ class GrimReaper(threading.Thread):
     def run(self):
         while self.timer < 2:
             #Increment the timer each iteration
-            self.timer += .1
+            self.timer += .2
             #If we have less than 1 second left,
             if self.timer > 1:
                 #Give a warning
-                logging.info("The Reaper is coming!")
-            time.sleep(.1)
+                logging.info("The Janitor is coming!")
+            time.sleep(.2)
         #Notify the system and kill all modules
-        logging.info("KILL ALL THE THREADS!!!!!")
+        logging.info("Cleaning up all the modules!!!!!")
         kill_all_modules()
 
     def delay_death(self):
@@ -129,7 +135,7 @@ class GrimReaper(threading.Thread):
         self.timer = 0
 
 
-class ModWrapper:
+class _ModWrapper:
     """This is the final layer managing a module,"""
 
     def __init__(self):
@@ -165,8 +171,13 @@ class ModWrapper:
         self.fallback_index += 1
         self.load()
 
+    def reload(self):
+        self.load()
+
     def load(self, modname=None):
-        """Load a module into the modwrapper, either from a name, or use the existing fallback_list and fallback_index"""
+        """
+        Load a module into the modwrapper, either from a name, or use the existing fallback_list and fallback_index
+        """
 
         #Start by unloading any previously loaded module
         if self.mod_loaded:
@@ -178,17 +189,17 @@ class ModWrapper:
         if modname is not None:
 
             #is it a subsystem name?
-            if modname in configerator.parsed_config:
-                self.fallback_list = configerator.parsed_config[modname]
+            if modname in filesystem.parsed_config:
+                self.fallback_list = filesystem.parsed_config[modname]
                 self.fallback_index = 0
 
             #no? must be a filename then.
             else:
                 #Search for filename in loaded config
-                for subsystem_config in configerator.parsed_config:
-                    if subsystem_config is not "StartupMods" and modname in configerator.parsed_config[subsystem_config]:
+                for subsystem_config in filesystem.parsed_config:
+                    if subsystem_config is not "StartupMods" and modname in filesystem.parsed_config[subsystem_config]:
                         #We found it! set the fallback list and module index
-                        self.fallback_list = configerator.parsed_config[subsystem_config]
+                        self.fallback_list = filesystem.parsed_config[subsystem_config]
                         self.fallback_index = self.fallback_list.index(modname)
 
                 #If we still don't have a fallback list, just make one up and go!
@@ -196,7 +207,8 @@ class ModWrapper:
                     self.fallback_list.append(modname)
                     self.fallback_index = 0
 
-        #Now that we have the fallback list, we can loop through it and try to find a module that will successfully load!
+        #Now that we have the fallback list, we can loop through it
+        # and try to find a module that will successfully load!
 
         success = False
         while not success:
@@ -224,15 +236,16 @@ class ModWrapper:
                 self.module = self.modfile.Module()
                 self.mod_loaded = True
 
-                #Trigger the module load function and get the module's true subsystem and file name
-                self.module.module_load()
+                #Get the module's true subsystem and file name
                 self.subsystem = self.module.subsystem
                 self.filename = file_to_load
 
-                #Trigger a *subsystem*.load event for the rest of the system to hear, and get our newly-loaded module
-                #up-to-date on current events
-                events.set_event(self.subsystem + ".load", self.subsystem, True)
-                events.refresh_events(self.subsystem)
+                #Check to see if we are already saved in _loaded_modules
+                if self.subsystem in _loaded_modules and self is _loaded_modules[self.subsystem]:
+                    #Trigger a *subsystem*.load event for the rest of the system to hear, and get our newly-loaded module
+                    #up-to-date on current events
+                    events.start_event(self.subsystem + ".load", self.subsystem)
+                    events.refresh_events(self.subsystem)
 
                 #Yay, we must have been successfull!
                 success = True
@@ -246,22 +259,13 @@ class ModWrapper:
     def unload(self):
         """Unload the currently loaded module"""
 
-        #If we actually have a module loaded, run it's unload function
-        if self.mod_loaded:
-            try:
-                self.module.module_unload()
-            except Exception as e:
-                logging.error("Error unloading module: " + self.filename + ": " + str(e) + "\n" + traceback.format_exc())
-
-        #Cleanup all traces of the old module
-
-        #Remove all event callbacks
-        events.remove_callbacks(self.subsystem)
+        #Remove all event callbacks and active events, triggering any inverse events
+        events.cleanup_events(self.subsystem)
 
         #Let the rest of the system know that this module has been unloaded;
         #stop the *subsystem*.load event and trigger the *subsystem*.unload event
-        events.set_event(self.subsystem + ".load", self.subsystem, False)
-        events.trigger(self.subsystem + ".unload", self.subsystem)
+        events.stop_event(self.subsystem + ".load", self.subsystem)
+        events.trigger_event(self.subsystem + ".unload", self.subsystem)
 
         #Clear the wpilib references, neuteralizing any outputs
         wpiwrap.clear_refrences(self.subsystem)
@@ -314,7 +318,7 @@ class ModuleUnloadError(Exception):
         super().__init__(name + ": " + message)
 
 
-class PhantomObject():
+class PhantomObject:
     """This is what is returned when a non-existant module is asked for"""
 
     chain = list()
@@ -333,19 +337,5 @@ class PhantomObject():
         function_name = self.chain[len(self.chain) - 1]
         text = "Phantom object reports phantom call! Called " + function_name + ", chain:"
         for link in self.chain:
-            text += "Phantom object " + link + ",\n"
+            text += "\n Phantom object " + link + ","
         logging.warning(text)
-
-
-class ModuleBase(object):
-    """The parent class for all modules"""
-    subsystem = "generic"
-    stop_flag = False
-
-    def module_load(self):
-        """The module's constructor, initialize all references and interfaces here"""
-        pass
-
-    def module_unload(self):
-        """The module's destructor, stop any loops and do any clean-up here."""
-        self.stop_flag = True

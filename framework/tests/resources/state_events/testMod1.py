@@ -1,16 +1,14 @@
-from framework.module_engine import ModuleBase
-
 __author__ = 'christian'
 
 from framework import events
 
 
-class Module(ModuleBase):
+class Module:
     subsystem = "test1"
     index = 1
 
-    def module_load(self):
-        events.set_callback("test", self.callback, self.subsystem)
+    def __init__(self):
+        events.add_callback("test", self.subsystem, self.callback)
 
     def reset(self):
         self.index = 1

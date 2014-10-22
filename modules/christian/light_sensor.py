@@ -11,10 +11,10 @@ class Module(ModuleBase):
     subsystem = "light_sensor"
 
 
-    def module_load(self):
+    def __init__(self):
         self.sensor = wpiwrap.AnalogInput("Light Sensor", self.subsystem, 1)
         self.sensor_stream = datastreams.get_stream("light_sensor")
-        events.set_callback("run", self.do_stuff, self.subsystem)
+        events.add_callback("run", self.subsystem, self.do_stuff)
 
     def do_stuff(self):
         """This is a simple run loop that says 'Hello World!' every second until the module is told to terminate."""

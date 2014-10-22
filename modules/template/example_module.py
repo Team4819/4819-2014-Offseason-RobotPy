@@ -18,13 +18,13 @@ class Module(ModuleBase):
     subsystem = "hello world"
 
 
-    def module_load(self):
+    def __init__(self):
         """This is run upon module load, initialize any variables or interfaces here, and subscribe to any events"""
 
         #This sets the method "self.do_stuff" to be run upon the event "run".
         #   The "run" event is triggered automatically, and should be used to start any loops
         #   designed to be run while the module is loaded
-        events.set_callback("run", self.do_stuff, self.subsystem)
+        events.add_callback("run", self.subsystem, self.do_stuff)
 
     def do_stuff(self):
         """This is a simple run loop that says 'Hello World!' every second until the module is told to terminate."""

@@ -11,31 +11,24 @@ class LockError(Exception):
     pass
 
 
-class DataStream(object):
+class Datastream(object):
 
     def __init__(self, name):
         self.name = name
         self.data = None
         self._lock = None
-        self._active = False
         self.updateHooks = dict()
-
-    def activate(self):
-        self._active = True
 
     def lock(self, owner):
         self._lock = owner
 
     def get(self, default):
-        self._active = True
         if self.data is None:
             return default
         else:
             return self.data
 
     def push(self, data, srcmod, autolock=False):
-        if not self._active:
-            return
         if data == self.data:
             return
         if autolock:
@@ -51,25 +44,20 @@ class DataStream(object):
             for key in self.updateHooks:
                 try:
                     if self.updateHooks[key](olddata, data):
-                        events.trigger(key, "datastream")
+                        events.trigger_event(key, "datastream." + srcmod)
                 except Exception as e:
                     logging.error(e)
 
     def on_update(self, event, check=lambda x, y: True):
         self.updateHooks[event] = check
-        self._active = True
 
 
-def get_stream(stream, activate=False):
+def get_stream(stream):
     if stream not in streams:
-        streams[stream] = DataStream(stream)
-    if activate:
-        streams[stream].activate()
+        streams[stream] = Datastream(stream)
     return streams[stream]
 
 
 def purge_datastreams():
-    keys = list()
-    keys += streams.keys()
-    for key in keys:
-        del(streams[key])
+    while len(streams) is not 0:
+        streams.popitem()
