@@ -15,10 +15,10 @@ relayRefs = dict()
 usbRefs = dict()
 
 
-def clear_refrences(mod):
+def clear_refrences(subsystem):
     reflist = list()
     for ref in refrences:
-        if refrences[ref].modulename is mod:
+        if refrences[ref].subsystem is subsystem:
             reflist.append(ref)
 
     for ref in reflist:
@@ -72,9 +72,9 @@ class Refrence:
     status = True
     statmsg = ""
 
-    def __init__(self, name, modulename, port):
+    def __init__(self, name, subsystem, port):
         self.name = name
-        self.modulename = modulename
+        self.subsystem = subsystem
         self.get_wpiobject(name, port)
 
     def get_wpiobject(self, name, *ports):
@@ -182,7 +182,7 @@ class Counter(Refrence):
     def init_wpilib_refrence(self, name, port):
         self.wpiobject = wpilib.Counter()
         self.wpiobject.SetUpSource(port)
-        #self.wpiobject.SetSemiPeriodMode(True)
+        #self.wpiobject.SetSemiPeriodsubsysteme(True)
         #self.wpiobject.SetUpSourceEdge(port, False)
         self.wpiobject.Start()
         self.wpiobject.label = name
@@ -242,9 +242,9 @@ class Gyro(Refrence):
     last_read_time = 0
     last_read_val = 0
 
-    def __init__(self, name, modulename, port, max_rate):
+    def __init__(self, name, subsystem, port, max_rate):
         self.name = name
-        self.modulename = modulename
+        self.subsystem = subsystem
         self.dog = DeviceWatchdog(max_rate)
         self.get_wpiobject(name, port)
 
@@ -277,9 +277,9 @@ class Compressor(Refrence):
     wpi_object_name = wpilib.Compressor.__name__
     portrefs = [dioRefs, relayRefs]
 
-    def __init__(self, name, modulename, switchport, relayport):
+    def __init__(self, name, subsystem, switchport, relayport):
         self.name = name
-        self.modulename = modulename
+        self.subsystem = subsystem
         self.get_wpiobject(name, switchport, relayport)
 
     def init_wpilib_refrence(self, name, switch, relay):
@@ -304,9 +304,9 @@ class Encoder(Refrence):
     portrefs = [dioRefs, dioRefs]
     wpi_object_name = wpilib.Encoder.__name__
 
-    def __init__(self, name, modulename, A_port, B_port, tics_per_foot, max_rate):
+    def __init__(self, name, subsystem, A_port, B_port, tics_per_foot, max_rate):
         self.name = name
-        self.modulename = modulename
+        self.subsystem = subsystem
         self.tics_per_foot = tics_per_foot
         self.dog = DeviceWatchdog(max_rate)
         self.get_wpiobject(name, A_port, B_port)
@@ -354,9 +354,9 @@ class Joystick(Refrence):
     portrefs = [usbRefs]
     wpi_object_name = wpilib.Joystick.__name__
 
-    def __init__(self, name, modulename, port):
+    def __init__(self, name, subsystem, port):
         self.name = name
-        self.modulename = modulename
+        self.subsystem = subsystem
         self.get_wpiobject(name, port)
 
     def init_wpilib_refrence(self, name, port):

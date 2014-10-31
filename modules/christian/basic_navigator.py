@@ -19,7 +19,7 @@ class Module:
 
     default_config = {"x-goal": 0, "y-goal": 0, "max-speed": 5, "max-acceleration": 3, "max-jerk": 5, "iter-second": 4, "precision": 1}
 
-    tunings = {"acceleration-factor": 1}
+    tunings = {"speed-factor": 5, "acceleration-factor": 1}
 
     def __init__(self):
         self.running = False
@@ -37,6 +37,66 @@ class Module:
         self.current_y = 0
 
     def do_drive(self):
+        """Perform the currently-configured drive sequence"""
+
+        #Set run status
+        self.status_stream.push(0, self.subsystem, autolock=True)
+        self.success = False
+        self.running = True
+        config = self.default_config
+        config.update(self.config_stream.get(self.default_config))
+        current_speed = 0
+        current_acceleration = 0
+
+        #Calculate the approximate distance it will take to slow down
+        slow_point = (config["max-speed"] * config["max-speed"] / (config["max-acceleration"] * 2))
+
+        while self.running and not self.success:
+
+            #Update the rest of the world about our current position
+            self.position_stream.push((self.current_x, self.current_y), self.subsystem, autolock=True)
+
+            #How much farther do we have to go?
+            delta_y = config["y-goal"] - self.current_y
+
+            #Calculate what speed we currently want to go at, this code will result in:
+            #
+            # s     __________________________
+            # p     |                         \
+            # e     |                          \
+            # e     |                           \
+            # d     |                            \
+            #-------                              -----
+            #                   Time
+            #
+            #
+            # a     __________________________
+            # c     |                         \
+            # c     |                          \
+            # e     |                           \
+            # l     |                            \
+            #-------                              -----
+            #                   Time
+
+
+            wanted_speed = config["max-speed"]
+            if delta_y <= slow_point:
+                #We must slow down then!
+                wanted_speed = delta_y * config["max-acceleration"]
+
+
+            wanted_speed_delta = current_speed - wanted_speed
+            wanted_acceleration = (abs(wanted_speed_delta)/wanted_speed_delta) * config["max-acceleration"]
+            wanted_acceleration_delta = current_acceleration - wanted_acceleration
+            wanted_jerk = (abs(wanted_acceleration_delta)/wanted_acceleration_delta) * config["max-jerk"]
+
+
+
+
+
+
+
+    def do_drive_old(self):
         self.status_stream.push(0, self.subsystem, autolock=True)
         self.drive_stream.lock(self.subsystem)
         self.running = True

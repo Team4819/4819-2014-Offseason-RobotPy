@@ -40,6 +40,7 @@ class Module:
 
     def cannon_loop(self):
         """Watches joystick input and fires cannon"""
+        self.stop_flag = False
         last_trigger = False
         while not self.stop_flag:
 
@@ -67,6 +68,7 @@ class Module:
     def blowback_loop(self):
         """Watches joystick input and operates cannon blowback"""
         last_blowback = False
+        self.stop_flag = False
         while not self.stop_flag:
             blowback = self.joystick.get_button(4)
             if blowback is not last_blowback:

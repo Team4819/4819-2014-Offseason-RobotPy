@@ -23,6 +23,10 @@ class Module:
         #The last state of the arms up and arms down buttons
         arms_up_last = False
         arms_down_last = False
+        
+        #Set the arms to up before we do anything
+        self.arm_solenoid.set(False)
+        events.start_event("disable_cannon", self.subsystem)
 
         while not self.stop_flag:
 
