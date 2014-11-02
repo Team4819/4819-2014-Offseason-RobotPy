@@ -6,6 +6,8 @@ try:
 except ImportError:
     from pyfrc import wpilib
 
+#TODO comment all of this stuff
+
 refrences = dict()
 dioRefs = dict()
 analogRefs = dict()

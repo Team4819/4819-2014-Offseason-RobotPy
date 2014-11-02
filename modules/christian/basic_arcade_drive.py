@@ -1,5 +1,5 @@
 __author__ = 'christian'
-from framework import events, wpiwrap
+from framework import events, wpiwrap, datastreams
 import time
 
 
@@ -14,6 +14,16 @@ class Module:
         self.right_motor = wpiwrap.Talon("right motor", self.subsystem, 2)
 
         events.add_callback("teleoperated", self.subsystem, callback=self.run, inverse_callback=self.stop)
+        events.add_callback("drivetrain.mark", self.subsystem, callback=self.mark)
+
+        self.position_stream = datastreams.get_stream("position")
+
+        self.current_distance = 0
+        self.current_angle = 0
+
+    def mark(self):
+        self.current_distance = 0
+        self.current_angle = 0
 
     def run(self):
         self.stop_flag = False
@@ -40,6 +50,10 @@ class Module:
 
             self.left_motor.set(output_left)
             self.right_motor.set(output_right)
+
+            self.current_distance += input_y * 8 * .05
+            self.current_angle += input_x * 4 * .05
+            self.position_stream.push({"angle": self.current_angle, "distance": self.current_distance}, self.subsystem, autolock=True)
 
             time.sleep(.05)
 

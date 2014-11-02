@@ -1,16 +1,13 @@
-from framework.module_engine import ModuleBase
-
 __author__ = 'christian'
-from framework import events, datastreams, wpiwrap
+from framework import events, datastreams
 import logging
 import time
 import copy
 
-class Module(ModuleBase):
+
+class Module:
 
     subsystem = "navigator"
-
-
 
     default_config = {"mode": 0, "x-goal": 0, "y-goal": 0, "max-speed": 5, "acceleration": 3, "make-up": 1, "iter-second": 4, "precision": 1, "gyroscope": True}
 
@@ -25,9 +22,7 @@ class Module(ModuleBase):
         events.add_callback("navigator.run", self.subsystem, self.do_drive)
         events.add_callback("navigator.stop", self.subsystem, self.stop_drive)
         events.add_callback("navigator.mark", self.subsystem, self.mark)
-        self.right_encoder = wpiwrap.Encoder("Right Encoder", self.subsystem, 1, 2, 360, 20)
-        self.left_encoder = wpiwrap.Encoder("Left Encoder", self.subsystem, 4, 3, 360, 20)
-        self.gyroscope = wpiwrap.Gyro("Gyroscope", self.subsystem, 2, 300)
+
         self.current_x = 0
         self.current_y = 0
         self.current_speed_x = 0
@@ -44,12 +39,6 @@ class Module(ModuleBase):
         self.last_accel_x = 0
         self.stage = 0
 
-    def mark(self):
-        self.current_x = 0
-        self.current_y = 0
-        self.left_encoder.reset()
-        self.right_encoder.reset()
-        self.gyroscope.reset()
 
     def do_drive(self):
         self.status_stream.push(0, self.subsystem, autolock=True)

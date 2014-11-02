@@ -295,7 +295,7 @@ class _ModWrapper:
                 #I guess that did not work either, well better report it also.
                 logging.error(ex)
 
-        #Clear the processe's entry in running_events
+        #Clear the process's entry in running_events
         del(self.running_events[id])
 
     def __getattr__(self, item):
