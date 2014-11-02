@@ -4,5 +4,8 @@
 *.log
 recs/*
 *__pycache__*
-*.pyc
 .coverage
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
