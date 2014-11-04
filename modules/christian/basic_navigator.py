@@ -1,7 +1,8 @@
 __author__ = 'christian'
 from framework import events, datastreams
-import logging
 import time
+import math
+import logging
 
 
 class Module:
@@ -9,218 +10,92 @@ class Module:
     subsystem = "navigator"
 
     #Navigator Config dictionary:
-    #x-goal: The target x value for the robot
-    #y-goal: The target y value for the robot
-    #max-speed: The maximum desired speed of the robot in feet per second
-    #max-acceleration: The maximum desired acceleration of the robot in feet per second squared
-    #max-jerk: The maximum desired jerk of the robot in feet per second cubed
+    #max-speed: The maximum desired values for speed, acceleration, jerk, and so on
     #iter-second: The speed in iterations per second of the navigation loop
     #precision: The distance from the end goal to be in order to finish
 
-    default_config = {"x-goal": 0, "y-goal": 0, "max-speed": 5, "max-acceleration": 3, "max-jerk": 5, "iter-second": 4, "precision": 1}
+    default_config = {"max_values": (5, 3, 5), "cycles_per_second": 4, "precision": 1}
 
-    tunings = {"speed-factor": 5, "acceleration-factor": 1}
+    #Navigator goals:
+    #This is a list of (x, y) values used as target coordinates
+    default_goals = [(0, 0)]
+
+    #Should we stop the loop?
+    stop_loop = False
 
     def __init__(self):
-        self.running = False
         self.config_stream = datastreams.get_stream("navigator.config")
-        self.default_config.update(self.config_stream.get(dict()))
+        self.goals_stream = datastreams.get_stream("navigator.goals")
         self.status_stream = datastreams.get_stream("navigator.status")
-        self.position_stream = datastreams.get_stream("position")
-        events.add_callback("navigator.run", self.subsystem, callback=self.do_drive, inverse_callback=self.stop_drive)
-        events.add_callback("navigator.mark", self.subsystem, self.mark)
-        self.current_x = 0
-        self.current_y = 0
+        self.drivetrain_state_stream = datastreams.get_stream("drivetrain.state")
+        self.drivetrain_control_stream = datastreams.get_stream("drivetrain.control")
 
-    def mark(self):
-        self.current_x = 0
-        self.current_y = 0
+        events.add_callback("navigator.run", self.subsystem, callback=self.do_drive, inverse_callback=self.stop_drive)
 
     def do_drive(self):
         """Perform the currently-configured drive sequence"""
 
-        #Set run status
-        self.status_stream.push(0, self.subsystem, autolock=True)
-        self.success = False
-        self.running = True
-        config = self.default_config
-        config.update(self.config_stream.get(self.default_config))
-        current_speed = 0
-        current_acceleration = 0
-
-        #Calculate the approximate distance it will take to slow down
-        slow_point = (config["max-speed"] * config["max-speed"] / (config["max-acceleration"] * 2))
-
-        while self.running and not self.success:
-
-            #Update the rest of the world about our current position
-            self.position_stream.push((self.current_x, self.current_y), self.subsystem, autolock=True)
-
-            #How much farther do we have to go?
-            delta_y = config["y-goal"] - self.current_y
-
-            #Calculate what speed we currently want to go at, this code will result in:
-            #
-            # s     __________________________
-            # p     |                         \
-            # e     |                          \
-            # e     |                           \
-            # d     |                            \
-            #-------                              -----
-            #                   Time
-            #
-            #
-            # a     __________________________
-            # c     |                         \
-            # c     |                          \
-            # e     |                           \
-            # l     |                            \
-            #-------                              -----
-            #                   Time
-
-
-            wanted_speed = config["max-speed"]
-            if delta_y <= slow_point:
-                #We must slow down then!
-                wanted_speed = delta_y * config["max-acceleration"]
-
-
-            wanted_speed_delta = current_speed - wanted_speed
-            wanted_acceleration = (abs(wanted_speed_delta)/wanted_speed_delta) * config["max-acceleration"]
-            wanted_acceleration_delta = current_acceleration - wanted_acceleration
-            wanted_jerk = (abs(wanted_acceleration_delta)/wanted_acceleration_delta) * config["max-jerk"]
-
-
-
-
-
-
-
-    def do_drive_old(self):
-        self.status_stream.push(0, self.subsystem, autolock=True)
-        self.drive_stream.lock(self.subsystem)
-        self.running = True
-        self.success = False
-        config = self.default_config
-        runtime_vars = {"last_out_x": 0, "last_out_y": 0, "last_accel_x": 0, "last_accel_y": 0, "stage": 0}
         try:
-            while self.running and not self.success and not self.stop_flag:
-                config.update(self.config_stream.get(self.default_config))
-                self.position_stream.push((self.current_x, self.current_y), self.subsystem, autolock=True)
-                #TODO get something better here
-                wait_time = 1/config["iter-second"]
+            #Set run status
+            self.status_stream.push(0, self.subsystem, autolock=True)
 
-                #Bang Bang Navigation
-                if config["mode"] is 0:
-                    out_x = 0
-                    out_y = 0
-                    delta_x = config["x-goal"] - self.current_x
-                    delta_y = config["y-goal"] - self.current_y
-                    self.success = True
-                    if abs(delta_x) > config["precision"]:
-                        sign = abs(delta_x)/delta_x
-                        out_x = sign * config["max-speed"]
-                        self.current_x += 5 * wait_time * out_x
-                        self.success = False
+            #Reset stop_loop flag
+            self.stop_loop = False
 
-                    if abs(delta_y) > config["precision"]:
-                        sign = abs(delta_y)/delta_y
-                        out_y = sign * config["max-speed"]
-                        self.current_y += 5 * wait_time * out_y
-                        self.success = False
+            #Get configs
+            config = self.default_config
+            config.update(self.config_stream.get(self.default_config))
+            goals = self.goals_stream.get(self.default_goals)
 
-                    self.drive_stream.push((out_x, out_y), self.subsystem)
+            logging.info("Navigating to point {}".format(goals[0]))
 
-                #Acceleration
-                if config["mode"] is 1:
-                    out_x = 0
-                    out_y = 0
-                    delta_x = config["x-goal"] - self.current_x
-                    delta_y = config["y-goal"] - self.current_y
-                    self.success = True
+            self.drivetrain_control_stream.lock(self.subsystem)
 
-                    if abs(delta_x) > config["precision"]:
-                        sign = abs(delta_x)/delta_x
-                        out_x = runtime_vars["last_out_x"]
-                        out_x += sign * config["acceleration"] * wait_time
-                        if abs(out_x) >= config["max-speed"]:
-                            out_x = sign * config["max-speed"]
-                        self.current_x += 5 * wait_time * out_x
-                        self.success = False
+            wait_time = 1/config["cycles_per_second"]
 
-                    if abs(delta_y) > config["precision"]:
-                        sign = abs(delta_y)/delta_y
-                        out_y = runtime_vars["last_out_y"]
-                        out_y += sign * config["acceleration"] * wait_time
-                        if abs(out_y) >= config["max-speed"]:
-                            out_y = sign * config["max-speed"]
-                        self.current_y += 5 * wait_time * out_y
-                        self.success = False
+            last_speed = 0
 
-                    runtime_vars["last_out_x"] = out_x
-                    runtime_vars["last_out_y"] = out_y
+            while not self.stop_loop:
 
-                    self.drive_stream.push((out_x, out_y), self.subsystem)
+                drivetrain_state = self.drivetrain_state_stream.get({"distance": 0, "speed": 0, "angle": 0})
 
-                #Trapezoidial Motion Profile
-                if config["mode"] is 2:
-                    out_x = 0
-                    out_y = 0
-                    delta_x = config["x-goal"] - self.current_x
-                    delta_y = config["y-goal"] - self.current_y
+                #How much farther do we have to go?
+                distance_error = goals[0][1] - drivetrain_state["distance"]
 
+                #Are we done? Then break!
+                if abs(distance_error) < config["precision"]:
+                    break
 
-                    if runtime_vars["stage"] is 2:
-                        out_y = runtime_vars["last_out_y"]
-                        accel_y = runtime_vars["last_accel_y"]
-                        target_accel = -(out_y * out_y / (2 * delta_y))
-                        target_delta_accel = target_accel - accel_y
-                        target_delta_accel *= config["make-up"]
-                        accel_y += target_delta_accel * wait_time
-                        out_y += accel_y * wait_time
-                        runtime_vars["last_accel_y"] = accel_y
-                        #out_y += planned_accel * wait_time
-                        if delta_y < config["precision"]:
-                            runtime_vars["stage"] = 3
+                #Calculate the approximate distance it will take to slow down
+                slow_point = (drivetrain_state["speed"] ** 2 / (config["max_values"][1] * 2))
 
-                    elif runtime_vars["stage"] is 1:
-                        out_y = runtime_vars["last_out_y"]
-                        end_range = (out_y * out_y / (config["acceleration"] * 2)) + out_y * wait_time
-                        if delta_y - end_range < config["precision"]:
-                            runtime_vars["stage"] = 2
+                #Calculate what speed we currently want to go at:
+                wanted_speed = math.copysign(config["max_values"][0], distance_error)
+                if distance_error < slow_point:
+                    #We must slow down then!
+                    wanted_speed = 0
 
-                    elif runtime_vars["stage"] is 0:
-                        sign = abs(delta_y)/delta_y
-                        out_y = runtime_vars["last_out_y"]
-                        out_y += sign * config["acceleration"] * wait_time
-                        if abs(out_y) >= config["max-speed"]:
-                            out_y = sign * config["max-speed"]
-                            runtime_vars["stage"] = 1
-                        end_range = (out_y * out_y / (config["acceleration"] * 2)) + out_y * wait_time
-                        if delta_y - end_range < config["precision"]:
-                            runtime_vars["stage"] = 2
+                #Limit the acceleration
+                wanted_speed_delta = wanted_speed - last_speed
+                wanted_acceleration = math.copysign(config["max_values"][1], wanted_speed_delta)
+                result_speed = last_speed + wanted_acceleration * wait_time
 
-                    else:
-                        self.success = True
+                #Add a bit of angle correction
+                angle_component = - drivetrain_state["angle"] * .01
 
-                    self.current_y += wait_time * out_y
+                #Send values to drivetrain
+                self.drivetrain_control_stream.push((angle_component, result_speed), self.subsystem)
 
-                    runtime_vars["last_out_x"] = out_x
-                    runtime_vars["last_out_y"] = out_y
+                last_speed = result_speed
 
-                    self.drive_stream.push((out_x/5, out_y/5), self.subsystem)
-
-
+                #Sleep until next loop
                 time.sleep(wait_time)
+
+            #Clean up
+            self.drivetrain_control_stream.push((0, 0), self.subsystem)
             self.status_stream.push(1, self.subsystem, autolock=True)
         except datastreams.LockError:
             self.status_stream.push(-1, self.subsystem, autolock=True)
 
     def stop_drive(self):
-        self.running = False
-        time.sleep(.1)
-        try:
-            self.drive_stream.push((0, 0), self.subsystem)
-        except datastreams.LockError:
-            pass
-        logging.info("I will stop doing something!")
+        self.stop_loop = True

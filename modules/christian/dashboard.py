@@ -17,7 +17,10 @@ class Module:
 
     def __init__(self):
         wpilib.SmartDashboard.init()
-        #self.ultrasonic_stream = datastreams.get_stream("ultrasonic", "r")
+        self.sensor = wpiwrap.AnalogInput("Light Sensor", self.subsystem, 1)
+        self.ultrasonic = wpiwrap.Counter("Ultrasonic_Sensor", self.subsystem, 11)
+        self.ultrasonic.set_semi_period()
+
         self.autonomous_conf_stream = datastreams.get_stream("autonomous_config")
         events.add_callback("run", self.subsystem, callback=self.run, inverse_callback=self.stop)
         wpilib.SmartDashboard.PutNumber("Auto Routine", 2)

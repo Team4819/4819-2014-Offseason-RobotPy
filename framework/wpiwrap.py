@@ -184,10 +184,15 @@ class Counter(Refrence):
     def init_wpilib_refrence(self, name, port):
         self.wpiobject = wpilib.Counter()
         self.wpiobject.SetUpSource(port)
-        #self.wpiobject.SetSemiPeriodsubsysteme(True)
-        #self.wpiobject.SetUpSourceEdge(port, False)
         self.wpiobject.Start()
         self.wpiobject.label = name
+
+    def set_semi_period(self):
+        #TODO Remove this try/except once pyfrc is updated with my commit
+        try:
+            self.wpiobject.SetSemiPeriodMode(True)
+        except AttributeError:
+            logging.info("My patch must not have fully propogated yet, there is no attribute for Counter.SetSemiPeriodMode")
 
     def get(self):
         return self.wpiobject.Get()
