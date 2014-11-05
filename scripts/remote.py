@@ -7,6 +7,7 @@ import copy
 import math
 from tkinter import *
 from tkinter import ttk
+import sys
 
 ip = sys.argv[1]
 NetworkTable.SetIPAddress(ip)

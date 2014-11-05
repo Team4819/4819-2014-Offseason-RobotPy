@@ -53,7 +53,6 @@ def start_event(eventname, src_subsystem):
 
 def stop_event(eventname, src_subsystem):
     """Stop the event"""
-    global _active_events
     #Scan through each active event
     for event in _active_events[:]:
         #If it is the correct event
