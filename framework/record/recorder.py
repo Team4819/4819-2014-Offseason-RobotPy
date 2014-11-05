@@ -6,6 +6,8 @@ from decimal import *
 
 __author__ = 'christian'
 
+#TODO This stuff is currently junk. Everything has changed since this was built, so it will probably blow up if used
+
 datastream_files = dict()
 last_datastream_updates = dict()
 starttime = 0

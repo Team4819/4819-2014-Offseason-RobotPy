@@ -7,6 +7,8 @@ import threading
 
 __author__ = 'christian'
 
+#TODO This stuff is currently junk. Everything has changed since this was built, so it will probably blow up if used
+
 starttime = 0
 
 

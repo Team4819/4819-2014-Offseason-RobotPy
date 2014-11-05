@@ -1,7 +1,8 @@
 """
-This is a wrapper for wpilib that primarily focuses on allowing multiple modules to have access to the same device refrences.
-Whenever a device refrence is created, the wpilib refrence is initialized once, then saved to one of the refs dictionaries, when
-that device is created again, the already-initialized wpilib refrence will be pulled from the dictionary.
+This is a wrapper for wpilib that primarily focuses on allowing multiple modules to have access to the same
+device references. Whenever a device reference is created, the wpilib reference is initialized once,
+then saved to one of the refs dictionaries, when that device is created again, the already-initialized
+wpilib reference will be pulled from the dictionary.
 """
 __author__ = 'christian'
 import time
@@ -11,16 +12,14 @@ try:
 except ImportError:
     from pyfrc import wpilib
 
-#TODO comment all of this stuff
+#These are the reference dictionaries, they cache wpilib references so that they can be re-used elsewhere.
 
-#These are the refrence dictionaries, they cache wpilib refrences so that they can be re-used elsewhere.
+#This holds references to all objects inheriting from wpiwrap.Reference, this is the first place
+# checked when looking for device reference dupilcates.
+references = list()
 
-#This holds refrences to all objects inheriting from wpiwrap.Refrence, this is the first place
-# checked when looking for device refrence dupilcates.
-refrences = list()
-
-#The following dictionaries hold refrences to the actual wpilib objects under their appropriate port number, for example: dioRefs[1] refrences
-# whatever wpilib object (if any) that is using dio port 1
+#The following dictionaries hold references to the actual wpilib objects under their appropriate port number,
+# for example: dioRefs[1] references whatever wpilib object (if any) that is using dio port 1
 dioRefs = dict()
 analogRefs = dict()
 pwmRefs = dict()
@@ -30,17 +29,20 @@ usbRefs = dict()
 
 
 def clear_refrences(subsystem):
-    """This searches through the refrences for anything created by subsystem, neuteralizes their outputs, and removes them"""
+    """
+    This searches through the references for anything created by subsystem, neutralizes their outputs, and removes them
+    """
 
     #Neuteralize them
-    for ref in refrences[:]:
-        ref.neuteralize()
-        refrences.remove(ref)
+    for ref in references[:]:
+        if ref.subsystem is subsystem:
+            ref.neutralize()
+            references.remove(ref)
 
 
 def publish_values():
     """This loops through all refrences and runs their publish_to_table command"""
-    for ref in refrences[:]:
+    for ref in references[:]:
         ref.publish_to_table()
 
 class DeviceInErrorStateError(Exception):
@@ -140,7 +142,10 @@ class Refrence:
         self.get_wpiobject(name, port)
 
     def get_wpiobject(self, name, *ports):
-        """This function populates our wpiobject with either a cached one, or a brand new one. It also saves the refrence in the port refrences given"""
+        """
+        This function populates our wpiobject with either a cached one, or a brand new one.
+        It also saves the reference in the port references given
+        """
 
         #Save some values
         self.ports = ports
@@ -167,7 +172,7 @@ class Refrence:
             refs[port] = self.wpiobject
 
         #Save self to the refrence list
-        refrences.append(self)
+        references.append(self)
 
     def init_wpilib_refrence(self, name, port):
         """This is meant to be overloaded with something to initialize the correct wpi object"""
@@ -181,7 +186,7 @@ class Refrence:
         """This is meant to be overloaded with the wpi object's default setter"""
         pass
 
-    def neuteralize(self):
+    def neutralize(self):
         """This is meant to be overloaded with whatever puts the wpi object into a safe state."""
         self.set(0)
 
@@ -197,6 +202,8 @@ class Refrence:
         """If we haven't heard of a function, forward the request to the wpi object"""
         return getattr(self.wpiobject, item)
 
+#The below classes all inherit from Refrence above, and
+
 
 class DigitalInput(Refrence):
 
@@ -211,7 +218,7 @@ class DigitalInput(Refrence):
         return self.wpiobject.Get()
 
     def publish_to_table(self):
-        wpilib.SmartDashboard.PutBoolean(self.name, self.get())
+        wpilib.SmartDashboard.PutBoolean(self.name, bool(self.get()))
 
 
 class AnalogInput(Refrence):
@@ -242,7 +249,7 @@ class DigitalOutput(Refrence):
     def set(self, value):
         return self.wpiobject.Set(value)
 
-    def neuteralize(self):
+    def neutralize(self):
         self.set(False)
 
     def publish_to_table(self):
@@ -309,7 +316,7 @@ class Solenoid(Refrence):
     def set(self, value):
         self.wpiobject.Set(value)
 
-    def neuteralize(self):
+    def neutralize(self):
         self.set(False)
 
     def publish_to_table(self):
@@ -371,11 +378,11 @@ class Compressor(Refrence):
         else:
             self.wpiobject.Stop()
 
-    def neuteralize(self):
+    def neutralize(self):
         self.set(False)
 
     def publish_to_table(self):
-        wpilib.SmartDashboard.PutBoolean(self.name, self.wpiobject.GetPressureSwitchValue())
+        wpilib.SmartDashboard.PutBoolean(self.name, False)
 
 
 class Encoder(Refrence):

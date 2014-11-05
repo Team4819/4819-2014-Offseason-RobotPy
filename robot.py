@@ -1,3 +1,8 @@
+#This is a little setup to catch and log errors that crash the interpreter, shamelessly copied from
+# the internet.
+
+#Load just the minimum stuff to start with, so we hopefully won't crash before we have this hook in-place
+
 import sys
 import os
 import traceback
@@ -14,8 +19,9 @@ def my_excepthook(type, value, tb):
 
 sys.excepthook = my_excepthook
 
+#Now we actually start doing things!
+
 from framework import module_engine, events, filesystem
-from framework.record import recorder, playback
 
 try:
     import wpilib
@@ -32,10 +38,9 @@ class RobotTrunk(wpilib.SimpleRobot):
         filesystem.init_logs()
 
         module_engine.load_startup_mods(os.path.join(filesystem.root_dir, "modules", "mods.conf"))
+
         #Toggle the run event
         events.start_event("run", "robot_main")
-
-        recorder.startRecording()
 
         self.reaper = module_engine.Janitor()
         self.reaper.start()
