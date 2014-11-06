@@ -17,6 +17,7 @@ recording = False
 
 TWOPLACES = Decimal(10) ** -2
 
+
 def startRecording():
     global recording, starttime, event_file
     filesystem.make_dirs()
