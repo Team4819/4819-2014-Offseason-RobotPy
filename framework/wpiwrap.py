@@ -268,6 +268,8 @@ class Counter(Refrence):
 
     def set_semi_period(self):
         #TODO Remove this try/except once pyfrc is updated with my commit
+        #I submitted a patch to pyfrc with the (previously missing) function stub. But it appears that it may not have fully propogated to the
+        # public release yet.
         try:
             self.wpiobject.SetSemiPeriodMode(True)
         except AttributeError:
@@ -340,14 +342,18 @@ class Gyro(Refrence):
 
     def get(self):
         angle = self.wpiobject.GetAngle()
+
+        #Run the value by the dog
         self.statmsg, self.status = self.dog.sniff(angle)
 
+        #If the dog says it is a bad value, raise an error
         if not self.status:
             raise DeviceInErrorStateError(self.statmsg)
         else:
             return angle
 
     def reset(self):
+        #Let the dog know, so he doesen't alert when the value jumps to zero
         self.dog.reset()
         return self.wpiobject.Reset()
 

@@ -1,11 +1,16 @@
 """
-This is an event system
+This is an event system. Modules can add callbacks to events, which will be run in a new thread once triggered.
+This is the primary mechanism for starting and stopping run loops.
+
+On the flip side, events can be either "triggered" which is a one-time call (For example: shoot_cannon or reset_gyro),
+ or they can be started and then stopped, for events with duration (For example: run, teleoperated, or enabled).
+ The main difference is that when modules are freshly loaded, the refresh_events method is called, which then finds all
+ of the "started" events and triggers them for the new module.
 """
 
 import logging
 import threading
 import framework.module_engine
-from framework.record import recorder
 
 __author__ = 'christian'
 

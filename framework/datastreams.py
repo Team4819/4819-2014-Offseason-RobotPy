@@ -52,7 +52,7 @@ class Datastream(object):
 
         #Check to see if we should automatically lock the stream to subsystem
         if autolock:
-            self._lock = subsystem
+            self.lock(subsystem)
 
         #Check lock
         if self._lock is not None and self._lock is not subsystem:

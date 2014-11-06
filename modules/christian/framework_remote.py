@@ -14,40 +14,61 @@ except ImportError:
 
 
 class Module:
+    """
+    This module interfaces with the python application under scripts/remote.py.
+    It publishes data over Network Tables and obeys commands sent back to it.
+    """
     subsystem = "remote"
     stop_flag = False
-    index = 1
+    #The last-used command index
+    command_index = 1
 
     def __init__(self):
-        events.add_callback("run", self.subsystem, callback=self.run, inverse_callback=self.stop)
+        #Initialize Network Tables
         wpilib.SmartDashboard.init()
         self.table = wpilib.NetworkTable.GetTable("framework_remote")
         self.table.PutString("frameworkcommands", "{}")
 
+        #Setup callback
+        events.add_callback("run", self.subsystem, callback=self.run, inverse_callback=self.stop)
+
     def run(self):
         self.stop_flag = False
         while not self.stop_flag:
+            #Get a list of all modules and send it to the table
             modnames = module_engine.list_modules()
             self.table.PutString("modlist", json.dumps(modnames))
+
+            #Loop through all loaded modules and get some info about them,
+            #  then publish it to the table as a json string.
             for name in modnames:
                 mod = module_engine.get_modules(name)
                 modsummary = {"name": mod.subsystem, "filename": mod.filename, "runningTasks": mod.running_events, "fallbackList": mod.fallback_list}
                 self.table.PutString("mod." + name, json.dumps(modsummary))
 
+            #Try to update our command_index if there is a larger remote one.
+            # this is to ensure that we do not run the same command again if we restart.
             try:
                 remoteindex = self.table.GetNumber("globalCommandIndex")
-                if self.index < remoteindex:
-                    self.index = remoteindex
+                if self.command_index < remoteindex:
+                    self.command_index = remoteindex
             except wpilib.TableKeyNotDefinedException:
                 pass
 
+            #Get the commands data from the table and parse it if there is anything to parse.
             commandsString = self.table.GetString("frameworkcommands")
             if not commandsString == "{}":
                 commands = json.loads(commandsString)
+
+                #For each command, check if it is greater than our command_index, and if so, do it!
                 for command in commands:
-                    if int(command) >= self.index:
-                        self.index = int(command) + 1
-                        self.table.PutNumber("globalCommandIndex", self.index)
+                    if int(command) >= self.command_index:
+                        self.command_index = int(command) + 1
+
+                        #Update the global command index
+                        self.table.PutNumber("globalCommandIndex", self.command_index)
+
+                        #Find and run the command
                         try:
                             if commands[command]["command"] == "reload module":
                                 module_engine.get_modules(commands[command]["target"]).load()
@@ -58,6 +79,7 @@ class Module:
                             else:
                                 logging.error("Framework Remote: No such command - " + commands[command]["command"])
                         except Exception as e:
+                            #Oops, my bad. :L
                             logging.error("Error running command: " + commands[command]["command"] + ": " + str(e) + "\n" + traceback.format_exc())
 
             time.sleep(.5)

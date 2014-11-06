@@ -4,6 +4,7 @@ import time
 
 
 class Module:
+    """This is a basic version of the drivetrain module, using pure estimation rather than sensors for state feedback"""
 
     subsystem = "drivetrain"
     stop_flag = False
@@ -29,6 +30,7 @@ class Module:
         self.current_angle = 0
 
     def run_loop(self):
+        """Listen to joystick input and the control datastream to determine what to do with the drivetrain"""
         self.stop_flag = False
         while not self.stop_flag:
             joystick_input_x = self.joystick.get_axis(0)

@@ -28,7 +28,7 @@ class Module:
         #Register autonomous event callback
         events.add_callback("autonomous", self.subsystem, callback=self.run, inverse_callback=self.stop)
 
-    class EndAuto(Exception):
+    class EndAutoError(Exception):
         """This is just a way to stop the autonomous routine at any time if we are told to"""
         pass
 
@@ -42,14 +42,13 @@ class Module:
             config = self.autonomous_config.get({"second_shot": 7, "first_shot": 12, "distance_from_tape": 3, "start_position": 1})
 
             #Configure navigator
-            self.navigator_config.push({"max_values": [5, 4], "cycles_per_second": 10, "precision": .2}, self.subsystem, autolock=True)
+            self.navigator_config.push({"max_values": [5, 5], "cycles_per_second": 10, "precision": .2}, self.subsystem, autolock=True)
 
             #Mark drivetrain
             events.trigger_event("drivetrain.mark", self.subsystem)
 
             #Drop Arms
-            self.intake_stream.lock(self.subsystem)
-            self.intake_stream.push({"arms_down": True, "flipper_out": True, "intake_motor": 0}, self.subsystem)
+            self.intake_stream.push({"arms_down": True, "flipper_out": True, "intake_motor": 0}, self.subsystem, autolock=True)
 
             #Trigger Vision
             wpilib.SmartDashboard.PutNumber("hot goal", 0)
@@ -65,7 +64,7 @@ class Module:
             # or the light sensor reports that we are on the line.
             while self.navigator_status.get(1) is 0 and time.time() - start_time < 5 and self.light_sensor.get() < 2.5:
                 if self.stop_flag:
-                    raise self.EndAuto()
+                    raise self.EndAutoError()
                 time.sleep(.2)
 
             #Stop the bot
@@ -98,7 +97,7 @@ class Module:
             while self.navigator_status.get(1) is 0 and time.time() - start_time < 5 and abs(pos["distance"] - shot_point) > 1:
                 pos = self.drivetrain_state_stream.get({"distance": 0})
                 if self.stop_flag:
-                    raise self.EndAuto()
+                    raise self.EndAutoError()
                 time.sleep(.1)
 
             #Shoot
@@ -107,7 +106,7 @@ class Module:
             #Wait for shooting to end
             time.sleep(.5)
 
-        except self.EndAuto:
+        except self.EndAutoError:
             pass
 
         #STOP!!!
@@ -115,6 +114,7 @@ class Module:
 
     def stop(self):
         logging.info("Stopping autonomous")
+        events.stop_event("navigator.run", self.subsystem)
         self.stop_flag = True
 
 

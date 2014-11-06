@@ -4,6 +4,10 @@ import time
 
 
 class Module:
+    """
+    This handles just about everything related to the drivetrain,
+    which amounts to motors, encoders, and a lonely gyro.
+    """
 
     subsystem = "drivetrain"
     _stop_drive_loop = False
@@ -16,7 +20,7 @@ class Module:
 
         self.right_encoder = wpiwrap.Encoder("Right Encoder", self.subsystem, 1, 2, 360, 20)
         self.left_encoder = wpiwrap.Encoder("Left Encoder", self.subsystem, 4, 3, 360, 20)
-        self.gyroscope = wpiwrap.Gyro("Gyroscope", self.subsystem, 2, 300)
+        self.gyroscope = wpiwrap.Gyro("Gyroscope", self.subsystem, 2, 500)
 
         events.add_callback("drivetrain.mark", self.subsystem, callback=self.mark)
         events.add_callback("enabled", self.subsystem, callback=self.drive_loop, inverse_callback=self.stop_drive_loop)
@@ -45,6 +49,7 @@ class Module:
         self._stop_state_loop = True
 
     def drive_loop(self):
+        """Listen to joystick input and the control datastream to determine what to do with the drivetrain"""
         self._stop_drive_loop = False
         while not self._stop_drive_loop:
             joystick_input_x = self.joystick.get_axis(0)
@@ -71,6 +76,7 @@ class Module:
                 input_y = control_input[1]/5
                 input_x = control_input[0]/5
 
+            #Convert input_x and input_y into output_left and output_right
             output_left = input_x - input_y
 
             if abs(output_left) > 1:
@@ -81,6 +87,7 @@ class Module:
             if abs(output_right) > 1:
                 output_right = abs(output_right)/output_right
 
+            #Drive the motors
             self.left_motor.set(output_left)
             self.right_motor.set(output_right)
 

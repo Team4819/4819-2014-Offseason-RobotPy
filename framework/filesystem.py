@@ -11,7 +11,7 @@ __author__ = 'christian'
 root_dir = ""
 
 #The directory to store all logs and recordings from this run session
-log_dir = os.path.join(root_dir, "recs")
+log_dir = os.path.join(root_dir, "logs")
 
 #The log file, which is a dump of all console output
 log_file = os.path.join(log_dir, "main.log")
@@ -34,7 +34,7 @@ def gen_paths():
     global log_dir, events_file, log_file, datastream_dir
 
     #The root log directory
-    log_root_dir = os.path.join(root_dir, "recs")
+    log_root_dir = os.path.join(root_dir, "logs")
 
     #Figure out what log file index we should use
     #The log file index is a 4-digit number corresponding to an unused log folder
