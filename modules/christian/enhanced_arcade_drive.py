@@ -10,8 +10,6 @@ class Module:
     """
 
     subsystem = "drivetrain"
-    _stop_drive_loop = False
-    _stop_state_loop = False
 
     def __init__(self):
         self.joystick = wpiwrap.Joystick("Joystick 1", self.subsystem, 1)
@@ -20,24 +18,23 @@ class Module:
 
         self.right_encoder = wpiwrap.Encoder("Right Encoder", self.subsystem, 1, 2, 360, 20)
         self.left_encoder = wpiwrap.Encoder("Left Encoder", self.subsystem, 4, 3, 360, 20)
-        self.gyroscope = wpiwrap.Gyro("Gyroscope", self.subsystem, 2, 500)
+        self.gyroscope = wpiwrap.Gyro("Gyroscope", self.subsystem, 2, 600)
 
-        events.add_callback("drivetrain.mark", self.subsystem, callback=self.mark)
-        events.add_callback("enabled", self.subsystem, callback=self.drive_loop, inverse_callback=self.stop_drive_loop)
-        events.add_callback("run", self.subsystem, callback=self.state_loop, inverse_callback=self.stop_state_loop)
+        events.add_callback("drivetrain.mark", self.subsystem, self.mark)
+        events.add_callback("enabled", self.subsystem, self.drive_loop)
+        events.add_callback("run", self.subsystem, self.state_loop)
 
         self.state_stream = datastreams.get_stream("drivetrain.state")
         self.control_stream = datastreams.get_stream("drivetrain.control")
 
-    def mark(self):
+    def mark(self, task):
         self.right_encoder.reset()
         self.left_encoder.reset()
         self.gyroscope.reset()
 
-    def state_loop(self):
+    def state_loop(self, task):
         """"Poll sensors to determine position, speed, direction, etc and send it to the state datastream"""
-        self._stop_state_loop = False
-        while not self._stop_state_loop:
+        while task.active:
             distance = self.right_encoder.get()
             speed = self.right_encoder.get_rate()
             angle = self.gyroscope.get()
@@ -45,13 +42,9 @@ class Module:
             self.state_stream.push(state, self.subsystem, autolock=True)
             time.sleep(.05)
 
-    def stop_state_loop(self):
-        self._stop_state_loop = True
-
-    def drive_loop(self):
+    def drive_loop(self, task):
         """Listen to joystick input and the control datastream to determine what to do with the drivetrain"""
-        self._stop_drive_loop = False
-        while not self._stop_drive_loop:
+        while task.active:
             joystick_input_x = self.joystick.get_axis(0)
             joystick_input_y = self.joystick.get_axis(1)
 
@@ -93,10 +86,5 @@ class Module:
 
             time.sleep(.05)
 
-        self.left_motor.set(0)
-        self.right_motor.set(0)
-
-    def stop_drive_loop(self):
-        self._stop_drive_loop = True
         self.left_motor.set(0)
         self.right_motor.set(0)

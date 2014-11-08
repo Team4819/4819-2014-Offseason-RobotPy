@@ -20,9 +20,6 @@ class Module:
     #This is a list of (x, y) values used as target coordinates
     default_goals = [(0, 0)]
 
-    #Should we stop the loop?
-    stop_loop = False
-
     def __init__(self):
         self.config_stream = datastreams.get_stream("navigator.config")
         self.goals_stream = datastreams.get_stream("navigator.goals")
@@ -30,17 +27,14 @@ class Module:
         self.drivetrain_state_stream = datastreams.get_stream("drivetrain.state")
         self.drivetrain_control_stream = datastreams.get_stream("drivetrain.control")
 
-        events.add_callback("navigator.run", self.subsystem, callback=self.do_drive, inverse_callback=self.stop_drive)
+        events.add_callback("navigator.run", self.subsystem, self.do_drive)
 
-    def do_drive(self):
+    def do_drive(self, task):
         """Perform the currently-configured drive sequence"""
 
         try:
             #Set run status
             self.status_stream.push(0, self.subsystem, autolock=True)
-
-            #Reset stop_loop flag
-            self.stop_loop = False
 
             #Get configs
             config = self.default_config
@@ -55,7 +49,7 @@ class Module:
 
             last_speed = 0
 
-            while not self.stop_loop:
+            while task.active:
 
                 drivetrain_state = self.drivetrain_state_stream.get({"distance": 0, "speed": 0, "angle": 0})
 
@@ -96,6 +90,3 @@ class Module:
             self.status_stream.push(1, self.subsystem, autolock=True)
         except datastreams.LockError:
             self.status_stream.push(-1, self.subsystem, autolock=True)
-
-    def stop_drive(self):
-        self.stop_loop = True

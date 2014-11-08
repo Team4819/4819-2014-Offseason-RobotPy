@@ -19,17 +19,16 @@ class Module(object):
         self.navigator_goals = datastreams.get_stream("navigator.goals")
         self.navigator_status = datastreams.get_stream("navigator.status")
         self.autonomous_config = datastreams.get_stream("auto_config")
-        self.drivetrain_state_stream = datastreams.get_stream("position")
+        self.drivetrain_state_stream = datastreams.get_stream("drivetrain.state")
         self.intake_control_stream = datastreams.get_stream("intake.control")
         self.light_sensor = wpiwrap.AnalogInput("Light Sensor", self.subsystem, 1)
-        events.add_callback("autonomous", self.subsystem, callback=self.run, inverse_callback=self.stop)
+        events.add_callback("autonomous", self.subsystem, self.run)
 
     class EndAutoError(Exception):
         """This is just a way to stop the autonomous routine at any time if we are told to"""
         pass
 
-    def run(self):
-        self.stop_flag = False
+    def run(self, task):
         auto_start_time = time.time()
 
         try:
@@ -43,7 +42,7 @@ class Module(object):
             events.trigger_event("drivetrain.mark", self.subsystem)
 
             #Drop Arms
-            self.intake_control_stream.push({"arms_down": True, "flipper_out": True, "intake_motor": 0}, self.subsystem, autolock=True)
+            self.intake_control_stream.push({"controlling": True, "arms_down": True, "flipper_out": True, "intake_motor": 0}, self.subsystem, autolock=True)
 
             #Trigger Vision
             wpilib.SmartDashboard.PutNumber("hot goal", 0)
@@ -58,7 +57,7 @@ class Module(object):
             #Loop until either we are told to stop, the navigator is done, it has taken too much time,
             # or the light sensor reports that we are on the line.
             while self.navigator_status.get(1) is 0 and time.time() - start_time < 5 and self.light_sensor.get() < 2.5:
-                if self.stop_flag:
+                if not task.active:
                     raise self.EndAutoError()
                 time.sleep(.2)
 
@@ -91,7 +90,7 @@ class Module(object):
             pos = self.drivetrain_state_stream.get({"distance": 0})
             while self.navigator_status.get(1) is 0 and time.time() - start_time < 5 and abs(pos["distance"] - shot_point) > 1:
                 pos = self.drivetrain_state_stream.get({"distance": 0})
-                if self.stop_flag:
+                if not task.active:
                     raise self.EndAutoError()
                 time.sleep(.1)
 
@@ -99,17 +98,17 @@ class Module(object):
             events.trigger_event("shoot_cannon", self.subsystem)
 
             #Run intake
-            self.intake_control_stream.push({"arms_down": True, "flipper_out": True, "intake_motor": .5}, self.subsystem, autolock=True)
+            self.intake_control_stream.push({"controlling": True, "arms_down": True, "flipper_out": True, "intake_motor": .5}, self.subsystem, autolock=True)
 
             #Wait for finish of drive arc
             while self.navigator_status.get(1) is 0 and time.time() - start_time < 7:
                 time.sleep(.5)
-                if self.stop_flag:
+                if not task.active:
                     raise self.EndAutoError()
 
             #wait for ball presence
             while not self.ballpresense_switch.get():
-                if self.stop_flag:
+                if not task.active:
                     raise self.EndAutoError()
                 time.sleep(.2)
 
@@ -123,14 +122,5 @@ class Module(object):
         events.stop_event("navigator.run", self.subsystem)
 
         #Stop intake
-        self.intake_control_stream.push({"arms_down": True, "flipper_out": True, "intake_motor": 0}, self.subsystem, autolock=True)
-
-    def stop(self):
-        logging.info("Stopping autonomous")
-        self.stop_flag = True
-        events.stop_event("navigator.run", self.subsystem)
-
-
-
-
-
+        self.intake_control_stream.push({"controlling": False, "arms_down": True, "flipper_out": True, "intake_motor": 0}, self.subsystem, autolock=True)
+        logging.info("End of Autonomous")

@@ -19,7 +19,6 @@ class Module:
     It publishes data over Network Tables and obeys commands sent back to it.
     """
     subsystem = "remote"
-    stop_flag = False
     #The last-used command index
     command_index = 1
 
@@ -30,11 +29,10 @@ class Module:
         self.table.PutString("frameworkcommands", "{}")
 
         #Setup callback
-        events.add_callback("run", self.subsystem, callback=self.run, inverse_callback=self.stop)
+        events.add_callback("run", self.subsystem, self.run)
 
-    def run(self):
-        self.stop_flag = False
-        while not self.stop_flag:
+    def run(self, task):
+        while task.active:
             #Get a list of all modules and send it to the table
             modnames = module_engine.list_modules()
             self.table.PutString("modlist", json.dumps(modnames))
@@ -83,6 +81,3 @@ class Module:
                             logging.error("Error running command: " + commands[command]["command"] + ": " + str(e) + "\n" + traceback.format_exc())
 
             time.sleep(.5)
-
-    def stop(self):
-        self.stop_flag = True

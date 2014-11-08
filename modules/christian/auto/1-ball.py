@@ -11,7 +11,6 @@ except ImportError:
 class Module:
 
     subsystem = "autonomous"
-    stop_flag = False
 
     def __init__(self):
         #Get our datastreams
@@ -26,14 +25,13 @@ class Module:
         self.light_sensor = wpiwrap.AnalogInput("Light Sensor", self.subsystem, 1)
 
         #Register autonomous event callback
-        events.add_callback("autonomous", self.subsystem, callback=self.run, inverse_callback=self.stop)
+        events.add_callback("autonomous", self.subsystem, self.run)
 
     class EndAutoError(Exception):
         """This is just a way to stop the autonomous routine at any time if we are told to"""
         pass
 
-    def run(self):
-        self.stop_flag = False
+    def run(self, task):
         auto_start_time = time.time()
 
         try:
@@ -48,7 +46,7 @@ class Module:
             events.trigger_event("drivetrain.mark", self.subsystem)
 
             #Drop Arms
-            self.intake_stream.push({"arms_down": True, "flipper_out": True, "intake_motor": 0}, self.subsystem, autolock=True)
+            self.intake_stream.push({"controlling": True, "arms_down": True, "flipper_out": True, "intake_motor": 0}, self.subsystem, autolock=True)
 
             #Trigger Vision
             wpilib.SmartDashboard.PutNumber("hot goal", 0)
@@ -63,7 +61,7 @@ class Module:
             #Loop until either we are told to stop, the navigator is done, it has taken too much time,
             # or the light sensor reports that we are on the line.
             while self.navigator_status.get(1) is 0 and time.time() - start_time < 5 and self.light_sensor.get() < 2.5:
-                if self.stop_flag:
+                if not task.active:
                     raise self.EndAutoError()
                 time.sleep(.2)
 
@@ -96,7 +94,7 @@ class Module:
             pos = self.drivetrain_state_stream.get({"distance": 0})
             while self.navigator_status.get(1) is 0 and time.time() - start_time < 5 and abs(pos["distance"] - shot_point) > 1:
                 pos = self.drivetrain_state_stream.get({"distance": 0})
-                if self.stop_flag:
+                if not task.active:
                     raise self.EndAutoError()
                 time.sleep(.1)
 
@@ -111,11 +109,7 @@ class Module:
 
         #STOP!!!
         events.stop_event("navigator.run", self.subsystem)
-
-    def stop(self):
-        logging.info("Stopping autonomous")
-        events.stop_event("navigator.run", self.subsystem)
-        self.stop_flag = True
+        logging.info("End of Autonomous")
 
 
 

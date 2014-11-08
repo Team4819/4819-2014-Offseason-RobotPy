@@ -19,6 +19,7 @@ def test_basic_events():
     time.sleep(.1)
     assert mod1.index is 3
     module_engine.kill_all_modules()
+    events.remove_callbacks()
 
 
 def test_state_events():
@@ -35,15 +36,15 @@ def test_state_events():
     assert mod1.index is 2
     mod1.reset()
     assert mod1.index is 1
-    events.refresh_events("test1")
+    events.repeat_callbacks("test1")
     time.sleep(.1)
     assert mod1.index is 2
     events.stop_event("test", "Tester")
     time.sleep(.1)
     mod1.reset()
     assert mod1.index is 1
-    events.refresh_events("test")
+    events.repeat_callbacks("test")
     time.sleep(.1)
     assert mod1.index is 1
     module_engine.kill_all_modules()
-    events.cleanup_events()
+    events.remove_callbacks()

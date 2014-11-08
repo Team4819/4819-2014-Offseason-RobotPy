@@ -25,14 +25,15 @@ class Module:
 
         #The only difference here from the last example is that we are running the event upon the robot being enabled,
         #and stopping it when the robot gets disabled
-        events.add_callback("teleoperated", self.subsystem, callback=self.spin_the_spinney_thing, inverse_callback=self.stop_the_spinney_thing)
+        events.add_callback("teleoperated", self.subsystem, self.spin_the_spinney_thing)
+        events.add_inverse_callback("teleoperated", self.subsystem, self.stop_the_spinney_thing)
 
-    def spin_the_spinney_thing(self):
+    def spin_the_spinney_thing(self, task):
         """This sets the motor to run at half speed"""
         #The way this stuff works, when you set the value of a motor, it will run at that speed until either it is told
         # to do something else, or the robot is disabled, which automatically shuts down all outputs.
         self.spinner_thing.set(.5)
 
-    def stop_the_spinney_thing(self):
+    def stop_the_spinney_thing(self, task):
         """This stops the motor"""
         self.spinner_thing.set(0)

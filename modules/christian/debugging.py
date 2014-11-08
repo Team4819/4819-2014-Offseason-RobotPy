@@ -6,17 +6,15 @@ import time
 class Module:
     """This module contains various debugging utilities (currently 1) bound to joystick buttons."""
     subsystem = "debugging"
-    stop_flag = False
 
     def __init__(self):
         self.joystick = wpiwrap.Joystick("Joystick 1", self.subsystem, 1)
-        events.add_callback("run", self.subsystem, callback=self.run, inverse_callback=self.stop)
+        events.add_callback("run", self.subsystem, self.run)
 
-    def run(self):
-        self.stop_flag = False
+    def run(self, task):
         #Initializing this to true to avoid a perpetual loop when this module gets reloaded!
         last_reload_button = True
-        while not self.stop_flag:
+        while task.active:
             #If the reload button is pressed, reload all modules.
             reload_button = self.joystick.get_button(10)
             if reload_button and not last_reload_button:

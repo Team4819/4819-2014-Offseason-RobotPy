@@ -21,28 +21,28 @@ class Module:
         #Set event callbacks
 
         #Shot events
-        events.add_callback("shoot_cannon", self.subsystem, callback=self.fire)
+        events.add_callback("shoot_cannon", self.subsystem, self.high_shot)
 
         #Cannon disable events
-        events.add_callback("disable_cannon", self.subsystem, callback=self.disable, inverse_callback=self.enable)
+        events.add_callback("disable_cannon", self.subsystem, self.disable)
+        events.add_inverse_callback("disable_cannon", self.subsystem, self.enable)
 
         #Run loops
-        events.add_callback("teleoperated", self.subsystem, callback=self.cannon_loop, inverse_callback=self.stop_loops)
-        events.add_callback("teleoperated", self.subsystem, callback=self.blowback_loop, inverse_callback=self.stop_loops)
+        events.add_callback("teleoperated", self.subsystem, self.cannon_loop)
+        events.add_callback("teleoperated", self.subsystem, self.blowback_loop)
 
-    def disable(self):
+    def disable(self, task):
         """Disables the cannon"""
         self.enabled = False
 
-    def enable(self):
+    def enable(self, task):
         """Enables the cannon"""
         self.enabled = True
 
-    def cannon_loop(self):
+    def cannon_loop(self, task):
         """Watches joystick input and fires cannon"""
-        self.stop_flag = False
         last_trigger = False
-        while not self.stop_flag:
+        while task.active:
 
             #Get joystick button values
             trigger = self.joystick.get_button(1)
@@ -64,20 +64,18 @@ class Module:
             time.sleep(.1)
 
     #The blowback can be a lot slower of reaction than the cannon, so we put it in it's own loop to conserve cpu usage
-
-    def blowback_loop(self):
+    def blowback_loop(self, task):
         """Watches joystick input and operates cannon blowback"""
         last_blowback = False
-        self.stop_flag = False
-        while not self.stop_flag:
+        while task.active:
             blowback = self.joystick.get_button(4)
             if blowback is not last_blowback:
                 self.blowback_solenoid.set(blowback)
             last_blowback = blowback
             time.sleep(.3)
 
-    def stop_loops(self):
-        self.stop_flag = True
+    def high_shot(self, task):
+        self.fire()
 
     def fire(self, duration=.5):
         """Fire the cannon, with the solenoids on for the period specified."""

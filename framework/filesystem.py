@@ -40,14 +40,14 @@ def gen_paths():
     #The log file index is a 4-digit number corresponding to an unused log folder
     index = 0
     #If our base log_root_dir exists:
-    if os.path.exists(log_dir):
+    if os.path.exists(log_root_dir):
 
         #Get existing folders, convert to string list, and sort
-        folders = os.listdir(log_dir)
+        folders = os.listdir(log_root_dir)
         ids = [int(f) for f in folders]
         ids.sort()
 
-        #This algorithim determines the next sequential value for our log index, it scans through the existing numbers
+        #This algorithm determines the next sequential value for our log index, it scans through the existing numbers
         #until either it finds a missing number in sequence, or runs out of numbers to scan.
 
         #Set this to a high number to start with, as it will get set every loop iteration
@@ -66,7 +66,7 @@ def gen_paths():
         index += 1
 
     #Set the log_dir, which is the directory for storing all logs during this run session
-    log_dir = os.path.join(log_dir, str(index).zfill(4))
+    log_dir = os.path.join(log_root_dir, str(index).zfill(4))
 
     #Set the log_file, which is a dump of all console output
     log_file = os.path.join(log_dir, "main.log")

@@ -13,5 +13,5 @@ class Module:
     def reset(self):
         self.index = 1
 
-    def callback(self):
+    def callback(self, task):
         self.index += 1

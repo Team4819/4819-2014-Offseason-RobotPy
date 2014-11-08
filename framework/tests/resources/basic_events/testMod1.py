@@ -10,5 +10,5 @@ class Module:
     def set_callback(self):
         events.add_callback("test", self.subsystem, self.callback)
 
-    def callback(self):
+    def callback(self, task):
         self.index += 1

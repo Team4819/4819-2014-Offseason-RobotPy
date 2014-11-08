@@ -7,7 +7,6 @@ class Module:
     """This is a basic version of the drivetrain module, using pure estimation rather than sensors for state feedback"""
 
     subsystem = "drivetrain"
-    stop_flag = False
     current_distance = 0
     current_angle = 0
     current_speed = 0
@@ -17,22 +16,22 @@ class Module:
         self.left_motor = wpiwrap.Talon("left motor", self.subsystem, 1)
         self.right_motor = wpiwrap.Talon("right motor", self.subsystem, 2)
 
-        events.add_callback("enabled", self.subsystem, callback=self.run_loop, inverse_callback=self.stop_run_loop)
-        events.add_callback("drivetrain.mark", self.subsystem, callback=self.mark)
+        events.add_callback("enabled", self.subsystem, self.run_loop)
+        events.add_callback("drivetrain.mark", self.subsystem, self.mark)
 
         self.state_stream = datastreams.get_stream("drivetrain.state")
         self.control_stream = datastreams.get_stream("drivetrain.control")
 
-        self.mark()
-
-    def mark(self):
         self.current_distance = 0
         self.current_angle = 0
 
-    def run_loop(self):
+    def mark(self, task):
+        self.current_distance = 0
+        self.current_angle = 0
+
+    def run_loop(self, task):
         """Listen to joystick input and the control datastream to determine what to do with the drivetrain"""
-        self.stop_flag = False
-        while not self.stop_flag:
+        while task.active:
             joystick_input_x = self.joystick.get_axis(0)
             joystick_input_y = self.joystick.get_axis(1)
 
@@ -77,7 +76,5 @@ class Module:
 
             time.sleep(.05)
 
-    def stop_run_loop(self):
-        self.stop_flag = True
         self.left_motor.set(0)
         self.right_motor.set(0)

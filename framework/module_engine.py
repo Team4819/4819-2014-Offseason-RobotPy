@@ -81,7 +81,7 @@ def load_module(name):
     #Trigger a *subsystem*.load event for the rest of the system to hear, and get our newly-loaded module
     #up-to-date on current events
     events.start_event(subsystem + ".load", subsystem)
-    events.refresh_events(subsystem)
+    events.repeat_callbacks(subsystem)
 
 
 def unload_module(subsystem):
@@ -245,7 +245,7 @@ class _ModWrapper:
                     #Trigger a *subsystem*.load event for the rest of the system to hear, and get our newly-loaded module
                     #up-to-date on current events
                     events.start_event(self.subsystem + ".load", self.subsystem)
-                    events.refresh_events(self.subsystem)
+                    events.repeat_callbacks(self.subsystem)
 
                 #Yay, we must have been successfull!
                 success = True
@@ -260,7 +260,7 @@ class _ModWrapper:
         """Unload the currently loaded module"""
 
         #Remove all event callbacks and active events, triggering any inverse events
-        events.cleanup_events(self.subsystem)
+        events.remove_callbacks(self.subsystem)
 
         #Let the rest of the system know that this module has been unloaded;
         #stop the *subsystem*.load event and trigger the *subsystem*.unload event
@@ -273,7 +273,7 @@ class _ModWrapper:
         self.mod_loaded = False
         logging.info("unloaded module " + self.subsystem)
 
-    def call_wrap(self, func):
+    def call_wrap(self, func, *args, **kwargs):
         """This function is responsible for running a module's function in a contained environment and handling any issues"""
 
         #Grab a process id and increment the reference.
@@ -285,7 +285,7 @@ class _ModWrapper:
 
         try:
             #Run the function!
-            func()
+            func(*args, **kwargs)
         except Exception as e:
             #Something happened! Report an exception and try to replace_faulty
             logging.error("Exception calling func " + func.__name__ + ": " + str(e) + "\n" + traceback.format_exc())

@@ -13,7 +13,6 @@ class Module:
     """This manages the smart dashboard output and autonomous selection"""
 
     subsystem = "dashboard"
-    stop_flag = False
 
     def __init__(self):
         wpilib.SmartDashboard.init()
@@ -33,12 +32,11 @@ class Module:
         wpilib.SmartDashboard.PutNumber("Start Position", 1)
 
         #Register callback
-        events.add_callback("run", self.subsystem, callback=self.run, inverse_callback=self.stop)
+        events.add_callback("run", self.subsystem, self.run)
 
-    def run(self):
+    def run(self, task):
         last_auto_routine = 5
-        self.stop_flag = False
-        while not self.stop_flag:
+        while task.active:
             #Use wpiwrap's function to automatically report all sensor values
             try:
                 wpiwrap.publish_values()
