@@ -54,7 +54,7 @@ def get_modules(subsystem):
         #We have it? Then return it!
         return _loaded_modules[subsystem]
     else:
-        #404 no module found, return the elusive Phantom Object!
+        #404 no module found, return a Phantom Object.
         return PhantomObject([subsystem])
 
 
@@ -197,7 +197,7 @@ class _ModWrapper:
             else:
                 #Search for filename in loaded config
                 for subsystem_config in filesystem.parsed_config:
-                    if subsystem_config is not "StartupMods" and modname in filesystem.parsed_config[subsystem_config]:
+                    if subsystem_config != "StartupMods" and modname in filesystem.parsed_config[subsystem_config]:
                         #We found it! set the fallback list and module index
                         self.fallback_list = filesystem.parsed_config[subsystem_config]
                         self.fallback_index = self.fallback_list.index(modname)
@@ -274,7 +274,10 @@ class _ModWrapper:
         logging.info("unloaded module " + self.subsystem)
 
     def call_wrap(self, func, *args, **kwargs):
-        """This function is responsible for running a module's function in a contained environment and handling any issues"""
+        """
+        This function is responsible for running a module's function in a contained environment
+        and handling any issues
+        """
 
         #Grab a process id and increment the reference.
         id = self.next_pid
@@ -319,7 +322,11 @@ class ModuleUnloadError(Exception):
 
 
 class PhantomObject:
-    """This is what is returned when a non-existant module is asked for"""
+    """
+    This is what is returned when a non-existent module is asked for.
+    It stores a stack of requested (and non-existent) attributes, and logs them
+    if the attribute is called.
+    """
 
     chain = list()
     """The chain of objects called to get to the called function."""

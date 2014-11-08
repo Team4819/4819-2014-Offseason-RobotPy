@@ -78,5 +78,5 @@ class Module:
             time.sleep(.05)
 
         self.arm_solenoid.set(False)
-        self.control_stream.push({"arms_down": False, "flipper_out": True, "intake_motor": 0}, self.subsystem, autolock=True)
+        self.control_stream.push({"controlling": False, "arms_down": False, "flipper_out": True, "intake_motor": 0}, self.subsystem, autolock=True)
         events.start_event("disable_cannon", self.subsystem)
